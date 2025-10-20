@@ -1,7 +1,11 @@
 import json
 import os
+import hashlib
 import psycopg2
 from typing import Dict, Any
+
+def hash_password(password: str) -> str:
+    return hashlib.sha256(password.encode()).hexdigest()
 
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
@@ -31,6 +35,58 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     try:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
+            
+            team_id = params.get('teamId')
+            if team_id:
+                cur.execute(
+                    """SELECT id, team_name, captain_nick, captain_telegram, status, created_at,
+                              top_nick, top_telegram, jungle_nick, jungle_telegram, 
+                              mid_nick, mid_telegram, adc_nick, adc_telegram,
+                              support_nick, support_telegram, sub1_nick, sub1_telegram,
+                              sub2_nick, sub2_telegram 
+                       FROM teams WHERE id = %s""",
+                    (team_id,)
+                )
+                t = cur.fetchone()
+                
+                if not t:
+                    return {
+                        'statusCode': 404,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Team not found'}),
+                        'isBase64Encoded': False
+                    }
+                
+                team_data = {
+                    'id': t[0],
+                    'teamName': t[1],
+                    'captainNick': t[2],
+                    'captainTelegram': t[3],
+                    'status': t[4],
+                    'createdAt': t[5].isoformat() if t[5] else None,
+                    'topNick': t[6],
+                    'topTelegram': t[7],
+                    'jungleNick': t[8],
+                    'jungleTelegram': t[9],
+                    'midNick': t[10],
+                    'midTelegram': t[11],
+                    'adcNick': t[12],
+                    'adcTelegram': t[13],
+                    'supportNick': t[14],
+                    'supportTelegram': t[15],
+                    'sub1Nick': t[16],
+                    'sub1Telegram': t[17],
+                    'sub2Nick': t[18],
+                    'sub2Telegram': t[19]
+                }
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'team': team_data}),
+                    'isBase64Encoded': False
+                }
+            
             status_filter = params.get('status', 'approved')
             
             cur.execute(
@@ -94,19 +150,50 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
+            if body_data.get('type') == 'individual':
+                password_hash = hash_password(body_data.get('password', ''))
+                
+                cur.execute(
+                    """INSERT INTO individual_players (
+                        nickname, telegram, preferred_role, password_hash, status
+                    ) VALUES (%s, %s, %s, %s, 'pending')
+                    RETURNING id""",
+                    (
+                        body_data.get('nickname'),
+                        body_data.get('telegram'),
+                        body_data.get('preferredRole'),
+                        password_hash
+                    )
+                )
+                player_id = cur.fetchone()[0]
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'success': True, 'playerId': player_id}),
+                    'isBase64Encoded': False
+                }
+            
+            password_hash = hash_password(body_data.get('password', ''))
+            
             cur.execute(
                 """INSERT INTO teams (
-                    team_name, captain_nick, captain_telegram,
+                    team_name, captain_nick, captain_telegram, password_hash,
                     top_nick, top_telegram, jungle_nick, jungle_telegram,
                     mid_nick, mid_telegram, adc_nick, adc_telegram,
                     support_nick, support_telegram, sub1_nick, sub1_telegram,
                     sub2_nick, sub2_telegram, status
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending')
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending')
                 RETURNING id""",
                 (
                     body_data.get('teamName'),
                     body_data.get('captainNick'),
                     body_data.get('captainTelegram'),
+                    password_hash,
                     body_data.get('topNick'),
                     body_data.get('topTelegram'),
                     body_data.get('jungleNick'),
@@ -139,6 +226,44 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         elif method == 'PUT':
             body_data = json.loads(event.get('body', '{}'))
             team_id = body_data.get('teamId')
+            action = body_data.get('action')
+            
+            if action == 'update':
+                cur.execute(
+                    """UPDATE teams SET 
+                        team_name = %s,
+                        top_nick = %s, top_telegram = %s,
+                        jungle_nick = %s, jungle_telegram = %s,
+                        mid_nick = %s, mid_telegram = %s,
+                        adc_nick = %s, adc_telegram = %s,
+                        support_nick = %s, support_telegram = %s,
+                        sub1_nick = %s, sub1_telegram = %s,
+                        sub2_nick = %s, sub2_telegram = %s
+                    WHERE id = %s""",
+                    (
+                        body_data.get('teamName'),
+                        body_data.get('topNick'), body_data.get('topTelegram'),
+                        body_data.get('jungleNick'), body_data.get('jungleTelegram'),
+                        body_data.get('midNick'), body_data.get('midTelegram'),
+                        body_data.get('adcNick'), body_data.get('adcTelegram'),
+                        body_data.get('supportNick'), body_data.get('supportTelegram'),
+                        body_data.get('sub1Nick'), body_data.get('sub1Telegram'),
+                        body_data.get('sub2Nick'), body_data.get('sub2Telegram'),
+                        team_id
+                    )
+                )
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
+            
             new_status = body_data.get('status')
             
             cur.execute(

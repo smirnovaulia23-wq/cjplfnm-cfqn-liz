@@ -1,0 +1,33 @@
+{
+  "tests": [
+    {
+      "name": "Login with invalid credentials",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "login",
+        "telegram": "@nonexistent",
+        "password": "wrongpass"
+      },
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Verify with invalid token",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "action": "verify",
+        "token": "invalid_token_12345"
+      },
+      "expectedStatus": 401,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

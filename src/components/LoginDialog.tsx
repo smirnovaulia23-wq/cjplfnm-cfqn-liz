@@ -12,12 +12,12 @@ interface LoginDialogProps {
 }
 
 export const LoginDialog = ({ open, onOpenChange, onLogin }: LoginDialogProps) => {
-  const [username, setUsername] = useState('');
+  const [telegram, setTelegram] = useState('');
   const [password, setPassword] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin(username, password);
+    onLogin(telegram, password);
   };
 
   return (
@@ -25,17 +25,18 @@ export const LoginDialog = ({ open, onOpenChange, onLogin }: LoginDialogProps) =
       <DialogContent className="bg-card border-border">
         <DialogHeader>
           <DialogTitle className="text-2xl text-primary">Вход</DialogTitle>
-          <DialogDescription>Введите логин и пароль для входа</DialogDescription>
+          <DialogDescription>Используйте Telegram для входа</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="username">Логин</Label>
+            <Label htmlFor="telegram">Telegram</Label>
             <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Введите логин"
+              id="telegram"
+              value={telegram}
+              onChange={(e) => setTelegram(e.target.value)}
+              placeholder="@username"
               className="bg-background border-border focus:border-primary"
+              required
             />
           </div>
           <div className="space-y-2">
@@ -47,6 +48,7 @@ export const LoginDialog = ({ open, onOpenChange, onLogin }: LoginDialogProps) =
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Введите пароль"
               className="bg-background border-border focus:border-primary"
+              required
             />
           </div>
           <Button type="submit" className="w-full bg-primary text-primary-foreground hover:bg-primary/90">

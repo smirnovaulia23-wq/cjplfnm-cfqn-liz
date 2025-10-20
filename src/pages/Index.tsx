@@ -9,9 +9,11 @@ import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 import LoginDialog from '@/components/LoginDialog';
 import AdminPanel from '@/components/AdminPanel';
+import TeamEditDialog from '@/components/TeamEditDialog';
 
 const BACKEND_URLS = {
   auth: 'https://functions.poehali.dev/87a1a191-aacc-478d-8869-478b7969f36c',
+  userAuth: 'https://functions.poehali.dev/6593734f-22cc-4ee2-b697-635b5817a9bd',
   teams: 'https://functions.poehali.dev/35199dac-d68a-4536-959b-4aad2fb7e7ad',
   settings: 'https://functions.poehali.dev/9f1de6c4-8e50-4131-b3c0-0253597bdbdf'
 };
@@ -21,8 +23,12 @@ const Index = () => {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [userRole, setUserRole] = useState('');
   const [username, setUsername] = useState('');
+  const [sessionToken, setSessionToken] = useState('');
+  const [teamId, setTeamId] = useState<number | null>(null);
+  const [showTeamEditDialog, setShowTeamEditDialog] = useState(false);
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
@@ -32,6 +38,8 @@ const Index = () => {
     teamName: '',
     captainNick: '',
     captainTelegram: '',
+    password: '',
+    confirmPassword: '',
     topNick: '',
     topTelegram: '',
     jungleNick: '',
@@ -46,6 +54,14 @@ const Index = () => {
     sub1Telegram: '',
     sub2Nick: '',
     sub2Telegram: ''
+  });
+  
+  const [individualForm, setIndividualForm] = useState({
+    nickname: '',
+    telegram: '',
+    preferredRole: '',
+    password: '',
+    confirmPassword: ''
   });
   const { toast } = useToast();
 
@@ -130,25 +146,58 @@ const Index = () => {
     }
   };
 
-  const handleLogin = async (user: string, pass: string) => {
+  const handleLogin = async (telegram: string, password: string) => {
     try {
-      const response = await fetch(BACKEND_URLS.auth, {
+      const adminResponse = await fetch(BACKEND_URLS.auth, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: user, password: pass })
+        body: JSON.stringify({ username: telegram, password })
       });
-      const data = await response.json();
+      const adminData = await adminResponse.json();
 
-      if (data.success) {
+      if (adminData.success) {
         setIsLoggedIn(true);
-        setUsername(data.username);
-        setUserRole(data.role);
+        setIsAdmin(true);
+        setUsername(adminData.username);
+        setUserRole(adminData.role);
         setShowLoginDialog(false);
         setShowAdminPanel(true);
-        toast({ title: 'Вход выполнен', description: `Добро пожаловать, ${data.username}!` });
+        toast({ title: 'Вход выполнен', description: `Добро пожаловать, ${adminData.username}!` });
         loadPendingTeams();
+        return;
+      }
+
+      const userResponse = await fetch(BACKEND_URLS.userAuth, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'login', telegram, password })
+      });
+      const userData = await userResponse.json();
+
+      if (userData.success) {
+        setIsLoggedIn(true);
+        setIsAdmin(false);
+        setSessionToken(userData.token);
+        setUserRole(userData.userType);
+        
+        if (userData.userType === 'team_captain') {
+          setUsername(userData.captainNick);
+          setTeamId(userData.teamId);
+          toast({ 
+            title: 'Вход выполнен', 
+            description: `Добро пожаловать, ${userData.captainNick}! Команда: ${userData.teamName}` 
+          });
+        } else {
+          setUsername(userData.nickname);
+          toast({ 
+            title: 'Вход выполнен', 
+            description: `Добро пожаловать, ${userData.nickname}!` 
+          });
+        }
+        
+        setShowLoginDialog(false);
       } else {
-        toast({ title: 'Ошибка входа', description: data.error, variant: 'destructive' });
+        toast({ title: 'Ошибка входа', description: userData.error || 'Неверный логин или пароль', variant: 'destructive' });
       }
     } catch (error) {
       toast({ title: 'Ошибка', description: 'Не удалось выполнить вход', variant: 'destructive' });
@@ -202,10 +251,21 @@ const Index = () => {
     e.preventDefault();
     
     if (!teamForm.teamName || !teamForm.captainNick || !teamForm.captainTelegram ||
+        !teamForm.password || !teamForm.confirmPassword ||
         !teamForm.topNick || !teamForm.topTelegram || !teamForm.jungleNick || !teamForm.jungleTelegram ||
         !teamForm.midNick || !teamForm.midTelegram || !teamForm.adcNick || !teamForm.adcTelegram ||
         !teamForm.supportNick || !teamForm.supportTelegram) {
       toast({ title: 'Заполните обязательные поля', description: 'Все поля отмеченные * обязательны', variant: 'destructive' });
+      return;
+    }
+
+    if (teamForm.password !== teamForm.confirmPassword) {
+      toast({ title: 'Ошибка', description: 'Пароли не совпадают', variant: 'destructive' });
+      return;
+    }
+
+    if (teamForm.password.length < 6) {
+      toast({ title: 'Ошибка', description: 'Пароль должен быть не менее 6 символов', variant: 'destructive' });
       return;
     }
 
@@ -218,11 +278,13 @@ const Index = () => {
       const data = await response.json();
 
       if (data.success) {
-        toast({ title: 'Заявка отправлена!', description: 'Ваша команда отправлена на одобрение администрации' });
+        toast({ title: 'Заявка отправлена!', description: 'Ваша команда отправлена на одобрение администрации. Используйте свой Telegram для входа.' });
         setTeamForm({
           teamName: '',
           captainNick: '',
           captainTelegram: '',
+          password: '',
+          confirmPassword: '',
           topNick: '',
           topTelegram: '',
           jungleNick: '',
@@ -240,6 +302,49 @@ const Index = () => {
         });
       } else {
         toast({ title: 'Ошибка', description: data.error || 'Не удалось отправить заявку', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось отправить заявку', variant: 'destructive' });
+    }
+  };
+
+  const handleIndividualRegistration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!individualForm.nickname || !individualForm.telegram || !individualForm.password || !individualForm.confirmPassword) {
+      toast({ title: 'Заполните обязательные поля', description: 'Все поля обязательны для заполнения', variant: 'destructive' });
+      return;
+    }
+
+    if (individualForm.password !== individualForm.confirmPassword) {
+      toast({ title: 'Ошибка', description: 'Пароли не совпадают', variant: 'destructive' });
+      return;
+    }
+
+    if (individualForm.password.length < 6) {
+      toast({ title: 'Ошибка', description: 'Пароль должен быть не менее 6 символов', variant: 'destructive' });
+      return;
+    }
+
+    try {
+      const response = await fetch(BACKEND_URLS.teams, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...individualForm, type: 'individual' })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        toast({ title: 'Регистрация успешна!', description: 'Вы зарегистрированы как свободный игрок. Используйте свой Telegram для входа.' });
+        setIndividualForm({
+          nickname: '',
+          telegram: '',
+          preferredRole: '',
+          password: '',
+          confirmPassword: ''
+        });
+      } else {
+        toast({ title: 'Ошибка', description: data.error || 'Не удалось зарегистрироваться', variant: 'destructive' });
       }
     } catch (error) {
       toast({ title: 'Ошибка', description: 'Не удалось отправить заявку', variant: 'destructive' });
@@ -281,13 +386,45 @@ const Index = () => {
                     </Button>
                   </nav>
                   {isLoggedIn ? (
-                    <Button
-                      onClick={() => setShowAdminPanel(true)}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow"
-                    >
-                      <Icon name="Settings" className="w-4 h-4 mr-2" />
-                      Админ-панель
-                    </Button>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">
+                        {username}
+                      </span>
+                      {isAdmin && (
+                        <Button
+                          onClick={() => setShowAdminPanel(true)}
+                          className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow"
+                        >
+                          <Icon name="Settings" className="w-4 h-4 mr-2" />
+                          Админ-панель
+                        </Button>
+                      )}
+                      {userRole === 'team_captain' && teamId && (
+                        <Button
+                          onClick={() => setShowTeamEditDialog(true)}
+                          className="bg-secondary text-white hover:bg-secondary/90"
+                        >
+                          <Icon name="Edit" className="w-4 h-4 mr-2" />
+                          Моя команда
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        onClick={() => {
+                          setIsLoggedIn(false);
+                          setIsAdmin(false);
+                          setUsername('');
+                          setUserRole('');
+                          setSessionToken('');
+                          setTeamId(null);
+                          toast({ title: 'Выход выполнен' });
+                        }}
+                        className="border-primary/50 text-primary hover:bg-primary/10"
+                      >
+                        <Icon name="LogOut" className="w-4 h-4 mr-2" />
+                        Выход
+                      </Button>
+                    </div>
                   ) : (
                     <Button
                       onClick={() => setShowLoginDialog(true)}
@@ -524,19 +661,26 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="register" className="mt-8">
-                <form onSubmit={handleTeamRegistration}>
-                  <Card className="max-w-3xl mx-auto bg-card/50 border-border">
-                    <CardHeader className="border-b border-border/50">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <CardTitle className="text-2xl text-primary">Регистрация команды</CardTitle>
-                          <CardDescription className="mt-2">Заполните данные для участия в турнире</CardDescription>
-                        </div>
-                        <Badge className={registrationOpen ? 'bg-primary/20 text-primary border border-primary/50' : 'bg-accent/20 text-accent border border-accent/50'}>
-                          {registrationOpen ? 'Регистрация открыта' : 'Регистрация закрыта'}
-                        </Badge>
-                      </div>
-                    </CardHeader>
+                <Tabs defaultValue="team" className="max-w-3xl mx-auto">
+                  <TabsList className="grid w-full grid-cols-2 mb-8">
+                    <TabsTrigger value="team">Регистрация команды</TabsTrigger>
+                    <TabsTrigger value="individual">Индивидуальная регистрация</TabsTrigger>
+                  </TabsList>
+
+                  <TabsContent value="team">
+                    <form onSubmit={handleTeamRegistration}>
+                      <Card className="bg-card/50 border-border">
+                        <CardHeader className="border-b border-border/50">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <CardTitle className="text-2xl text-primary">Регистрация команды</CardTitle>
+                              <CardDescription className="mt-2">Заполните данные для участия в турнире</CardDescription>
+                            </div>
+                            <Badge className={registrationOpen ? 'bg-primary/20 text-primary border border-primary/50' : 'bg-accent/20 text-accent border border-accent/50'}>
+                              {registrationOpen ? 'Регистрация открыта' : 'Регистрация закрыта'}
+                            </Badge>
+                          </div>
+                        </CardHeader>
                     <CardContent className="space-y-8 pt-6">
                       <div className="space-y-4">
                         <Label className="text-base font-semibold text-foreground">Название команды *</Label>
@@ -572,6 +716,38 @@ const Index = () => {
                             required
                             disabled={!registrationOpen}
                           />
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <Label className="text-base font-semibold text-foreground">Пароль для входа</Label>
+                        <p className="text-sm text-muted-foreground">Используйте Telegram капитана для входа</p>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Пароль *</Label>
+                            <Input
+                              type="password"
+                              value={teamForm.password}
+                              onChange={(e) => setTeamForm({ ...teamForm, password: e.target.value })}
+                              placeholder="Минимум 6 символов"
+                              className="bg-background border-border focus:border-primary"
+                              required
+                              disabled={!registrationOpen}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Подтвердите пароль *</Label>
+                            <Input
+                              type="password"
+                              value={teamForm.confirmPassword}
+                              onChange={(e) => setTeamForm({ ...teamForm, confirmPassword: e.target.value })}
+                              placeholder="Повторите пароль"
+                              className="bg-background border-border focus:border-primary"
+                              required
+                              disabled={!registrationOpen}
+                            />
+                          </div>
                         </div>
                       </div>
 
@@ -664,6 +840,110 @@ const Index = () => {
                   </Card>
                 </form>
               </TabsContent>
+
+              <TabsContent value="individual">
+                <form onSubmit={handleIndividualRegistration}>
+                  <Card className="bg-card/50 border-border">
+                    <CardHeader className="border-b border-border/50">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-2xl text-primary">Индивидуальная регистрация</CardTitle>
+                          <CardDescription className="mt-2">Зарегистрируйтесь как свободный игрок</CardDescription>
+                        </div>
+                        <Badge className={registrationOpen ? 'bg-primary/20 text-primary border border-primary/50' : 'bg-accent/20 text-accent border border-accent/50'}>
+                          {registrationOpen ? 'Регистрация открыта' : 'Регистрация закрыта'}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-6 pt-6">
+                      <div className="space-y-4">
+                        <Label className="text-base font-semibold text-foreground">Основная информация</Label>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Игровой ник *</Label>
+                            <Input
+                              value={individualForm.nickname}
+                              onChange={(e) => setIndividualForm({ ...individualForm, nickname: e.target.value })}
+                              placeholder="Ваш игровой ник"
+                              className="bg-background border-border focus:border-primary"
+                              required
+                              disabled={!registrationOpen}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Telegram *</Label>
+                            <Input
+                              value={individualForm.telegram}
+                              onChange={(e) => setIndividualForm({ ...individualForm, telegram: e.target.value })}
+                              placeholder="@username"
+                              className="bg-background border-border focus:border-primary"
+                              required
+                              disabled={!registrationOpen}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Предпочитаемая роль</Label>
+                          <select
+                            value={individualForm.preferredRole}
+                            onChange={(e) => setIndividualForm({ ...individualForm, preferredRole: e.target.value })}
+                            className="w-full bg-background border border-border rounded-md px-3 py-2 focus:border-primary focus:outline-none"
+                            disabled={!registrationOpen}
+                          >
+                            <option value="">Не указана</option>
+                            <option value="top">Топ</option>
+                            <option value="jungle">Лес</option>
+                            <option value="mid">Мид</option>
+                            <option value="adc">АДК</option>
+                            <option value="support">Саппорт</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div className="space-y-4">
+                        <Label className="text-base font-semibold text-foreground">Пароль для входа</Label>
+                        <p className="text-sm text-muted-foreground">Используйте ваш Telegram для входа</p>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Пароль *</Label>
+                            <Input
+                              type="password"
+                              value={individualForm.password}
+                              onChange={(e) => setIndividualForm({ ...individualForm, password: e.target.value })}
+                              placeholder="Минимум 6 символов"
+                              className="bg-background border-border focus:border-primary"
+                              required
+                              disabled={!registrationOpen}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Подтвердите пароль *</Label>
+                            <Input
+                              type="password"
+                              value={individualForm.confirmPassword}
+                              onChange={(e) => setIndividualForm({ ...individualForm, confirmPassword: e.target.value })}
+                              placeholder="Повторите пароль"
+                              className="bg-background border-border focus:border-primary"
+                              required
+                              disabled={!registrationOpen}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <Button type="submit" className="w-full bg-gradient-to-r from-secondary to-accent text-white hover:opacity-90 h-12 text-lg font-semibold" disabled={!registrationOpen}>
+                        <Icon name="UserPlus" className="w-5 h-5 mr-2" />
+                        Зарегистрироваться
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </form>
+              </TabsContent>
+            </Tabs>
+          </TabsContent>
             </Tabs>
           </div>
         </section>
@@ -703,6 +983,19 @@ const Index = () => {
         onRejectTeam={handleRejectTeam}
         userRole={userRole}
       />
+
+      {teamId && (
+        <TeamEditDialog
+          open={showTeamEditDialog}
+          onOpenChange={setShowTeamEditDialog}
+          teamId={teamId}
+          sessionToken={sessionToken}
+          onSuccess={() => {
+            loadApprovedTeams();
+            toast({ title: 'Успешно', description: 'Данные команды обновлены' });
+          }}
+        />
+      )}
     </div>
   );
 };
