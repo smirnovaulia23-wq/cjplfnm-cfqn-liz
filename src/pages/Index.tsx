@@ -76,7 +76,6 @@ const Index = () => {
     loadSettings();
     if (isLoggedIn) {
       loadPendingTeams();
-      loadIndividualPlayers();
     }
   }, [isLoggedIn]);
 
