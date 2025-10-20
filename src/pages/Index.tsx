@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { LoginDialog } from '@/components/LoginDialog';
 import AdminPanel from '@/components/AdminPanel';
@@ -9,8 +10,9 @@ import { MobileNavigation } from '@/components/MobileNavigation';
 import { TeamsList } from '@/components/TeamsList';
 import { PlayersList } from '@/components/PlayersList';
 import { RegistrationForms } from '@/components/RegistrationForms';
-import { ApprovedApplicationsManager } from '@/components/ApprovedApplicationsManager';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
+import TeamManagementDialog from '@/components/TeamManagementDialog';
+import Icon from '@/components/ui/icon';
 
 const BACKEND_URLS = {
   auth: 'https://functions.poehali.dev/87a1a191-aacc-478d-8869-478b7969f36c',
@@ -33,6 +35,7 @@ const Index = () => {
   const [sessionToken, setSessionToken] = useState('');
   const [teamId, setTeamId] = useState<number | null>(null);
   const [showTeamEditDialog, setShowTeamEditDialog] = useState(false);
+  const [showTeamManagementDialog, setShowTeamManagementDialog] = useState(false);
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
   const [pendingPlayers, setPendingPlayers] = useState<any[]>([]);
@@ -470,18 +473,26 @@ const Index = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="manage" className="mt-8">
-                <ApprovedApplicationsManager
-                  approvedTeams={approvedTeams}
-                  individualPlayers={individualPlayers}
-                  onRefresh={() => {
-                    loadApprovedTeams();
-                    loadIndividualPlayers();
-                  }}
-                  backendUrl={BACKEND_URLS.teams}
-                  isAdmin={isAdmin}
-                  sessionToken={sessionToken}
-                />
+              <TabsContent value="myteam" className="mt-8">
+                <div className="max-w-2xl mx-auto text-center py-12">
+                  <div className="mb-6">
+                    <div className="w-16 h-16 bg-secondary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <Icon name="Settings" className="w-8 h-8 text-secondary" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-foreground mb-2">Управление командой</h2>
+                    <p className="text-muted-foreground mb-6">
+                      Войдите с помощью названия команды и пароля, указанных при регистрации
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => setShowTeamManagementDialog(true)}
+                    size="lg"
+                    className="bg-secondary hover:bg-secondary/90"
+                  >
+                    <Icon name="LogIn" className="w-5 h-5 mr-2" />
+                    Войти в управление командой
+                  </Button>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
@@ -527,6 +538,12 @@ const Index = () => {
           sessionToken={sessionToken}
         />
       )}
+
+      <TeamManagementDialog
+        open={showTeamManagementDialog}
+        onOpenChange={setShowTeamManagementDialog}
+        backendUrl={BACKEND_URLS.teams}
+      />
     </div>
   );
 };

@@ -72,12 +72,12 @@ export const TournamentHeader = ({
               Свободные игроки
             </Button>
             <Button 
-              variant={selectedTab === 'manage' ? 'default' : 'ghost'}
-              onClick={() => setSelectedTab('manage')}
-              className={selectedTab === 'manage' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+              variant={selectedTab === 'myteam' ? 'default' : 'ghost'}
+              onClick={() => setSelectedTab('myteam')}
+              className={selectedTab === 'myteam' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
             >
-              <Icon name="Edit" className="w-4 h-4 mr-2" />
-              Управление
+              <Icon name="Settings" className="w-4 h-4 mr-2" />
+              Моя команда
             </Button>
           </nav>
           {isLoggedIn ? (

@@ -38,13 +38,13 @@ export const MobileNavigation = ({ selectedTab, setSelectedTab }: MobileNavigati
           <span className="text-xs">Игроки</span>
         </Button>
         <Button
-          variant={selectedTab === 'manage' ? 'default' : 'ghost'}
-          onClick={() => setSelectedTab('manage')}
-          className={selectedTab === 'manage' ? 'bg-secondary text-white' : 'text-foreground'}
+          variant={selectedTab === 'myteam' ? 'default' : 'ghost'}
+          onClick={() => setSelectedTab('myteam')}
+          className={selectedTab === 'myteam' ? 'bg-secondary text-white' : 'text-foreground'}
           size="sm"
         >
-          <Icon name="Edit" className="w-4 h-4 mr-1" />
-          <span className="text-xs">Управл.</span>
+          <Icon name="Settings" className="w-4 h-4 mr-1" />
+          <span className="text-xs">Моя</span>
         </Button>
       </div>
     </div>
