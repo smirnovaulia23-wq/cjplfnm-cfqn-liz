@@ -27,6 +27,7 @@ const Index = () => {
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
   const [registrationOpen, setRegistrationOpen] = useState(true);
+  const [expandedTeam, setExpandedTeam] = useState<number | null>(null);
   const [teamForm, setTeamForm] = useState({
     teamName: '',
     captainNick: '',
@@ -389,21 +390,100 @@ const Index = () => {
                       {approvedTeams.map((team, index) => (
                         <Card key={team.id} className="bg-card/50 border-border hover:border-primary/50 transition-all">
                           <CardContent className="p-6">
-                            <div className="flex items-start justify-between">
-                              <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
-                                  <span className="text-xl font-bold text-primary">#{index + 1}</span>
+                            <div className="space-y-4">
+                              <div className="flex items-start justify-between">
+                                <div className="flex items-center gap-4">
+                                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
+                                    <span className="text-xl font-bold text-primary">#{index + 1}</span>
+                                  </div>
+                                  <div>
+                                    <h3 className="text-xl font-semibold text-foreground">{team.teamName}</h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      Капитан: {team.captainNick}
+                                      {(!registrationOpen || isLoggedIn) && (
+                                        <span> • {team.captainTelegram}</span>
+                                      )}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <h3 className="text-xl font-semibold text-foreground">{team.teamName}</h3>
-                                  <p className="text-sm text-muted-foreground">
-                                    Капитан: {team.captainNick} • {team.captainTelegram}
-                                  </p>
+                                <div className="flex items-center gap-2">
+                                  <Badge className="bg-primary/20 text-primary border border-primary/50">
+                                    Одобрено
+                                  </Badge>
+                                  {!isLoggedIn && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="border-primary/50 text-primary hover:bg-primary/10"
+                                      onClick={() => setExpandedTeam(expandedTeam === team.id ? null : team.id)}
+                                    >
+                                      <Icon name={expandedTeam === team.id ? "ChevronUp" : "ChevronDown"} className="w-4 h-4 mr-1" />
+                                      Подробнее
+                                    </Button>
+                                  )}
                                 </div>
                               </div>
-                              <Badge className="bg-primary/20 text-primary border border-primary/50">
-                                Одобрено
-                              </Badge>
+
+                              {(expandedTeam === team.id || isLoggedIn) && (
+                                <div className="pt-4 border-t border-border/50 space-y-3">
+                                  <h4 className="font-semibold text-foreground mb-3">Состав команды:</h4>
+                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                      <p className="text-xs text-muted-foreground mb-1">Топ</p>
+                                      <p className="font-medium text-foreground">{team.topNick}</p>
+                                      {(!registrationOpen || isLoggedIn) && (
+                                        <p className="text-xs text-muted-foreground mt-1">{team.topTelegram}</p>
+                                      )}
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                      <p className="text-xs text-muted-foreground mb-1">Лес</p>
+                                      <p className="font-medium text-foreground">{team.jungleNick}</p>
+                                      {(!registrationOpen || isLoggedIn) && (
+                                        <p className="text-xs text-muted-foreground mt-1">{team.jungleTelegram}</p>
+                                      )}
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                      <p className="text-xs text-muted-foreground mb-1">Мид</p>
+                                      <p className="font-medium text-foreground">{team.midNick}</p>
+                                      {(!registrationOpen || isLoggedIn) && (
+                                        <p className="text-xs text-muted-foreground mt-1">{team.midTelegram}</p>
+                                      )}
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                      <p className="text-xs text-muted-foreground mb-1">АДК</p>
+                                      <p className="font-medium text-foreground">{team.adcNick}</p>
+                                      {(!registrationOpen || isLoggedIn) && (
+                                        <p className="text-xs text-muted-foreground mt-1">{team.adcTelegram}</p>
+                                      )}
+                                    </div>
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                      <p className="text-xs text-muted-foreground mb-1">Саппорт</p>
+                                      <p className="font-medium text-foreground">{team.supportNick}</p>
+                                      {(!registrationOpen || isLoggedIn) && (
+                                        <p className="text-xs text-muted-foreground mt-1">{team.supportTelegram}</p>
+                                      )}
+                                    </div>
+                                    {team.sub1Nick && (
+                                      <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                        <p className="text-xs text-muted-foreground mb-1">Запасной 1</p>
+                                        <p className="font-medium text-foreground">{team.sub1Nick}</p>
+                                        {(!registrationOpen || isLoggedIn) && team.sub1Telegram && (
+                                          <p className="text-xs text-muted-foreground mt-1">{team.sub1Telegram}</p>
+                                        )}
+                                      </div>
+                                    )}
+                                    {team.sub2Nick && (
+                                      <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                        <p className="text-xs text-muted-foreground mb-1">Запасной 2</p>
+                                        <p className="font-medium text-foreground">{team.sub2Nick}</p>
+                                        {(!registrationOpen || isLoggedIn) && team.sub2Telegram && (
+                                          <p className="text-xs text-muted-foreground mt-1">{team.sub2Telegram}</p>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              )}
                             </div>
                           </CardContent>
                         </Card>

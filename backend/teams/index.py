@@ -34,7 +34,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             status_filter = params.get('status', 'approved')
             
             cur.execute(
-                "SELECT id, team_name, captain_nick, captain_telegram, status, created_at FROM teams WHERE status = %s ORDER BY created_at DESC",
+                """SELECT id, team_name, captain_nick, captain_telegram, status, created_at,
+                          top_nick, top_telegram, jungle_nick, jungle_telegram, 
+                          mid_nick, mid_telegram, adc_nick, adc_telegram,
+                          support_nick, support_telegram, sub1_nick, sub1_telegram,
+                          sub2_nick, sub2_telegram 
+                   FROM teams WHERE status = %s ORDER BY created_at DESC""",
                 (status_filter,)
             )
             teams = cur.fetchall()
@@ -45,7 +50,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'captainNick': t[2],
                 'captainTelegram': t[3],
                 'status': t[4],
-                'createdAt': t[5].isoformat() if t[5] else None
+                'createdAt': t[5].isoformat() if t[5] else None,
+                'topNick': t[6],
+                'topTelegram': t[7],
+                'jungleNick': t[8],
+                'jungleTelegram': t[9],
+                'midNick': t[10],
+                'midTelegram': t[11],
+                'adcNick': t[12],
+                'adcTelegram': t[13],
+                'supportNick': t[14],
+                'supportTelegram': t[15],
+                'sub1Nick': t[16],
+                'sub1Telegram': t[17],
+                'sub2Nick': t[18],
+                'sub2Telegram': t[19]
             } for t in teams]
             
             return {
