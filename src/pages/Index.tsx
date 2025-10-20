@@ -139,6 +139,7 @@ const Index = () => {
         setIsLoggedIn(true);
         setIsAdmin(true);
         setIsSuperAdmin(adminData.username === 'Xuna');
+        setSessionToken(adminData.token);
         setUsername(adminData.username);
         setUserRole(adminData.role);
         setShowLoginDialog(false);

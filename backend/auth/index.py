@@ -1,15 +1,19 @@
 import json
 import os
 import hashlib
+import secrets
 import psycopg2
 from typing import Dict, Any
 
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
+def generate_session_token() -> str:
+    return secrets.token_urlsafe(32)
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
-    Business: Authenticate users and manage admin sessions
+    Business: Authenticate users and manage admin sessions with token generation
     Args: event - dict with httpMethod, body, headers
           context - object with request_id attribute
     Returns: HTTP response dict
@@ -147,12 +151,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             password = body_data.get('password', '')
             
             cur.execute(
-                "SELECT username, role FROM admin_users WHERE username = %s AND password_hash = %s",
+                "SELECT id, username, role FROM admin_users WHERE username = %s AND password_hash = %s",
                 (username, password)
             )
             user = cur.fetchone()
             
             if user:
+                session_token = generate_session_token()
+                
+                cur.execute(
+                    "UPDATE admin_users SET session_token = %s WHERE id = %s",
+                    (session_token, user[0])
+                )
+                conn.commit()
+                
                 return {
                     'statusCode': 200,
                     'headers': {
@@ -161,9 +173,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     },
                     'body': json.dumps({
                         'success': True,
-                        'username': user[0],
-                        'role': user[1],
-                        'token': f"{user[0]}:{user[1]}"
+                        'username': user[1],
+                        'role': user[2],
+                        'token': session_token
                     }),
                     'isBase64Encoded': False
                 }
