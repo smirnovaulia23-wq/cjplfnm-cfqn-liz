@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
-import LoginDialog from '@/components/LoginDialog';
+import { LoginDialog } from '@/components/LoginDialog';
 import AdminPanel from '@/components/AdminPanel';
 import TeamEditDialog from '@/components/TeamEditDialog';
 
