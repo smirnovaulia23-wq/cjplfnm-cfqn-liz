@@ -15,7 +15,8 @@ const BACKEND_URLS = {
   auth: 'https://functions.poehali.dev/87a1a191-aacc-478d-8869-478b7969f36c',
   userAuth: 'https://functions.poehali.dev/6593734f-22cc-4ee2-b697-635b5817a9bd',
   teams: 'https://functions.poehali.dev/35199dac-d68a-4536-959b-4aad2fb7e7ad',
-  settings: 'https://functions.poehali.dev/9f1de6c4-8e50-4131-b3c0-0253597bdbdf'
+  settings: 'https://functions.poehali.dev/9f1de6c4-8e50-4131-b3c0-0253597bdbdf',
+  register: 'https://functions.poehali.dev/aa5c695c-a493-4e80-8b18-578f26f15470'
 };
 
 const Index = () => {
@@ -320,6 +321,18 @@ const Index = () => {
     }
 
     try {
+      const registerResponse = await fetch(BACKEND_URLS.register, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...teamForm, type: 'team' })
+      });
+      const registerData = await registerResponse.json();
+
+      if (!registerData.success) {
+        toast({ title: 'Ошибка', description: registerData.error || 'Не удалось сохранить регистрацию', variant: 'destructive' });
+        return;
+      }
+
       const response = await fetch(BACKEND_URLS.teams, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -372,10 +385,22 @@ const Index = () => {
     }
 
     try {
-      const response = await fetch(BACKEND_URLS.teams, {
+      const registrationData = {
+        type: 'individual',
+        playerNick: individualForm.nickname,
+        playerTelegram: individualForm.telegram,
+        mainRole: individualForm.preferredRoles[0],
+        alternativeRole: individualForm.preferredRoles[1] || null,
+        friend1Nick: individualForm.hasFriends ? individualForm.friend1Nickname : null,
+        friend1Telegram: individualForm.hasFriends ? individualForm.friend1Telegram : null,
+        friend2Nick: individualForm.hasFriends ? individualForm.friend2Nickname : null,
+        friend2Telegram: individualForm.hasFriends ? individualForm.friend2Telegram : null
+      };
+
+      const response = await fetch(BACKEND_URLS.register, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...individualForm, type: 'individual' })
+        body: JSON.stringify(registrationData)
       });
       const data = await response.json();
 
@@ -641,12 +666,6 @@ const Index = () => {
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <h3 className="text-lg sm:text-xl font-semibold text-foreground text-ellipsis-nick">{team.teamName}</h3>
-                                    <p className="text-sm text-muted-foreground">
-                                      <span className="text-ellipsis-nick block sm:inline">Капитан: {team.captainNick}</span>
-                                      {(!registrationOpen || isLoggedIn) && (
-                                        <span className="text-ellipsis-nick block sm:inline"> • {team.captainTelegram}</span>
-                                      )}
-                                    </p>
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -665,6 +684,13 @@ const Index = () => {
                                     </Button>
                                   )}
                                 </div>
+                              </div>
+
+                              <div className="text-sm text-muted-foreground">
+                                <span className="text-ellipsis-nick block sm:inline">Капитан: {team.captainNick}</span>
+                                {(!registrationOpen || isLoggedIn) && (
+                                  <span className="text-ellipsis-nick block sm:inline"> • {team.captainTelegram}</span>
+                                )}
                               </div>
 
                               {(expandedTeam === team.id || isLoggedIn) && (
@@ -965,8 +991,14 @@ const Index = () => {
               <TabsContent value="register" className="mt-8">
                 <Tabs defaultValue="team" className="max-w-3xl mx-auto">
                   <TabsList className="grid w-full grid-cols-2 mb-8">
-                    <TabsTrigger value="team">Регистрация команды</TabsTrigger>
-                    <TabsTrigger value="individual">Индивидуальная регистрация</TabsTrigger>
+                    <TabsTrigger value="team" className="text-xs sm:text-sm">
+                      <span className="hidden sm:inline">Регистрация команды</span>
+                      <span className="sm:hidden">Команда</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="individual" className="text-xs sm:text-sm">
+                      <span className="hidden sm:inline">Индивидуальная регистрация</span>
+                      <span className="sm:hidden">Индивид.</span>
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="team">

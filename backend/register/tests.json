@@ -1,0 +1,49 @@
+{
+  "tests": [
+    {
+      "name": "Team registration success",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "type": "team",
+        "teamName": "Test Team",
+        "captainNick": "Captain1",
+        "captainTelegram": "@captain",
+        "topNick": "TopPlayer",
+        "topTelegram": "@top",
+        "jungleNick": "JunglePlayer",
+        "jungleTelegram": "@jungle",
+        "midNick": "MidPlayer",
+        "midTelegram": "@mid",
+        "adcNick": "ADCPlayer",
+        "adcTelegram": "@adc",
+        "supportNick": "SupportPlayer",
+        "supportTelegram": "@support"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Individual registration success",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "type": "individual",
+        "playerNick": "SoloPlayer",
+        "playerTelegram": "@solo",
+        "mainRole": "mid",
+        "alternativeRole": "top"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "message": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
