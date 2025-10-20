@@ -27,6 +27,25 @@ const Index = () => {
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
   const [registrationOpen, setRegistrationOpen] = useState(true);
+  const [teamForm, setTeamForm] = useState({
+    teamName: '',
+    captainNick: '',
+    captainTelegram: '',
+    topNick: '',
+    topTelegram: '',
+    jungleNick: '',
+    jungleTelegram: '',
+    midNick: '',
+    midTelegram: '',
+    adcNick: '',
+    adcTelegram: '',
+    supportNick: '',
+    supportTelegram: '',
+    sub1Nick: '',
+    sub1Telegram: '',
+    sub2Nick: '',
+    sub2Telegram: ''
+  });
   const { toast } = useToast();
 
   const tournaments = [
@@ -178,17 +197,46 @@ const Index = () => {
     }
   };
 
-  const handleTeamRegistration = async (formData: any) => {
+  const handleTeamRegistration = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!teamForm.teamName || !teamForm.captainNick || !teamForm.captainTelegram ||
+        !teamForm.topNick || !teamForm.topTelegram || !teamForm.jungleNick || !teamForm.jungleTelegram ||
+        !teamForm.midNick || !teamForm.midTelegram || !teamForm.adcNick || !teamForm.adcTelegram ||
+        !teamForm.supportNick || !teamForm.supportTelegram) {
+      toast({ title: 'Заполните обязательные поля', description: 'Все поля отмеченные * обязательны', variant: 'destructive' });
+      return;
+    }
+
     try {
       const response = await fetch(BACKEND_URLS.teams, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(teamForm)
       });
       const data = await response.json();
 
       if (data.success) {
-        toast({ title: 'Заявка отправлена!', description: 'Ожидайте одобрения администрации' });
+        toast({ title: 'Заявка отправлена!', description: 'Ваша команда отправлена на одобрение администрации' });
+        setTeamForm({
+          teamName: '',
+          captainNick: '',
+          captainTelegram: '',
+          topNick: '',
+          topTelegram: '',
+          jungleNick: '',
+          jungleTelegram: '',
+          midNick: '',
+          midTelegram: '',
+          adcNick: '',
+          adcTelegram: '',
+          supportNick: '',
+          supportTelegram: '',
+          sub1Nick: '',
+          sub1Telegram: '',
+          sub2Nick: '',
+          sub2Telegram: ''
+        });
       } else {
         toast({ title: 'Ошибка', description: data.error || 'Не удалось отправить заявку', variant: 'destructive' });
       }
@@ -396,131 +444,145 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="register" className="mt-8">
-                <Card className="max-w-3xl mx-auto bg-card/50 border-border">
-                  <CardHeader className="border-b border-border/50">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-2xl text-primary">Регистрация команды</CardTitle>
-                        <CardDescription className="mt-2">Заполните данные для участия в турнире</CardDescription>
+                <form onSubmit={handleTeamRegistration}>
+                  <Card className="max-w-3xl mx-auto bg-card/50 border-border">
+                    <CardHeader className="border-b border-border/50">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <CardTitle className="text-2xl text-primary">Регистрация команды</CardTitle>
+                          <CardDescription className="mt-2">Заполните данные для участия в турнире</CardDescription>
+                        </div>
+                        <Badge className={registrationOpen ? 'bg-primary/20 text-primary border border-primary/50' : 'bg-accent/20 text-accent border border-accent/50'}>
+                          {registrationOpen ? 'Регистрация открыта' : 'Регистрация закрыта'}
+                        </Badge>
                       </div>
-                      <Badge className="bg-secondary/20 text-secondary border border-secondary/50">
-                        Турнир 5x5
-                      </Badge>
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-8 pt-6">
-                    <div className="space-y-4">
-                      <Label className="text-base font-semibold text-foreground">Название команды *</Label>
-                      <Input
-                        placeholder="Введите название команды"
-                        className="bg-background border-border focus:border-primary h-12"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">Ник капитана *</Label>
+                    </CardHeader>
+                    <CardContent className="space-y-8 pt-6">
+                      <div className="space-y-4">
+                        <Label className="text-base font-semibold text-foreground">Название команды *</Label>
                         <Input
-                          placeholder="IvanGamer"
-                          className="bg-background border-border focus:border-primary"
+                          value={teamForm.teamName}
+                          onChange={(e) => setTeamForm({ ...teamForm, teamName: e.target.value })}
+                          placeholder="Введите название команды"
+                          className="bg-background border-border focus:border-primary h-12"
+                          required
+                          disabled={!registrationOpen}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">Telegram капитана *</Label>
-                        <Input
-                          placeholder="@username"
-                          className="bg-background border-border focus:border-primary"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-4">
-                      <Label className="text-base font-semibold text-foreground">Состав команды</Label>
-                      
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Топ *</Label>
-                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Telegram топа *</Label>
-                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
-                        </div>
-                      </div>
 
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Лес *</Label>
-                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
+                          <Label className="text-sm font-medium text-muted-foreground">Ник капитана *</Label>
+                          <Input
+                            value={teamForm.captainNick}
+                            onChange={(e) => setTeamForm({ ...teamForm, captainNick: e.target.value })}
+                            placeholder="IvanGamer"
+                            className="bg-background border-border focus:border-primary"
+                            required
+                            disabled={!registrationOpen}
+                          />
                         </div>
                         <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Telegram леса *</Label>
-                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram капитана *</Label>
+                          <Input
+                            value={teamForm.captainTelegram}
+                            onChange={(e) => setTeamForm({ ...teamForm, captainTelegram: e.target.value })}
+                            placeholder="@username"
+                            className="bg-background border-border focus:border-primary"
+                            required
+                            disabled={!registrationOpen}
+                          />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Мид *</Label>
-                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
+                      <div className="space-y-4">
+                        <Label className="text-base font-semibold text-foreground">Состав команды</Label>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Топ *</Label>
+                            <Input value={teamForm.topNick} onChange={(e) => setTeamForm({ ...teamForm, topNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Telegram топа *</Label>
+                            <Input value={teamForm.topTelegram} onChange={(e) => setTeamForm({ ...teamForm, topTelegram: e.target.value })} placeholder="@username" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Telegram мида *</Label>
-                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Лес *</Label>
+                            <Input value={teamForm.jungleNick} onChange={(e) => setTeamForm({ ...teamForm, jungleNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Telegram леса *</Label>
+                            <Input value={teamForm.jungleTelegram} onChange={(e) => setTeamForm({ ...teamForm, jungleTelegram: e.target.value })} placeholder="@username" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Мид *</Label>
+                            <Input value={teamForm.midNick} onChange={(e) => setTeamForm({ ...teamForm, midNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Telegram мида *</Label>
+                            <Input value={teamForm.midTelegram} onChange={(e) => setTeamForm({ ...teamForm, midTelegram: e.target.value })} placeholder="@username" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">АДК *</Label>
+                            <Input value={teamForm.adcNick} onChange={(e) => setTeamForm({ ...teamForm, adcNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Telegram АДК *</Label>
+                            <Input value={teamForm.adcTelegram} onChange={(e) => setTeamForm({ ...teamForm, adcTelegram: e.target.value })} placeholder="@username" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Саппорт *</Label>
+                            <Input value={teamForm.supportNick} onChange={(e) => setTeamForm({ ...teamForm, supportNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Telegram саппорта *</Label>
+                            <Input value={teamForm.supportTelegram} onChange={(e) => setTeamForm({ ...teamForm, supportTelegram: e.target.value })} placeholder="@username" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Запасной 1</Label>
+                            <Input value={teamForm.sub1Nick} onChange={(e) => setTeamForm({ ...teamForm, sub1Nick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" disabled={!registrationOpen} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Telegram запасного 1</Label>
+                            <Input value={teamForm.sub1Telegram} onChange={(e) => setTeamForm({ ...teamForm, sub1Telegram: e.target.value })} placeholder="@username" className="bg-background border-border focus:border-primary" disabled={!registrationOpen} />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Запасной 2</Label>
+                            <Input value={teamForm.sub2Nick} onChange={(e) => setTeamForm({ ...teamForm, sub2Nick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" disabled={!registrationOpen} />
+                          </div>
+                          <div className="space-y-2">
+                            <Label className="text-sm font-medium text-muted-foreground">Telegram запасного 2</Label>
+                            <Input value={teamForm.sub2Telegram} onChange={(e) => setTeamForm({ ...teamForm, sub2Telegram: e.target.value })} placeholder="@username" className="bg-background border-border focus:border-primary" disabled={!registrationOpen} />
+                          </div>
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">АДК *</Label>
-                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Telegram АДК *</Label>
-                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Саппорт *</Label>
-                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Telegram саппорта *</Label>
-                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Запасной 1</Label>
-                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Telegram запасного 1</Label>
-                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Запасной 2</Label>
-                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Telegram запасного 2</Label>
-                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button className="w-full bg-gradient-to-r from-secondary to-accent text-white hover:opacity-90 h-12 text-lg font-semibold">
-                      <Icon name="Send" className="w-5 h-5 mr-2" />
-                      Отправить заявку
-                    </Button>
-                  </CardContent>
-                </Card>
+                      <Button type="submit" className="w-full bg-gradient-to-r from-secondary to-accent text-white hover:opacity-90 h-12 text-lg font-semibold" disabled={!registrationOpen}>
+                        <Icon name="Send" className="w-5 h-5 mr-2" />
+                        Отправить заявку
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </form>
               </TabsContent>
             </Tabs>
           </div>
