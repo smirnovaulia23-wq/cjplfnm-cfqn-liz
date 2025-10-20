@@ -53,7 +53,10 @@ export const TeamEditDialog = ({ open, onOpenChange, teamId, sessionToken, onSuc
       const data = await response.json();
 
       if (data.success) {
-        toast({ title: 'Успешно', description: 'Данные команды обновлены' });
+        toast({ 
+          title: 'Данные отправлены на проверку', 
+          description: 'Ваша команда будет рассмотрена администрацией' 
+        });
         onSuccess();
         onOpenChange(false);
       } else {

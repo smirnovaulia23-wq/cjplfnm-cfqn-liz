@@ -76,7 +76,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                               top_nick, top_telegram, jungle_nick, jungle_telegram, 
                               mid_nick, mid_telegram, adc_nick, adc_telegram,
                               support_nick, support_telegram, sub1_nick, sub1_telegram,
-                              sub2_nick, sub2_telegram 
+                              sub2_nick, sub2_telegram, is_edited 
                        FROM teams WHERE id = %s""",
                     (team_id,)
                 )
@@ -110,7 +110,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'sub1Nick': t[16],
                     'sub1Telegram': t[17],
                     'sub2Nick': t[18],
-                    'sub2Telegram': t[19]
+                    'sub2Telegram': t[19],
+                    'isEdited': t[20] if len(t) > 20 and t[20] is not None else False
                 }
                 
                 return {
@@ -127,7 +128,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                           top_nick, top_telegram, jungle_nick, jungle_telegram, 
                           mid_nick, mid_telegram, adc_nick, adc_telegram,
                           support_nick, support_telegram, sub1_nick, sub1_telegram,
-                          sub2_nick, sub2_telegram 
+                          sub2_nick, sub2_telegram, is_edited 
                    FROM teams WHERE status = %s ORDER BY created_at DESC""",
                 (status_filter,)
             )
@@ -153,7 +154,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'sub1Nick': t[16],
                 'sub1Telegram': t[17],
                 'sub2Nick': t[18],
-                'sub2Telegram': t[19]
+                'sub2Telegram': t[19],
+                'isEdited': t[20] if len(t) > 20 and t[20] is not None else False
             } for t in teams]
             
             return {
@@ -280,7 +282,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         adc_nick = %s, adc_telegram = %s,
                         support_nick = %s, support_telegram = %s,
                         sub1_nick = %s, sub1_telegram = %s,
-                        sub2_nick = %s, sub2_telegram = %s
+                        sub2_nick = %s, sub2_telegram = %s,
+                        status = 'pending',
+                        is_edited = true
                     WHERE id = %s""",
                     (
                         body_data.get('teamName'),
@@ -308,10 +312,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             new_status = body_data.get('status')
             
-            cur.execute(
-                "UPDATE teams SET status = %s WHERE id = %s",
-                (new_status, team_id)
-            )
+            if new_status == 'approved':
+                cur.execute(
+                    "UPDATE teams SET status = %s, is_edited = false WHERE id = %s",
+                    (new_status, team_id)
+                )
+            else:
+                cur.execute(
+                    "UPDATE teams SET status = %s WHERE id = %s",
+                    (new_status, team_id)
+                )
             conn.commit()
             
             return {

@@ -13,6 +13,7 @@ interface Team {
   captainTelegram: string;
   status: string;
   createdAt: string;
+  isEdited?: boolean;
 }
 
 interface AdminPanelProps {
@@ -95,8 +96,16 @@ export const AdminPanel = ({
                       className="p-4 rounded-lg bg-card border border-border space-y-4"
                     >
                       <div className="flex items-start justify-between">
-                        <div>
-                          <h3 className="font-semibold text-lg text-foreground">{team.teamName}</h3>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-lg text-foreground">{team.teamName}</h3>
+                            {team.isEdited && (
+                              <Badge className="bg-accent/20 text-accent border-accent/50">
+                                <Icon name="Edit" className="w-3 h-3 mr-1" />
+                                Отредактирована
+                              </Badge>
+                            )}
+                          </div>
                           <p className="text-sm text-muted-foreground">
                             Капитан: {team.captainNick} ({team.captainTelegram})
                           </p>
