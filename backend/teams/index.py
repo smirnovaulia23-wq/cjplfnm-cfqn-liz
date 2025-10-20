@@ -38,7 +38,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if params.get('type') == 'individual':
                 cur.execute(
-                    """SELECT id, nickname, telegram, preferred_roles, status, created_at
+                    """SELECT id, nickname, telegram, preferred_roles, status, created_at,
+                              has_friends, friend1_nickname, friend1_telegram, friend1_role,
+                              friend2_nickname, friend2_telegram, friend2_role
                        FROM individual_players 
                        ORDER BY created_at DESC"""
                 )
@@ -50,7 +52,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'telegram': p[2],
                     'preferredRoles': p[3] if p[3] else [],
                     'status': p[4],
-                    'createdAt': p[5].isoformat() if p[5] else None
+                    'createdAt': p[5].isoformat() if p[5] else None,
+                    'hasFriends': p[6] if p[6] is not None else False,
+                    'friend1Nickname': p[7],
+                    'friend1Telegram': p[8],
+                    'friend1Role': p[9],
+                    'friend2Nickname': p[10],
+                    'friend2Telegram': p[11],
+                    'friend2Role': p[12]
                 } for p in players]
                 
                 return {
@@ -176,16 +185,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if body_data.get('type') == 'individual':
                 preferred_roles = body_data.get('preferredRoles', [])
+                has_friends = body_data.get('hasFriends', False)
                 
                 cur.execute(
                     """INSERT INTO individual_players (
-                        nickname, telegram, preferred_roles, status
-                    ) VALUES (%s, %s, %s, 'pending')
+                        nickname, telegram, preferred_roles, status,
+                        has_friends, friend1_nickname, friend1_telegram, friend1_role,
+                        friend2_nickname, friend2_telegram, friend2_role
+                    ) VALUES (%s, %s, %s, 'pending', %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id""",
                     (
                         body_data.get('nickname'),
                         body_data.get('telegram'),
-                        preferred_roles
+                        preferred_roles,
+                        has_friends,
+                        body_data.get('friend1Nickname') if has_friends else None,
+                        body_data.get('friend1Telegram') if has_friends else None,
+                        body_data.get('friend1Role') if has_friends else None,
+                        body_data.get('friend2Nickname') if has_friends else None,
+                        body_data.get('friend2Telegram') if has_friends else None,
+                        body_data.get('friend2Role') if has_friends else None
                     )
                 )
                 player_id = cur.fetchone()[0]

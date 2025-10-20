@@ -61,7 +61,14 @@ const Index = () => {
   const [individualForm, setIndividualForm] = useState({
     nickname: '',
     telegram: '',
-    preferredRoles: [] as string[]
+    preferredRoles: [] as string[],
+    hasFriends: false,
+    friend1Nickname: '',
+    friend1Telegram: '',
+    friend1Role: '',
+    friend2Nickname: '',
+    friend2Telegram: '',
+    friend2Role: ''
   });
   const { toast } = useToast();
 
@@ -345,7 +352,14 @@ const Index = () => {
         setIndividualForm({
           nickname: '',
           telegram: '',
-          preferredRoles: []
+          preferredRoles: [],
+          hasFriends: false,
+          friend1Nickname: '',
+          friend1Telegram: '',
+          friend1Role: '',
+          friend2Nickname: '',
+          friend2Telegram: '',
+          friend2Role: ''
         });
         loadIndividualPlayers();
       } else {
@@ -736,9 +750,7 @@ const Index = () => {
                               </div>
                               <div className="flex-1">
                                 <h3 className="text-lg font-semibold text-foreground">{player.nickname}</h3>
-                                {(!registrationOpen || isLoggedIn) && (
-                                  <p className="text-sm text-muted-foreground mt-1">{player.telegram}</p>
-                                )}
+                                <p className="text-sm text-muted-foreground mt-1">{player.telegram}</p>
                                 
                                 {player.preferredRoles && player.preferredRoles.length > 0 && (
                                   <div className="mt-3 space-y-2">
@@ -766,6 +778,57 @@ const Index = () => {
                                           </Badge>
                                         );
                                       })}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {player.hasFriends && (player.friend1Nickname || player.friend2Nickname) && (
+                                  <div className="mt-4 pt-3 border-t border-border/50">
+                                    <p className="text-xs text-muted-foreground mb-2 flex items-center">
+                                      <Icon name="Users" className="w-3 h-3 mr-1" />
+                                      Друзья:
+                                    </p>
+                                    <div className="space-y-2">
+                                      {player.friend1Nickname && (
+                                        <div className="text-xs bg-background/50 p-2 rounded border border-border/50">
+                                          <p className="font-medium text-foreground">{player.friend1Nickname}</p>
+                                          <p className="text-muted-foreground">{player.friend1Telegram}</p>
+                                          {player.friend1Role && (
+                                            <Badge className="mt-1 text-xs" variant="outline">
+                                              {
+                                                {
+                                                  'any': 'Любая',
+                                                  'top': 'Топ',
+                                                  'jungle': 'Лес',
+                                                  'mid': 'Мид',
+                                                  'adc': 'АДК',
+                                                  'support': 'Саппорт'
+                                                }[player.friend1Role] || player.friend1Role
+                                              }
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      )}
+                                      {player.friend2Nickname && (
+                                        <div className="text-xs bg-background/50 p-2 rounded border border-border/50">
+                                          <p className="font-medium text-foreground">{player.friend2Nickname}</p>
+                                          <p className="text-muted-foreground">{player.friend2Telegram}</p>
+                                          {player.friend2Role && (
+                                            <Badge className="mt-1 text-xs" variant="outline">
+                                              {
+                                                {
+                                                  'any': 'Любая',
+                                                  'top': 'Топ',
+                                                  'jungle': 'Лес',
+                                                  'mid': 'Мид',
+                                                  'adc': 'АДК',
+                                                  'support': 'Саппорт'
+                                                }[player.friend2Role] || player.friend2Role
+                                              }
+                                            </Badge>
+                                          )}
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
                                 )}
@@ -1084,6 +1147,132 @@ const Index = () => {
                               </Button>
                             ))}
                           </div>
+                        </div>
+
+                        <div className="pt-6 border-t border-border/50 space-y-4">
+                          <Label className="text-base font-semibold text-foreground">Есть ли у вас друзья, с кем хотите пойти на турнир?</Label>
+                          
+                          <div className="flex gap-4">
+                            <Button
+                              type="button"
+                              variant={individualForm.hasFriends ? 'default' : 'outline'}
+                              onClick={() => setIndividualForm({ ...individualForm, hasFriends: true })}
+                              disabled={!registrationOpen}
+                              className={individualForm.hasFriends ? 'bg-primary text-primary-foreground' : 'border-border'}
+                            >
+                              <Icon name="Check" className="w-4 h-4 mr-2" />
+                              Да
+                            </Button>
+                            <Button
+                              type="button"
+                              variant={!individualForm.hasFriends ? 'default' : 'outline'}
+                              onClick={() => setIndividualForm({ 
+                                ...individualForm, 
+                                hasFriends: false,
+                                friend1Nickname: '',
+                                friend1Telegram: '',
+                                friend1Role: '',
+                                friend2Nickname: '',
+                                friend2Telegram: '',
+                                friend2Role: ''
+                              })}
+                              disabled={!registrationOpen}
+                              className={!individualForm.hasFriends ? 'bg-primary text-primary-foreground' : 'border-border'}
+                            >
+                              <Icon name="X" className="w-4 h-4 mr-2" />
+                              Нет
+                            </Button>
+                          </div>
+
+                          {individualForm.hasFriends && (
+                            <div className="space-y-6 pt-4">
+                              <div className="p-4 rounded-lg border border-border bg-background/30">
+                                <Label className="text-sm font-semibold text-foreground mb-3 block">Друг 1</Label>
+                                <div className="grid grid-cols-3 gap-3">
+                                  <div className="space-y-2">
+                                    <Label className="text-xs text-muted-foreground">Игровой ник</Label>
+                                    <Input
+                                      value={individualForm.friend1Nickname}
+                                      onChange={(e) => setIndividualForm({ ...individualForm, friend1Nickname: e.target.value })}
+                                      placeholder="Ник друга"
+                                      className="bg-background border-border focus:border-primary"
+                                      disabled={!registrationOpen}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-xs text-muted-foreground">Telegram</Label>
+                                    <Input
+                                      value={individualForm.friend1Telegram}
+                                      onChange={(e) => setIndividualForm({ ...individualForm, friend1Telegram: e.target.value })}
+                                      placeholder="@username"
+                                      className="bg-background border-border focus:border-primary"
+                                      disabled={!registrationOpen}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-xs text-muted-foreground">Роль</Label>
+                                    <select
+                                      value={individualForm.friend1Role}
+                                      onChange={(e) => setIndividualForm({ ...individualForm, friend1Role: e.target.value })}
+                                      className="w-full h-10 px-3 rounded-md bg-background border border-border text-foreground focus:border-primary focus:outline-none"
+                                      disabled={!registrationOpen}
+                                    >
+                                      <option value="">Выберите роль</option>
+                                      <option value="any">Любая</option>
+                                      <option value="top">Топ</option>
+                                      <option value="jungle">Лес</option>
+                                      <option value="mid">Мид</option>
+                                      <option value="adc">АДК</option>
+                                      <option value="support">Саппорт</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div className="p-4 rounded-lg border border-border bg-background/30">
+                                <Label className="text-sm font-semibold text-foreground mb-3 block">Друг 2 (необязательно)</Label>
+                                <div className="grid grid-cols-3 gap-3">
+                                  <div className="space-y-2">
+                                    <Label className="text-xs text-muted-foreground">Игровой ник</Label>
+                                    <Input
+                                      value={individualForm.friend2Nickname}
+                                      onChange={(e) => setIndividualForm({ ...individualForm, friend2Nickname: e.target.value })}
+                                      placeholder="Ник друга"
+                                      className="bg-background border-border focus:border-primary"
+                                      disabled={!registrationOpen}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-xs text-muted-foreground">Telegram</Label>
+                                    <Input
+                                      value={individualForm.friend2Telegram}
+                                      onChange={(e) => setIndividualForm({ ...individualForm, friend2Telegram: e.target.value })}
+                                      placeholder="@username"
+                                      className="bg-background border-border focus:border-primary"
+                                      disabled={!registrationOpen}
+                                    />
+                                  </div>
+                                  <div className="space-y-2">
+                                    <Label className="text-xs text-muted-foreground">Роль</Label>
+                                    <select
+                                      value={individualForm.friend2Role}
+                                      onChange={(e) => setIndividualForm({ ...individualForm, friend2Role: e.target.value })}
+                                      className="w-full h-10 px-3 rounded-md bg-background border border-border text-foreground focus:border-primary focus:outline-none"
+                                      disabled={!registrationOpen}
+                                    >
+                                      <option value="">Выберите роль</option>
+                                      <option value="any">Любая</option>
+                                      <option value="top">Топ</option>
+                                      <option value="jungle">Лес</option>
+                                      <option value="mid">Мид</option>
+                                      <option value="adc">АДК</option>
+                                      <option value="support">Саппорт</option>
+                                    </select>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
 
