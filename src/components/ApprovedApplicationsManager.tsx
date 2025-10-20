@@ -48,13 +48,17 @@ interface ApprovedApplicationsManagerProps {
   individualPlayers: Player[];
   onRefresh: () => void;
   backendUrl: string;
+  isAdmin?: boolean;
+  sessionToken?: string;
 }
 
 export const ApprovedApplicationsManager = ({
   approvedTeams,
   individualPlayers,
   onRefresh,
-  backendUrl
+  backendUrl,
+  isAdmin = false,
+  sessionToken = ''
 }: ApprovedApplicationsManagerProps) => {
   const [showPasswordDialog, setShowPasswordDialog] = useState(false);
   const [password, setPassword] = useState('');
@@ -65,7 +69,50 @@ export const ApprovedApplicationsManager = ({
   const handleAction = (type: 'team' | 'player', id: number, actionType: 'edit' | 'delete') => {
     setSelectedItem({ type, id });
     setAction(actionType);
-    setShowPasswordDialog(true);
+    
+    if (isAdmin) {
+      handleAdminAction(type, id, actionType);
+    } else {
+      setShowPasswordDialog(true);
+    }
+  };
+
+  const handleAdminAction = async (type: 'team' | 'player', id: number, actionType: 'edit' | 'delete') => {
+    if (actionType === 'delete') {
+      try {
+        const response = await fetch(`${backendUrl}`, {
+          method: 'DELETE',
+          headers: { 
+            'Content-Type': 'application/json',
+            'X-Auth-Token': sessionToken
+          },
+          body: JSON.stringify({
+            id,
+            type,
+            adminAction: true
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || 'Ошибка при удалении');
+        }
+
+        toast({
+          title: 'Успешно',
+          description: 'Заявка удалена'
+        });
+
+        onRefresh();
+      } catch (error: any) {
+        toast({
+          title: 'Ошибка',
+          description: error.message,
+          variant: 'destructive'
+        });
+      }
+    }
   };
 
   const handleSubmitPassword = async () => {
@@ -79,7 +126,6 @@ export const ApprovedApplicationsManager = ({
     }
 
     try {
-      const endpoint = selectedItem.type === 'team' ? 'teams' : 'individual_players';
       const response = await fetch(`${backendUrl}`, {
         method: action === 'delete' ? 'DELETE' : 'PUT',
         headers: { 'Content-Type': 'application/json' },

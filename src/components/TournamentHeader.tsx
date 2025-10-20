@@ -6,11 +6,13 @@ interface TournamentHeaderProps {
   setSelectedTab: (tab: string) => void;
   isLoggedIn: boolean;
   isAdmin: boolean;
+  isSuperAdmin?: boolean;
   userRole: string;
   username: string;
   teamId: number | null;
   setShowLoginDialog: (show: boolean) => void;
   setShowAdminPanel: (show: boolean) => void;
+  setShowSuperAdminPanel?: (show: boolean) => void;
   setShowTeamEditDialog: (show: boolean) => void;
   onLogout: () => void;
 }
@@ -20,11 +22,13 @@ export const TournamentHeader = ({
   setSelectedTab,
   isLoggedIn,
   isAdmin,
+  isSuperAdmin = false,
   userRole,
   username,
   teamId,
   setShowLoginDialog,
   setShowAdminPanel,
+  setShowSuperAdminPanel,
   setShowTeamEditDialog,
   onLogout
 }: TournamentHeaderProps) => {
@@ -82,14 +86,26 @@ export const TournamentHeader = ({
                 {username}
               </span>
               {isAdmin && (
-                <Button
-                  onClick={() => setShowAdminPanel(true)}
-                  className="bg-primary text-primary-foreground hover:bg-primary/90"
-                  size="sm"
-                >
-                  <Icon name="Settings" className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Админ-панель</span>
-                </Button>
+                <>
+                  <Button
+                    onClick={() => setShowAdminPanel(true)}
+                    className="bg-primary text-primary-foreground hover:bg-primary/90"
+                    size="sm"
+                  >
+                    <Icon name="Settings" className="w-4 h-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Админ-панель</span>
+                  </Button>
+                  {isSuperAdmin && setShowSuperAdminPanel && (
+                    <Button
+                      onClick={() => setShowSuperAdminPanel(true)}
+                      className="bg-secondary text-white hover:bg-secondary/90"
+                      size="sm"
+                    >
+                      <Icon name="Shield" className="w-4 h-4 sm:mr-2" />
+                      <span className="hidden sm:inline">Администрация</span>
+                    </Button>
+                  )}
+                </>
               )}
               {userRole === 'team_captain' && teamId && (
                 <Button

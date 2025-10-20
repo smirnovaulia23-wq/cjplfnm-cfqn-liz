@@ -358,6 +358,49 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             item_id = body_data.get('id')
             password = body_data.get('password')
             item_type = body_data.get('type')
+            admin_action = body_data.get('adminAction', False)
+            
+            if admin_action:
+                auth_token = event.get('headers', {}).get('X-Auth-Token') or event.get('headers', {}).get('x-auth-token')
+                
+                if not auth_token:
+                    return {
+                        'statusCode': 401,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Unauthorized'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute(
+                    "SELECT role FROM admin_users WHERE session_token = %s",
+                    (auth_token,)
+                )
+                admin_result = cur.fetchone()
+                
+                if not admin_result or admin_result[0] != 'admin':
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Admin access required'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if item_type == 'team':
+                    cur.execute("DELETE FROM teams WHERE id = %s", (item_id,))
+                elif item_type == 'player':
+                    cur.execute("DELETE FROM individual_players WHERE id = %s", (item_id,))
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
             
             if not item_id or not password or not item_type:
                 return {

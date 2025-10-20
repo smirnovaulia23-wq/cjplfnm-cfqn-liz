@@ -10,6 +10,7 @@ import { TeamsList } from '@/components/TeamsList';
 import { PlayersList } from '@/components/PlayersList';
 import { RegistrationForms } from '@/components/RegistrationForms';
 import { ApprovedApplicationsManager } from '@/components/ApprovedApplicationsManager';
+import SuperAdminPanel from '@/components/SuperAdminPanel';
 
 const BACKEND_URLS = {
   auth: 'https://functions.poehali.dev/87a1a191-aacc-478d-8869-478b7969f36c',
@@ -23,8 +24,10 @@ const Index = () => {
   const [selectedTab, setSelectedTab] = useState('register');
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [userRole, setUserRole] = useState('');
   const [username, setUsername] = useState('');
   const [sessionToken, setSessionToken] = useState('');
@@ -135,6 +138,7 @@ const Index = () => {
       if (adminData.success) {
         setIsLoggedIn(true);
         setIsAdmin(true);
+        setIsSuperAdmin(adminData.username === 'Xuna');
         setUsername(adminData.username);
         setUserRole(adminData.role);
         setShowLoginDialog(false);
@@ -184,6 +188,7 @@ const Index = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setIsAdmin(false);
+    setIsSuperAdmin(false);
     setUsername('');
     setUserRole('');
     setSessionToken('');
@@ -418,11 +423,13 @@ const Index = () => {
           setSelectedTab={setSelectedTab}
           isLoggedIn={isLoggedIn}
           isAdmin={isAdmin}
+          isSuperAdmin={isSuperAdmin}
           userRole={userRole}
           username={username}
           teamId={teamId}
           setShowLoginDialog={setShowLoginDialog}
           setShowAdminPanel={setShowAdminPanel}
+          setShowSuperAdminPanel={setShowSuperAdminPanel}
           setShowTeamEditDialog={setShowTeamEditDialog}
           onLogout={handleLogout}
         />
@@ -471,6 +478,8 @@ const Index = () => {
                     loadIndividualPlayers();
                   }}
                   backendUrl={BACKEND_URLS.teams}
+                  isAdmin={isAdmin}
+                  sessionToken={sessionToken}
                 />
               </TabsContent>
             </Tabs>
@@ -496,6 +505,16 @@ const Index = () => {
           onApprovePlayer={handleApprovePlayer}
           onRejectPlayer={handleRejectPlayer}
           onToggleRegistration={handleToggleRegistration}
+          userRole={userRole}
+        />
+      )}
+
+      {isSuperAdmin && (
+        <SuperAdminPanel
+          open={showSuperAdminPanel}
+          onOpenChange={setShowSuperAdminPanel}
+          sessionToken={sessionToken}
+          authUrl={BACKEND_URLS.auth}
         />
       )}
 
