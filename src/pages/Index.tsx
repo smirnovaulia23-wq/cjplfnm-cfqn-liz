@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { LoginDialog } from '@/components/LoginDialog';
 import AdminPanel from '@/components/AdminPanel';
@@ -9,8 +10,9 @@ import { MobileNavigation } from '@/components/MobileNavigation';
 import { TeamsList } from '@/components/TeamsList';
 import { PlayersList } from '@/components/PlayersList';
 import { RegistrationForms } from '@/components/RegistrationForms';
-import { ApprovedApplicationsManager } from '@/components/ApprovedApplicationsManager';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
+import TeamManagementDialog from '@/components/TeamManagementDialog';
+import Icon from '@/components/ui/icon';
 
 const BACKEND_URLS = {
   auth: 'https://functions.poehali.dev/87a1a191-aacc-478d-8869-478b7969f36c',
@@ -25,8 +27,6 @@ const Index = () => {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -35,6 +35,7 @@ const Index = () => {
   const [sessionToken, setSessionToken] = useState('');
   const [teamId, setTeamId] = useState<number | null>(null);
   const [showTeamEditDialog, setShowTeamEditDialog] = useState(false);
+  const [showTeamManagementDialog, setShowTeamManagementDialog] = useState(false);
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
   const [pendingPlayers, setPendingPlayers] = useState<any[]>([]);
@@ -87,69 +88,90 @@ const Index = () => {
 
   const loadApprovedTeams = async () => {
     try {
-      const response = await fetch(`${BACKEND_URLS.teams}?status=approved`);
+      const response = await fetch(`${BACKEND_URLS.teams}?status=approved`, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      if (!response.ok) {
+        setApprovedTeams([]);
+        return;
+      }
       const data = await response.json();
       setApprovedTeams(data.teams || []);
     } catch (error) {
-      console.error('Error loading teams:', error);
+      setApprovedTeams([]);
     }
   };
 
   const loadPendingTeams = async () => {
     try {
-      const response = await fetch(`${BACKEND_URLS.teams}?status=pending`);
+      const response = await fetch(`${BACKEND_URLS.teams}?status=pending`, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      if (!response.ok) {
+        setPendingTeams([]);
+        return;
+      }
       const data = await response.json();
       setPendingTeams(data.teams || []);
     } catch (error) {
-      console.error('Error loading pending teams:', error);
+      setPendingTeams([]);
     }
   };
 
   const loadIndividualPlayers = async () => {
     try {
-      const response = await fetch(`${BACKEND_URLS.teams}?type=individual`);
+      const response = await fetch(`${BACKEND_URLS.teams}?type=individual`, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      if (!response.ok) {
+        setIndividualPlayers([]);
+        setPendingPlayers([]);
+        return;
+      }
       const data = await response.json();
       const approved = (data.players || []).filter((p: any) => p.status === 'approved');
       const pending = (data.players || []).filter((p: any) => p.status === 'pending');
       setIndividualPlayers(approved);
       setPendingPlayers(pending);
     } catch (error) {
-      console.error('Error loading individual players:', error);
+      setIndividualPlayers([]);
+      setPendingPlayers([]);
     }
   };
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(BACKEND_URLS.settings);
+      const response = await fetch(BACKEND_URLS.settings, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      if (!response.ok) {
+        setRegistrationOpen(true);
+        return;
+      }
       const data = await response.json();
       setRegistrationOpen(data.settings?.registration_open === 'true');
     } catch (error) {
-      console.error('Error loading settings:', error);
+      setRegistrationOpen(true);
     }
-  };
-
-  const addLog = (message: string) => {
-    const timestamp = new Date().toLocaleTimeString();
-    setDebugLogs(prev => [`[${timestamp}] ${message}`, ...prev].slice(0, 50));
   };
 
   const handleLogin = async (telegram: string, password: string) => {
     try {
-      addLog(`🔐 Попытка входа: ${telegram}`);
-      addLog(`📡 Admin URL: ${BACKEND_URLS.auth}`);
-      
       const adminResponse = await fetch(BACKEND_URLS.auth, {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: telegram, password })
       });
       
-      addLog(`✅ Ответ админа: статус ${adminResponse.status}`);
       const adminData = await adminResponse.json();
-      addLog(`📦 Данные админа: ${JSON.stringify(adminData).substring(0, 100)}`);
 
       if (adminData.success) {
-        addLog(`🎉 Успешный вход как админ: ${adminData.username}`);
         setIsLoggedIn(true);
         setIsAdmin(true);
         setIsSuperAdmin(adminData.username === 'Xuna');
@@ -157,27 +179,27 @@ const Index = () => {
         setUsername(adminData.username);
         setUserRole(adminData.role);
         setShowLoginDialog(false);
-        setShowAdminPanel(true);
+        if (adminData.username === 'Xuna') {
+          setShowSuperAdminPanel(true);
+        } else {
+          setShowAdminPanel(true);
+        }
         toast({ title: 'Вход выполнен', description: `Добро пожаловать, ${adminData.username}!` });
         loadPendingTeams();
         return;
       }
-      
-      addLog(`❌ Не админ, проверяю пользователя...`);
 
-      addLog(`📡 User URL: ${BACKEND_URLS.userAuth}`);
       const userResponse = await fetch(BACKEND_URLS.userAuth, {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'login', telegram, password })
       });
       
-      addLog(`✅ Ответ пользователя: статус ${userResponse.status}`);
       const userData = await userResponse.json();
-      addLog(`📦 Данные пользователя: ${JSON.stringify(userData).substring(0, 100)}`);
 
       if (userData.success) {
-        addLog(`🎉 Успешный вход как пользователь`);
         setIsLoggedIn(true);
         setIsAdmin(false);
         setSessionToken(userData.token);
@@ -186,12 +208,14 @@ const Index = () => {
         if (userData.userType === 'team_captain') {
           setUsername(userData.captainNick);
           setTeamId(userData.teamId);
+          setShowTeamEditDialog(true);
           toast({ 
             title: 'Вход выполнен', 
             description: `Добро пожаловать, ${userData.captainNick}! Команда: ${userData.teamName}` 
           });
         } else {
           setUsername(userData.nickname);
+          setShowTeamManagementDialog(true);
           toast({ 
             title: 'Вход выполнен', 
             description: `Добро пожаловать, ${userData.nickname}!` 
@@ -200,13 +224,10 @@ const Index = () => {
         
         setShowLoginDialog(false);
       } else {
-        addLog(`❌ Неверный логин или пароль: ${userData.error}`);
         toast({ title: 'Ошибка входа', description: userData.error || 'Неверный логин или пароль', variant: 'destructive' });
       }
     } catch (error) {
-      addLog(`🔥 ОШИБКА: ${error}`);
-      console.error('Login error:', error);
-      toast({ title: 'Ошибка', description: 'Не удалось выполнить вход', variant: 'destructive' });
+      toast({ title: 'Ошибка', description: 'Не удалось выполнить вход. Попробуйте обновить страницу', variant: 'destructive' });
     }
   };
 
@@ -440,29 +461,6 @@ const Index = () => {
 
   return (
     <div className="min-h-screen go-board-pattern">
-      {showDebugPanel && (
-        <div className="fixed bottom-4 right-4 bg-black/90 text-green-400 p-4 rounded-lg shadow-xl max-w-2xl max-h-96 overflow-auto z-50 font-mono text-sm">
-          <div className="flex justify-between items-center mb-2">
-            <span className="font-bold">🔍 Debug Logs</span>
-            <button onClick={() => setShowDebugPanel(false)} className="text-red-400 hover:text-red-300">✕</button>
-          </div>
-          <div className="space-y-1">
-            {debugLogs.length === 0 ? (
-              <div className="text-gray-500">Логи появятся при попытке входа...</div>
-            ) : (
-              debugLogs.map((log, i) => <div key={i} className="border-b border-gray-800 pb-1">{log}</div>)
-            )}
-          </div>
-        </div>
-      )}
-      
-      <button 
-        onClick={() => setShowDebugPanel(!showDebugPanel)}
-        className="fixed bottom-4 left-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-medium"
-      >
-        {showDebugPanel ? '🔍 Скрыть логи' : '🔍 Показать логи'}
-      </button>
-      
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background"></div>
         
@@ -479,6 +477,7 @@ const Index = () => {
           setShowAdminPanel={setShowAdminPanel}
           setShowSuperAdminPanel={setShowSuperAdminPanel}
           setShowTeamEditDialog={setShowTeamEditDialog}
+          setShowTeamManagementDialog={setShowTeamManagementDialog}
           onLogout={handleLogout}
         />
 
@@ -517,18 +516,26 @@ const Index = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="manage" className="mt-8">
-                <ApprovedApplicationsManager
-                  approvedTeams={approvedTeams}
-                  individualPlayers={individualPlayers}
-                  onRefresh={() => {
-                    loadApprovedTeams();
-                    loadIndividualPlayers();
-                  }}
-                  backendUrl={BACKEND_URLS.teams}
-                  isAdmin={isAdmin}
-                  sessionToken={sessionToken}
-                />
+              <TabsContent value="myteam" className="mt-8">
+                <div className="max-w-2xl mx-auto text-center py-12">
+                  <div className="mb-6">
+                    <div className="w-16 h-16 bg-secondary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
+                      <Icon name="Settings" className="w-8 h-8 text-secondary" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-foreground mb-2">Управление командой</h2>
+                    <p className="text-muted-foreground mb-6">
+                      Войдите с помощью названия команды и пароля, указанных при регистрации
+                    </p>
+                  </div>
+                  <Button 
+                    onClick={() => setShowTeamManagementDialog(true)}
+                    size="lg"
+                    className="bg-secondary hover:bg-secondary/90"
+                  >
+                    <Icon name="LogIn" className="w-5 h-5 mr-2" />
+                    Войти в управление командой
+                  </Button>
+                </div>
               </TabsContent>
             </Tabs>
           </div>
@@ -574,6 +581,12 @@ const Index = () => {
           sessionToken={sessionToken}
         />
       )}
+
+      <TeamManagementDialog
+        open={showTeamManagementDialog}
+        onOpenChange={setShowTeamManagementDialog}
+        backendUrl={BACKEND_URLS.teams}
+      />
     </div>
   );
 };
