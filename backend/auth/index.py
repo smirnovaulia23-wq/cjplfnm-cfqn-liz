@@ -149,10 +149,11 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             username = body_data.get('username', '')
             password = body_data.get('password', '')
+            hashed_password = hash_password(password)
             
             cur.execute(
                 "SELECT id, username, role FROM admin_users WHERE username = %s AND password_hash = %s",
-                (username, password)
+                (username, hashed_password)
             )
             user = cur.fetchone()
             
