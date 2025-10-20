@@ -1294,6 +1294,8 @@ const Index = () => {
                 </form>
               </TabsContent>
             </Tabs>
+          </TabsContent>
+        </Tabs>
           </div>
         </section>
 
