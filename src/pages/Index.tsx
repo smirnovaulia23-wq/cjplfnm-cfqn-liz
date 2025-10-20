@@ -1294,8 +1294,6 @@ const Index = () => {
                 </form>
               </TabsContent>
             </Tabs>
-          </TabsContent>
-            </Tabs>
           </div>
         </section>
 
@@ -1303,10 +1301,10 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center space-x-2 mb-4 md:mb-0">
-                <div className="w-8 h-8 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/50">
-                  <Icon name="Swords" className="w-5 h-5 text-primary" />
+                <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center border border-secondary/50">
+                  <Icon name="Circle" className="w-5 h-5 text-secondary" />
                 </div>
-                <span className="font-bold text-primary">CYBER ARENA</span>
+                <span className="font-bold text-secondary">GO TOURNAMENT</span>
               </div>
               <div className="flex space-x-6 text-sm text-muted-foreground">
                 <a href="#" className="hover:text-primary transition-colors">О нас</a>
