@@ -68,23 +68,43 @@ const Index = () => {
                   </div>
                   <h1 className="text-3xl font-bold text-primary neon-glow">CYBER ARENA</h1>
                 </div>
-                <nav className="hidden md:flex space-x-6">
-                  <Button variant="ghost" className="text-foreground hover:text-primary transition-colors">
-                    Главная
+                <nav className="hidden md:flex space-x-2">
+                  <Button 
+                    variant={selectedTab === 'register' ? 'default' : 'ghost'}
+                    onClick={() => setSelectedTab('register')}
+                    className={selectedTab === 'register' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+                  >
+                    <Icon name="UserPlus" className="w-4 h-4 mr-2" />
+                    Регистрация
                   </Button>
-                  <Button variant="ghost" className="text-foreground hover:text-primary transition-colors">
-                    Турниры
-                  </Button>
-                  <Button variant="ghost" className="text-foreground hover:text-primary transition-colors">
+                  <Button 
+                    variant={selectedTab === 'teams' ? 'default' : 'ghost'}
+                    onClick={() => setSelectedTab('teams')}
+                    className={selectedTab === 'teams' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+                  >
+                    <Icon name="Users" className="w-4 h-4 mr-2" />
                     Команды
                   </Button>
-                  <Button variant="ghost" className="text-foreground hover:text-primary transition-colors">
-                    Трансляции
+                  <Button 
+                    variant={selectedTab === 'tournaments' ? 'default' : 'ghost'}
+                    onClick={() => setSelectedTab('tournaments')}
+                    className={selectedTab === 'tournaments' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+                  >
+                    <Icon name="Trophy" className="w-4 h-4 mr-2" />
+                    Сетка
+                  </Button>
+                  <Button 
+                    variant={selectedTab === 'streams' ? 'default' : 'ghost'}
+                    onClick={() => setSelectedTab('streams')}
+                    className={selectedTab === 'streams' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+                  >
+                    <Icon name="Calendar" className="w-4 h-4 mr-2" />
+                    Моя команда
                   </Button>
                 </nav>
                 <Button className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow">
-                  <Icon name="LogIn" className="w-4 h-4 mr-2" />
-                  Войти
+                  <Icon name="User" className="w-4 h-4 mr-2" />
+                  Админ
                 </Button>
               </div>
             </div>
@@ -123,24 +143,6 @@ const Index = () => {
         <section className="py-8">
           <div className="container mx-auto px-4">
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-              <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 bg-card/50 border border-border mb-8">
-                <TabsTrigger value="register" className="data-[state=active]:bg-secondary data-[state=active]:text-white">
-                  <Icon name="UserPlus" className="w-4 h-4 mr-2" />
-                  Регистрация
-                </TabsTrigger>
-                <TabsTrigger value="teams" className="data-[state=active]:bg-secondary data-[state=active]:text-white">
-                  <Icon name="Users" className="w-4 h-4 mr-2" />
-                  Команды
-                </TabsTrigger>
-                <TabsTrigger value="tournaments" className="data-[state=active]:bg-secondary data-[state=active]:text-white">
-                  <Icon name="Trophy" className="w-4 h-4 mr-2" />
-                  Сетка
-                </TabsTrigger>
-                <TabsTrigger value="streams" className="data-[state=active]:bg-secondary data-[state=active]:text-white">
-                  <Icon name="Calendar" className="w-4 h-4 mr-2" />
-                  Моя команда
-                </TabsTrigger>
-              </TabsList>
 
               <TabsContent value="tournaments" className="mt-8">
                 <div className="grid md:grid-cols-2 gap-6">
