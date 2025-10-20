@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 
 const Index = () => {
-  const [selectedTab, setSelectedTab] = useState('tournaments');
+  const [selectedTab, setSelectedTab] = useState('register');
 
   const tournaments = [
     {
@@ -120,25 +120,25 @@ const Index = () => {
           </section>
         </div>
 
-        <section className="py-16">
+        <section className="py-8">
           <div className="container mx-auto px-4">
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-              <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 bg-card/50 border border-border">
-                <TabsTrigger value="tournaments" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Icon name="Trophy" className="w-4 h-4 mr-2" />
-                  Турниры
+              <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-4 bg-card/50 border border-border mb-8">
+                <TabsTrigger value="register" className="data-[state=active]:bg-secondary data-[state=active]:text-white">
+                  <Icon name="UserPlus" className="w-4 h-4 mr-2" />
+                  Регистрация
                 </TabsTrigger>
-                <TabsTrigger value="teams" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                <TabsTrigger value="teams" className="data-[state=active]:bg-secondary data-[state=active]:text-white">
                   <Icon name="Users" className="w-4 h-4 mr-2" />
                   Команды
                 </TabsTrigger>
-                <TabsTrigger value="streams" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Icon name="Radio" className="w-4 h-4 mr-2" />
-                  Трансляции
+                <TabsTrigger value="tournaments" className="data-[state=active]:bg-secondary data-[state=active]:text-white">
+                  <Icon name="Trophy" className="w-4 h-4 mr-2" />
+                  Сетка
                 </TabsTrigger>
-                <TabsTrigger value="register" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
-                  <Icon name="UserPlus" className="w-4 h-4 mr-2" />
-                  Регистрация
+                <TabsTrigger value="streams" className="data-[state=active]:bg-secondary data-[state=active]:text-white">
+                  <Icon name="Calendar" className="w-4 h-4 mr-2" />
+                  Моя команда
                 </TabsTrigger>
               </TabsList>
 
