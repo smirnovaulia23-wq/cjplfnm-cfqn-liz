@@ -749,8 +749,18 @@ const Index = () => {
                                 <Icon name="User" className="w-6 h-6 text-primary" />
                               </div>
                               <div className="flex-1">
-                                <h3 className="text-lg font-semibold text-foreground">{player.nickname}</h3>
-                                <p className="text-sm text-muted-foreground mt-1">{player.telegram}</p>
+                                <div className="flex items-start justify-between gap-2">
+                                  <div className="flex-1">
+                                    <h3 className="text-lg font-semibold text-foreground">{player.nickname}</h3>
+                                    <p className="text-sm text-muted-foreground mt-1">{player.telegram}</p>
+                                  </div>
+                                  {player.hasFriends && (player.friend1Nickname || player.friend2Nickname) && (
+                                    <Badge className="bg-gradient-to-r from-primary/20 to-secondary/20 text-primary border-primary/50 whitespace-nowrap">
+                                      <Icon name="Users" className="w-3 h-3 mr-1" />
+                                      {player.friend1Nickname && player.friend2Nickname ? '2 друга' : '1 друг'}
+                                    </Badge>
+                                  )}
+                                </div>
                                 
                                 {player.preferredRoles && player.preferredRoles.length > 0 && (
                                   <div className="mt-3 space-y-2">
