@@ -24,6 +24,14 @@ const BACKEND_URLS = {
 
 const Index = () => {
   const [selectedTab, setSelectedTab] = useState('register');
+  
+  const handleTabChange = (tab: string) => {
+    if (tab === 'myteam') {
+      setShowTeamManagementDialog(true);
+      return;
+    }
+    setSelectedTab(tab);
+  };
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
@@ -424,7 +432,7 @@ const Index = () => {
         
         <TournamentHeader
           selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
+          setSelectedTab={handleTabChange}
           isLoggedIn={isLoggedIn}
           isAdmin={isAdmin}
           isSuperAdmin={isSuperAdmin}
@@ -435,14 +443,15 @@ const Index = () => {
           setShowAdminPanel={setShowAdminPanel}
           setShowSuperAdminPanel={setShowSuperAdminPanel}
           setShowTeamEditDialog={setShowTeamEditDialog}
+          setShowTeamManagementDialog={setShowTeamManagementDialog}
           onLogout={handleLogout}
         />
 
         <section className="py-8 relative z-10 pb-20 sm:pb-8">
           <div className="container mx-auto px-4">
-            <MobileNavigation selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+            <MobileNavigation selectedTab={selectedTab} setSelectedTab={handleTabChange} />
 
-            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+            <Tabs value={selectedTab} onValueChange={handleTabChange} className="w-full">
               <TabsContent value="register" className="mt-8">
                 <RegistrationForms
                   teamForm={teamForm}

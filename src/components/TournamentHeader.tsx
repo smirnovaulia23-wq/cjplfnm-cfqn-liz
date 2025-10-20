@@ -14,6 +14,7 @@ interface TournamentHeaderProps {
   setShowAdminPanel: (show: boolean) => void;
   setShowSuperAdminPanel?: (show: boolean) => void;
   setShowTeamEditDialog: (show: boolean) => void;
+  setShowTeamManagementDialog: (show: boolean) => void;
   onLogout: () => void;
 }
 
@@ -30,6 +31,7 @@ export const TournamentHeader = ({
   setShowAdminPanel,
   setShowSuperAdminPanel,
   setShowTeamEditDialog,
+  setShowTeamManagementDialog,
   onLogout
 }: TournamentHeaderProps) => {
   return (
@@ -128,13 +130,25 @@ export const TournamentHeader = ({
               </Button>
             </div>
           ) : (
-            <Button 
-              onClick={() => setShowLoginDialog(true)}
-              className="bg-primary text-primary-foreground hover:bg-primary/90"
-            >
-              <Icon name="LogIn" className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Вход</span>
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                onClick={() => setShowTeamManagementDialog(true)}
+                className="bg-secondary text-white hover:bg-secondary/90"
+                size="sm"
+              >
+                <Icon name="Settings" className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Моя команда</span>
+              </Button>
+              <Button 
+                onClick={() => setShowLoginDialog(true)}
+                variant="outline"
+                size="sm"
+                className="border-primary/50 text-primary hover:bg-primary/10"
+              >
+                <Icon name="Shield" className="w-4 h-4 sm:mr-2" />
+                <span className="hidden sm:inline">Админ</span>
+              </Button>
+            </div>
           )}
         </div>
       </div>
