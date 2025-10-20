@@ -63,10 +63,10 @@ const Index = () => {
     hasFriends: false,
     friend1Nickname: '',
     friend1Telegram: '',
-    friend1Role: '',
+    friend1Roles: [] as string[],
     friend2Nickname: '',
     friend2Telegram: '',
-    friend2Role: ''
+    friend2Roles: [] as string[]
   });
   const { toast } = useToast();
 
@@ -76,6 +76,7 @@ const Index = () => {
     loadSettings();
     if (isLoggedIn) {
       loadPendingTeams();
+      loadIndividualPlayers();
     }
   }, [isLoggedIn]);
 
@@ -360,15 +361,32 @@ const Index = () => {
         friend2Telegram: individualForm.hasFriends ? individualForm.friend2Telegram : null
       };
 
-      const response = await fetch(BACKEND_URLS.register, {
+      const registerResponse = await fetch(BACKEND_URLS.register, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(registrationData)
       });
+      const registerData = await registerResponse.json();
+
+      if (!registerData.success) {
+        toast({ title: 'Ошибка', description: registerData.error || 'Не удалось сохранить регистрацию', variant: 'destructive' });
+        return;
+      }
+
+      const response = await fetch(BACKEND_URLS.teams, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          ...individualForm,
+          type: 'individual',
+          friend1Role: individualForm.friend1Roles?.join(',') || '',
+          friend2Role: individualForm.friend2Roles?.join(',') || ''
+        })
+      });
       const data = await response.json();
 
       if (data.success) {
-        toast({ title: 'Регистрация успешна!', description: 'Вы зарегистрированы как свободный игрок.' });
+        toast({ title: 'Заявка отправлена!', description: 'Ваша заявка отправлена на модерацию администрации.' });
         setIndividualForm({
           nickname: '',
           telegram: '',
@@ -376,10 +394,10 @@ const Index = () => {
           hasFriends: false,
           friend1Nickname: '',
           friend1Telegram: '',
-          friend1Role: '',
+          friend1Roles: [],
           friend2Nickname: '',
           friend2Telegram: '',
-          friend2Role: ''
+          friend2Roles: []
         });
         loadIndividualPlayers();
       } else {

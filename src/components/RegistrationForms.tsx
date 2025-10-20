@@ -36,10 +36,10 @@ interface IndividualFormData {
   hasFriends: boolean;
   friend1Nickname: string;
   friend1Telegram: string;
-  friend1Role: string;
+  friend1Roles: string[];
   friend2Nickname: string;
   friend2Telegram: string;
-  friend2Role: string;
+  friend2Roles: string[];
 }
 
 interface RegistrationFormsProps {
@@ -54,11 +54,21 @@ interface RegistrationFormsProps {
 }
 
 const roleColors: { [key: string]: string } = {
+  any: 'bg-gray-500/20 text-gray-400 border-gray-500/50',
   top: 'bg-blue-500/20 text-blue-400 border-blue-500/50',
   jungle: 'bg-green-500/20 text-green-400 border-green-500/50',
   mid: 'bg-purple-500/20 text-purple-400 border-purple-500/50',
   adc: 'bg-orange-500/20 text-orange-400 border-orange-500/50',
   support: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50',
+};
+
+const roleLabels: { [key: string]: string } = {
+  any: 'Любая',
+  top: 'Топ',
+  jungle: 'Лес',
+  mid: 'Мид',
+  adc: 'АДК',
+  support: 'Саппорт',
 };
 
 export const RegistrationForms = ({
@@ -301,7 +311,7 @@ export const RegistrationForms = ({
               <div className="space-y-4">
                 <Label className="text-base font-semibold text-foreground">Предпочитаемые роли * (выберите до 3)</Label>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {['top', 'jungle', 'mid', 'adc', 'support'].map((role) => (
+                  {['any', 'top', 'jungle', 'mid', 'adc', 'support'].map((role) => (
                     <button
                       key={role}
                       type="button"
@@ -313,12 +323,8 @@ export const RegistrationForms = ({
                           : 'border-border bg-background/50 text-muted-foreground hover:border-primary/50'
                       } disabled:opacity-50 disabled:cursor-not-allowed`}
                     >
-                      <span className="font-medium capitalize">
-                        {role === 'top' && 'Топ'}
-                        {role === 'jungle' && 'Лес'}
-                        {role === 'mid' && 'Мид'}
-                        {role === 'adc' && 'АДК'}
-                        {role === 'support' && 'Саппорт'}
+                      <span className="font-medium">
+                        {roleLabels[role]}
                       </span>
                     </button>
                   ))}
@@ -341,50 +347,110 @@ export const RegistrationForms = ({
                 </div>
 
                 {individualForm.hasFriends && (
-                  <div className="space-y-4 p-4 bg-background/50 rounded-lg border border-border">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">Ник друга 1</Label>
-                        <Input
-                          value={individualForm.friend1Nickname}
-                          onChange={(e) => setIndividualForm({ ...individualForm, friend1Nickname: e.target.value })}
-                          placeholder="Ник игрока"
-                          className="bg-background border-border focus:border-primary"
-                          disabled={!registrationOpen}
-                        />
+                  <div className="space-y-6 p-4 bg-background/50 rounded-lg border border-border">
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold text-foreground">Друг 1</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Ник</Label>
+                          <Input
+                            value={individualForm.friend1Nickname}
+                            onChange={(e) => setIndividualForm({ ...individualForm, friend1Nickname: e.target.value })}
+                            placeholder="Ник игрока"
+                            className="bg-background border-border focus:border-primary"
+                            disabled={!registrationOpen}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram</Label>
+                          <Input
+                            value={individualForm.friend1Telegram}
+                            onChange={(e) => setIndividualForm({ ...individualForm, friend1Telegram: e.target.value })}
+                            placeholder="@username"
+                            className="bg-background border-border focus:border-primary"
+                            disabled={!registrationOpen}
+                          />
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">Telegram друга 1</Label>
-                        <Input
-                          value={individualForm.friend1Telegram}
-                          onChange={(e) => setIndividualForm({ ...individualForm, friend1Telegram: e.target.value })}
-                          placeholder="@username"
-                          className="bg-background border-border focus:border-primary"
-                          disabled={!registrationOpen}
-                        />
+                        <Label className="text-sm font-medium text-muted-foreground">Роли друга (выберите до 3)</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {['any', 'top', 'jungle', 'mid', 'adc', 'support'].map((role) => (
+                            <button
+                              key={role}
+                              type="button"
+                              onClick={() => {
+                                const roles = individualForm.friend1Roles || [];
+                                if (roles.includes(role)) {
+                                  setIndividualForm({ ...individualForm, friend1Roles: roles.filter(r => r !== role) });
+                                } else if (roles.length < 3) {
+                                  setIndividualForm({ ...individualForm, friend1Roles: [...roles, role] });
+                                }
+                              }}
+                              disabled={!registrationOpen}
+                              className={`p-2 rounded-lg border-2 transition-all text-center text-sm ${
+                                (individualForm.friend1Roles || []).includes(role)
+                                  ? roleColors[role] + ' border-current'
+                                  : 'border-border bg-background/50 text-muted-foreground hover:border-primary/50'
+                              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            >
+                              {roleLabels[role]}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">Ник друга 2</Label>
-                        <Input
-                          value={individualForm.friend2Nickname}
-                          onChange={(e) => setIndividualForm({ ...individualForm, friend2Nickname: e.target.value })}
-                          placeholder="Ник игрока"
-                          className="bg-background border-border focus:border-primary"
-                          disabled={!registrationOpen}
-                        />
+                    <div className="space-y-4 pt-4 border-t border-border">
+                      <Label className="text-base font-semibold text-foreground">Друг 2</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Ник</Label>
+                          <Input
+                            value={individualForm.friend2Nickname}
+                            onChange={(e) => setIndividualForm({ ...individualForm, friend2Nickname: e.target.value })}
+                            placeholder="Ник игрока"
+                            className="bg-background border-border focus:border-primary"
+                            disabled={!registrationOpen}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram</Label>
+                          <Input
+                            value={individualForm.friend2Telegram}
+                            onChange={(e) => setIndividualForm({ ...individualForm, friend2Telegram: e.target.value })}
+                            placeholder="@username"
+                            className="bg-background border-border focus:border-primary"
+                            disabled={!registrationOpen}
+                          />
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label className="text-sm font-medium text-muted-foreground">Telegram друга 2</Label>
-                        <Input
-                          value={individualForm.friend2Telegram}
-                          onChange={(e) => setIndividualForm({ ...individualForm, friend2Telegram: e.target.value })}
-                          placeholder="@username"
-                          className="bg-background border-border focus:border-primary"
-                          disabled={!registrationOpen}
-                        />
+                        <Label className="text-sm font-medium text-muted-foreground">Роли друга (выберите до 3)</Label>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                          {['any', 'top', 'jungle', 'mid', 'adc', 'support'].map((role) => (
+                            <button
+                              key={role}
+                              type="button"
+                              onClick={() => {
+                                const roles = individualForm.friend2Roles || [];
+                                if (roles.includes(role)) {
+                                  setIndividualForm({ ...individualForm, friend2Roles: roles.filter(r => r !== role) });
+                                } else if (roles.length < 3) {
+                                  setIndividualForm({ ...individualForm, friend2Roles: [...roles, role] });
+                                }
+                              }}
+                              disabled={!registrationOpen}
+                              className={`p-2 rounded-lg border-2 transition-all text-center text-sm ${
+                                (individualForm.friend2Roles || []).includes(role)
+                                  ? roleColors[role] + ' border-current'
+                                  : 'border-border bg-background/50 text-muted-foreground hover:border-primary/50'
+                              } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            >
+                              {roleLabels[role]}
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
                   </div>

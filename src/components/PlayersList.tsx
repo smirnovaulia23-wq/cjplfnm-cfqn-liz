@@ -24,6 +24,7 @@ interface PlayersListProps {
 }
 
 const roleColors: { [key: string]: string } = {
+  any: 'bg-gray-500/20 text-gray-400 border-gray-500/50',
   top: 'bg-blue-500/20 text-blue-400 border-blue-500/50',
   jungle: 'bg-green-500/20 text-green-400 border-green-500/50',
   mid: 'bg-purple-500/20 text-purple-400 border-purple-500/50',
@@ -32,6 +33,7 @@ const roleColors: { [key: string]: string } = {
 };
 
 const roleLabels: { [key: string]: string } = {
+  any: 'Любая',
   top: 'Топ',
   jungle: 'Лес',
   mid: 'Мид',
@@ -50,7 +52,7 @@ export const PlayersList = ({
     ? individualPlayers.filter(player => player.preferredRoles.includes(selectedRoleFilter))
     : individualPlayers;
 
-  const roles = ['top', 'jungle', 'mid', 'adc', 'support'];
+  const roles = ['any', 'top', 'jungle', 'mid', 'adc', 'support'];
 
   return (
     <div className="max-w-5xl mx-auto">

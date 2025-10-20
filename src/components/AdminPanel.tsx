@@ -23,6 +23,13 @@ interface Player {
   preferredRoles: string[];
   status: string;
   createdAt: string;
+  hasFriends?: boolean;
+  friend1Nickname?: string;
+  friend1Telegram?: string;
+  friend1Role?: string;
+  friend2Nickname?: string;
+  friend2Telegram?: string;
+  friend2Role?: string;
 }
 
 interface AdminPanelProps {
@@ -238,8 +245,43 @@ export const AdminPanel = ({
                               </Badge>
                             ))}
                           </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Подано: {new Date(player.createdAt).toLocaleString('ru-RU')}
+                          </p>
                         </div>
                       </div>
+
+                      {player.hasFriends && (player.friend1Nickname || player.friend2Nickname) && (
+                        <div className="pt-2 border-t border-border/50">
+                          <p className="text-sm font-medium text-muted-foreground mb-2">Хочет играть с друзьями:</p>
+                          <div className="space-y-1">
+                            {player.friend1Nickname && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <Icon name="UserPlus" className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-foreground">{player.friend1Nickname}</span>
+                                {player.friend1Telegram && (
+                                  <span className="text-muted-foreground">({player.friend1Telegram})</span>
+                                )}
+                                {player.friend1Role && (
+                                  <Badge variant="outline" className="text-xs">{player.friend1Role}</Badge>
+                                )}
+                              </div>
+                            )}
+                            {player.friend2Nickname && (
+                              <div className="flex items-center gap-2 text-sm">
+                                <Icon name="UserPlus" className="w-4 h-4 text-muted-foreground" />
+                                <span className="text-foreground">{player.friend2Nickname}</span>
+                                {player.friend2Telegram && (
+                                  <span className="text-muted-foreground">({player.friend2Telegram})</span>
+                                )}
+                                {player.friend2Role && (
+                                  <Badge variant="outline" className="text-xs">{player.friend2Role}</Badge>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
 
                       <div className="flex gap-2 pt-2">
                         <Button
