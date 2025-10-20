@@ -353,6 +353,68 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif method == 'DELETE':
+            body_data = json.loads(event.get('body', '{}'))
+            item_id = body_data.get('id')
+            password = body_data.get('password')
+            item_type = body_data.get('type')
+            
+            if not item_id or not password or not item_type:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Missing id, password or type'}),
+                    'isBase64Encoded': False
+                }
+            
+            hashed_password = hash_password(password)
+            
+            if item_type == 'team':
+                cur.execute(
+                    "SELECT password_hash FROM teams WHERE id = %s",
+                    (item_id,)
+                )
+                result = cur.fetchone()
+                
+                if not result or result[0] != hashed_password:
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Invalid password'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute("DELETE FROM teams WHERE id = %s", (item_id,))
+                conn.commit()
+            
+            elif item_type == 'player':
+                cur.execute(
+                    "SELECT password_hash FROM individual_players WHERE id = %s",
+                    (item_id,)
+                )
+                result = cur.fetchone()
+                
+                if not result or (result[0] and result[0] != hashed_password):
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Invalid password'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute("DELETE FROM individual_players WHERE id = %s", (item_id,))
+                conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({'success': True}),
+                'isBase64Encoded': False
+            }
+        
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},

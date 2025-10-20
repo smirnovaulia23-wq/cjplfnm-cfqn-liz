@@ -67,6 +67,14 @@ export const TournamentHeader = ({
               <Icon name="UserCircle" className="w-4 h-4 mr-2" />
               Свободные игроки
             </Button>
+            <Button 
+              variant={selectedTab === 'manage' ? 'default' : 'ghost'}
+              onClick={() => setSelectedTab('manage')}
+              className={selectedTab === 'manage' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+            >
+              <Icon name="Edit" className="w-4 h-4 mr-2" />
+              Управление
+            </Button>
           </nav>
           {isLoggedIn ? (
             <div className="flex items-center gap-2 sm:gap-3">

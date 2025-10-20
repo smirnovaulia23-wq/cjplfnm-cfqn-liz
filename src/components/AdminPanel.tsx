@@ -252,36 +252,43 @@ export const AdminPanel = ({
                       </div>
 
                       {player.hasFriends && (player.friend1Nickname || player.friend2Nickname) && (
-                        <div className="pt-2 border-t border-border/50">
-                          <p className="text-sm font-medium text-muted-foreground mb-2">Хочет играть с друзьями:</p>
-                          <div className="space-y-1">
+                        <div className="pt-3 mt-3 border-t border-border/50">
+                          <p className="text-sm font-semibold text-primary mb-3 flex items-center gap-2">
+                            <Icon name="Users" className="w-4 h-4" />
+                            Хочет играть с друзьями:
+                          </p>
+                          <div className="space-y-3 pl-2">
                             {player.friend1Nickname && (
-                              <div className="flex items-center gap-2 text-sm flex-wrap">
-                                <Icon name="UserPlus" className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-foreground">{player.friend1Nickname}</span>
-                                {player.friend1Telegram && (
-                                  <span className="text-muted-foreground">({player.friend1Telegram})</span>
-                                )}
+                              <div className="p-2 rounded-lg bg-background/50 border border-border/50">
+                                <div className="flex items-center gap-2 text-sm mb-1">
+                                  <Icon name="UserPlus" className="w-4 h-4 text-primary" />
+                                  <span className="font-medium text-foreground">{player.friend1Nickname}</span>
+                                  {player.friend1Telegram && (
+                                    <span className="text-muted-foreground text-xs">({player.friend1Telegram})</span>
+                                  )}
+                                </div>
                                 {player.friend1Roles && player.friend1Roles.length > 0 && (
-                                  <div className="flex gap-1">
+                                  <div className="flex gap-1 mt-2 ml-6">
                                     {player.friend1Roles.map((role: string) => (
-                                      <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
+                                      <Badge key={role} variant="outline" className="text-xs border-primary/50 text-primary">{role}</Badge>
                                     ))}
                                   </div>
                                 )}
                               </div>
                             )}
                             {player.friend2Nickname && (
-                              <div className="flex items-center gap-2 text-sm flex-wrap">
-                                <Icon name="UserPlus" className="w-4 h-4 text-muted-foreground" />
-                                <span className="text-foreground">{player.friend2Nickname}</span>
-                                {player.friend2Telegram && (
-                                  <span className="text-muted-foreground">({player.friend2Telegram})</span>
-                                )}
+                              <div className="p-2 rounded-lg bg-background/50 border border-border/50">
+                                <div className="flex items-center gap-2 text-sm mb-1">
+                                  <Icon name="UserPlus" className="w-4 h-4 text-primary" />
+                                  <span className="font-medium text-foreground">{player.friend2Nickname}</span>
+                                  {player.friend2Telegram && (
+                                    <span className="text-muted-foreground text-xs">({player.friend2Telegram})</span>
+                                  )}
+                                </div>
                                 {player.friend2Roles && player.friend2Roles.length > 0 && (
-                                  <div className="flex gap-1">
+                                  <div className="flex gap-1 mt-2 ml-6">
                                     {player.friend2Roles.map((role: string) => (
-                                      <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
+                                      <Badge key={role} variant="outline" className="text-xs border-primary/50 text-primary">{role}</Badge>
                                     ))}
                                   </div>
                                 )}

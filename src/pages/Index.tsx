@@ -9,6 +9,7 @@ import { MobileNavigation } from '@/components/MobileNavigation';
 import { TeamsList } from '@/components/TeamsList';
 import { PlayersList } from '@/components/PlayersList';
 import { RegistrationForms } from '@/components/RegistrationForms';
+import { ApprovedApplicationsManager } from '@/components/ApprovedApplicationsManager';
 
 const BACKEND_URLS = {
   auth: 'https://functions.poehali.dev/87a1a191-aacc-478d-8869-478b7969f36c',
@@ -458,6 +459,18 @@ const Index = () => {
                   individualPlayers={individualPlayers}
                   registrationOpen={registrationOpen}
                   loadIndividualPlayers={loadIndividualPlayers}
+                />
+              </TabsContent>
+
+              <TabsContent value="manage" className="mt-8">
+                <ApprovedApplicationsManager
+                  approvedTeams={approvedTeams}
+                  individualPlayers={individualPlayers}
+                  onRefresh={() => {
+                    loadApprovedTeams();
+                    loadIndividualPlayers();
+                  }}
+                  backendUrl={BACKEND_URLS.teams}
                 />
               </TabsContent>
             </Tabs>
