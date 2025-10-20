@@ -88,7 +88,10 @@ const Index = () => {
 
   const loadApprovedTeams = async () => {
     try {
-      const response = await fetch(`${BACKEND_URLS.teams}?status=approved`);
+      const response = await fetch(`${BACKEND_URLS.teams}?status=approved`, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
       if (!response.ok) {
         setApprovedTeams([]);
         return;
@@ -102,7 +105,10 @@ const Index = () => {
 
   const loadPendingTeams = async () => {
     try {
-      const response = await fetch(`${BACKEND_URLS.teams}?status=pending`);
+      const response = await fetch(`${BACKEND_URLS.teams}?status=pending`, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
       if (!response.ok) {
         setPendingTeams([]);
         return;
@@ -116,7 +122,10 @@ const Index = () => {
 
   const loadIndividualPlayers = async () => {
     try {
-      const response = await fetch(`${BACKEND_URLS.teams}?type=individual`);
+      const response = await fetch(`${BACKEND_URLS.teams}?type=individual`, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
       if (!response.ok) {
         setIndividualPlayers([]);
         setPendingPlayers([]);
@@ -135,7 +144,10 @@ const Index = () => {
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(BACKEND_URLS.settings);
+      const response = await fetch(BACKEND_URLS.settings, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
       if (!response.ok) {
         setRegistrationOpen(true);
         return;
@@ -151,6 +163,8 @@ const Index = () => {
     try {
       const adminResponse = await fetch(BACKEND_URLS.auth, {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: telegram, password })
       });
@@ -181,6 +195,8 @@ const Index = () => {
 
       const userResponse = await fetch(BACKEND_URLS.userAuth, {
         method: 'POST',
+        mode: 'cors',
+        credentials: 'omit',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'login', telegram, password })
       });
