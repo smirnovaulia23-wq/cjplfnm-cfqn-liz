@@ -154,6 +154,11 @@ const Index = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: telegram, password })
       });
+      
+      if (!adminResponse.ok && adminResponse.status !== 401) {
+        throw new Error('Network error');
+      }
+      
       const adminData = await adminResponse.json();
 
       if (adminData.success) {
@@ -179,6 +184,11 @@ const Index = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'login', telegram, password })
       });
+      
+      if (!userResponse.ok && userResponse.status !== 401) {
+        throw new Error('Network error');
+      }
+      
       const userData = await userResponse.json();
 
       if (userData.success) {
@@ -209,7 +219,7 @@ const Index = () => {
         toast({ title: 'Ошибка входа', description: userData.error || 'Неверный логин или пароль', variant: 'destructive' });
       }
     } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось выполнить вход', variant: 'destructive' });
+      toast({ title: 'Ошибка', description: 'Не удалось выполнить вход. Попробуйте обновить страницу', variant: 'destructive' });
     }
   };
 
