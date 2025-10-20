@@ -248,47 +248,127 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="register" className="mt-8">
-                <Card className="max-w-2xl mx-auto bg-card/50 border-border">
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-primary">Регистрация команды</CardTitle>
-                    <CardDescription>Заполните форму для участия в турнире</CardDescription>
+                <Card className="max-w-3xl mx-auto bg-card/50 border-border">
+                  <CardHeader className="border-b border-border/50">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-2xl text-primary">Регистрация команды</CardTitle>
+                        <CardDescription className="mt-2">Заполните данные для участия в турнире</CardDescription>
+                      </div>
+                      <Badge className="bg-secondary/20 text-secondary border border-secondary/50">
+                        Турнир 5x5
+                      </Badge>
+                    </div>
                   </CardHeader>
-                  <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="teamName">Название команды</Label>
+                  <CardContent className="space-y-8 pt-6">
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold text-foreground">Название команды *</Label>
                       <Input
-                        id="teamName"
                         placeholder="Введите название команды"
-                        className="bg-background border-border focus:border-primary"
+                        className="bg-background border-border focus:border-primary h-12"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="captain">Капитан команды</Label>
-                      <Input
-                        id="captain"
-                        placeholder="Ваш никнейм"
-                        className="bg-background border-border focus:border-primary"
-                      />
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-muted-foreground">Ник капитана *</Label>
+                        <Input
+                          placeholder="IvanGamer"
+                          className="bg-background border-border focus:border-primary"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium text-muted-foreground">Telegram капитана *</Label>
+                        <Input
+                          placeholder="@username"
+                          className="bg-background border-border focus:border-primary"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="team@example.com"
-                        className="bg-background border-border focus:border-primary"
-                      />
+
+                    <div className="space-y-4">
+                      <Label className="text-base font-semibold text-foreground">Состав команды</Label>
+                      
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Топ *</Label>
+                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram топа *</Label>
+                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Лес *</Label>
+                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram леса *</Label>
+                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Мид *</Label>
+                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram мида *</Label>
+                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">АДК *</Label>
+                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram АДК *</Label>
+                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Саппорт *</Label>
+                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram саппорта *</Label>
+                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Запасной 1</Label>
+                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram запасного 1</Label>
+                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Запасной 2</Label>
+                          <Input placeholder="Ник игрока" className="bg-background border-border focus:border-primary" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium text-muted-foreground">Telegram запасного 2</Label>
+                          <Input placeholder="@username" className="bg-background border-border focus:border-primary" />
+                        </div>
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="players">Состав команды</Label>
-                      <Input
-                        id="players"
-                        placeholder="5 игроков через запятую"
-                        className="bg-background border-border focus:border-primary"
-                      />
-                    </div>
-                    <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 neon-border border border-primary">
-                      <Icon name="Send" className="w-4 h-4 mr-2" />
+
+                    <Button className="w-full bg-gradient-to-r from-secondary to-accent text-white hover:opacity-90 h-12 text-lg font-semibold">
+                      <Icon name="Send" className="w-5 h-5 mr-2" />
                       Отправить заявку
                     </Button>
                   </CardContent>
