@@ -377,7 +377,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 )
                 admin_result = cur.fetchone()
                 
-                if not admin_result or admin_result[0] != 'admin':
+                if not admin_result:
                     return {
                         'statusCode': 403,
                         'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
