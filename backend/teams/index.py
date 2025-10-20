@@ -191,10 +191,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 cur.execute(
                     """INSERT INTO individual_players (
-                        nickname, telegram, preferred_roles, status,
+                        nickname, telegram, password_hash, preferred_roles, status,
                         has_friends, friend1_nickname, friend1_telegram, friend1_roles,
                         friend2_nickname, friend2_telegram, friend2_roles
-                    ) VALUES (%s, %s, %s, 'pending', %s, %s, %s, %s, %s, %s, %s)
+                    ) VALUES (%s, %s, '', %s, 'pending', %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id""",
                     (
                         body_data.get('nickname'),
