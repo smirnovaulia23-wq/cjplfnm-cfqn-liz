@@ -88,11 +88,11 @@ export const AdminPanel = ({
                   <p>Нет новых заявок</p>
                 </div>
               ) : (
-                <div className="space-y-4">
+<div className="space-y-4">
                   {pendingTeams.map((team) => (
                     <div
                       key={team.id}
-                      className="p-4 rounded-lg bg-card border border-border space-y-3"
+                      className="p-4 rounded-lg bg-card border border-border space-y-4"
                     >
                       <div className="flex items-start justify-between">
                         <div>
@@ -105,7 +105,57 @@ export const AdminPanel = ({
                           </p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+
+                      <div className="border-t border-border/50 pt-3">
+                        <h4 className="text-sm font-semibold text-foreground mb-3">Состав команды:</h4>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                          <div className="p-2 rounded bg-background/50 border border-border/50">
+                            <p className="text-xs text-muted-foreground">Топ</p>
+                            <p className="font-medium text-sm">{team.topNick}</p>
+                            <p className="text-xs text-muted-foreground">{team.topTelegram}</p>
+                          </div>
+                          <div className="p-2 rounded bg-background/50 border border-border/50">
+                            <p className="text-xs text-muted-foreground">Лес</p>
+                            <p className="font-medium text-sm">{team.jungleNick}</p>
+                            <p className="text-xs text-muted-foreground">{team.jungleTelegram}</p>
+                          </div>
+                          <div className="p-2 rounded bg-background/50 border border-border/50">
+                            <p className="text-xs text-muted-foreground">Мид</p>
+                            <p className="font-medium text-sm">{team.midNick}</p>
+                            <p className="text-xs text-muted-foreground">{team.midTelegram}</p>
+                          </div>
+                          <div className="p-2 rounded bg-background/50 border border-border/50">
+                            <p className="text-xs text-muted-foreground">АДК</p>
+                            <p className="font-medium text-sm">{team.adcNick}</p>
+                            <p className="text-xs text-muted-foreground">{team.adcTelegram}</p>
+                          </div>
+                          <div className="p-2 rounded bg-background/50 border border-border/50">
+                            <p className="text-xs text-muted-foreground">Саппорт</p>
+                            <p className="font-medium text-sm">{team.supportNick}</p>
+                            <p className="text-xs text-muted-foreground">{team.supportTelegram}</p>
+                          </div>
+                          {team.sub1Nick && (
+                            <div className="p-2 rounded bg-background/50 border border-border/50">
+                              <p className="text-xs text-muted-foreground">Запасной 1</p>
+                              <p className="font-medium text-sm">{team.sub1Nick}</p>
+                              {team.sub1Telegram && (
+                                <p className="text-xs text-muted-foreground">{team.sub1Telegram}</p>
+                              )}
+                            </div>
+                          )}
+                          {team.sub2Nick && (
+                            <div className="p-2 rounded bg-background/50 border border-border/50">
+                              <p className="text-xs text-muted-foreground">Запасной 2</p>
+                              <p className="font-medium text-sm">{team.sub2Nick}</p>
+                              {team.sub2Telegram && (
+                                <p className="text-xs text-muted-foreground">{team.sub2Telegram}</p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
                         <Button
                           size="sm"
                           className="bg-primary/20 text-primary border border-primary/50 hover:bg-primary hover:text-primary-foreground"
