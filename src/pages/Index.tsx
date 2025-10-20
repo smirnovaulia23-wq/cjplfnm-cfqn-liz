@@ -109,38 +109,9 @@ const Index = () => {
               </div>
             </div>
           </header>
-
-          <section className="relative z-10 py-20 md:py-32">
-            <div className="container mx-auto px-4">
-              <div className="max-w-4xl mx-auto text-center space-y-6">
-                <Badge className="bg-primary/20 text-primary border border-primary/50 mb-4 animate-glow-pulse">
-                  <Icon name="Zap" className="w-3 h-3 mr-1" />
-                  Турнир 5 на 5
-                </Badge>
-                <h2 className="text-5xl md:text-7xl font-bold leading-tight">
-                  <span className="text-primary neon-glow">КИБЕРСПОРТИВНАЯ</span>
-                  <br />
-                  <span className="text-foreground">АРЕНА</span>
-                </h2>
-                <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                  Присоединяйся к легендарным турнирам, собери команду и докажи свое превосходство на киберспортивной арене
-                </p>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center pt-6">
-                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 neon-border border border-primary text-lg">
-                    <Icon name="Trophy" className="w-5 h-5 mr-2" />
-                    Зарегистрировать команду
-                  </Button>
-                  <Button size="lg" variant="outline" className="border-secondary text-secondary hover:bg-secondary/10 text-lg">
-                    <Icon name="Play" className="w-5 h-5 mr-2" />
-                    Смотреть трансляции
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </section>
         </div>
 
-        <section className="py-8">
+        <section className="py-8 relative z-10">
           <div className="container mx-auto px-4">
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
 
