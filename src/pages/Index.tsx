@@ -388,20 +388,19 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="bg-grid">
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background"></div>
-          
-          <header className="relative z-10 border-b border-primary/20">
-            <div className="container mx-auto px-4 py-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <div className="w-10 h-10 bg-primary/20 rounded-lg flex items-center justify-center neon-border border border-primary">
-                    <Icon name="Swords" className="w-6 h-6 text-primary" />
-                  </div>
-                  <h1 className="text-3xl font-bold text-primary neon-glow">CYBER ARENA</h1>
+    <div className="min-h-screen go-board-pattern">
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background"></div>
+        
+        <header className="relative z-10 border-b border-secondary/30 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <div className="w-10 h-10 bg-secondary/20 rounded-lg flex items-center justify-center neon-border border border-secondary">
+                  <Icon name="Circle" className="w-6 h-6 text-secondary" />
                 </div>
+                <h1 className="text-3xl font-bold text-secondary neon-glow">GO TOURNAMENT</h1>
+              </div>
                 <div className="flex items-center gap-4">
                   <nav className="flex space-x-2">
                     <Button 
