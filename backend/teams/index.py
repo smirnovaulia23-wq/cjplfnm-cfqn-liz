@@ -151,18 +151,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             if body_data.get('type') == 'individual':
-                password_hash = hash_password(body_data.get('password', ''))
+                preferred_roles = body_data.get('preferredRoles', [])
                 
                 cur.execute(
                     """INSERT INTO individual_players (
-                        nickname, telegram, preferred_role, password_hash, status
-                    ) VALUES (%s, %s, %s, %s, 'pending')
+                        nickname, telegram, preferred_roles, status
+                    ) VALUES (%s, %s, %s, 'pending')
                     RETURNING id""",
                     (
                         body_data.get('nickname'),
                         body_data.get('telegram'),
-                        body_data.get('preferredRole'),
-                        password_hash
+                        preferred_roles
                     )
                 )
                 player_id = cur.fetchone()[0]

@@ -59,9 +59,7 @@ const Index = () => {
   const [individualForm, setIndividualForm] = useState({
     nickname: '',
     telegram: '',
-    preferredRole: '',
-    password: '',
-    confirmPassword: ''
+    preferredRoles: [] as string[]
   });
   const { toast } = useToast();
 
@@ -311,18 +309,13 @@ const Index = () => {
   const handleIndividualRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!individualForm.nickname || !individualForm.telegram || !individualForm.password || !individualForm.confirmPassword) {
-      toast({ title: 'Заполните обязательные поля', description: 'Все поля обязательны для заполнения', variant: 'destructive' });
+    if (!individualForm.nickname || !individualForm.telegram) {
+      toast({ title: 'Заполните обязательные поля', description: 'Ник и Telegram обязательны для заполнения', variant: 'destructive' });
       return;
     }
 
-    if (individualForm.password !== individualForm.confirmPassword) {
-      toast({ title: 'Ошибка', description: 'Пароли не совпадают', variant: 'destructive' });
-      return;
-    }
-
-    if (individualForm.password.length < 6) {
-      toast({ title: 'Ошибка', description: 'Пароль должен быть не менее 6 символов', variant: 'destructive' });
+    if (individualForm.preferredRoles.length === 0) {
+      toast({ title: 'Выберите роли', description: 'Выберите хотя бы одну предпочитаемую роль', variant: 'destructive' });
       return;
     }
 
@@ -335,19 +328,34 @@ const Index = () => {
       const data = await response.json();
 
       if (data.success) {
-        toast({ title: 'Регистрация успешна!', description: 'Вы зарегистрированы как свободный игрок. Используйте свой Telegram для входа.' });
+        toast({ title: 'Регистрация успешна!', description: 'Вы зарегистрированы как свободный игрок.' });
         setIndividualForm({
           nickname: '',
           telegram: '',
-          preferredRole: '',
-          password: '',
-          confirmPassword: ''
+          preferredRoles: []
         });
       } else {
         toast({ title: 'Ошибка', description: data.error || 'Не удалось зарегистрироваться', variant: 'destructive' });
       }
     } catch (error) {
       toast({ title: 'Ошибка', description: 'Не удалось отправить заявку', variant: 'destructive' });
+    }
+  };
+
+  const toggleRole = (role: string) => {
+    const roles = individualForm.preferredRoles;
+    if (roles.includes(role)) {
+      setIndividualForm({
+        ...individualForm,
+        preferredRoles: roles.filter(r => r !== role)
+      });
+    } else if (roles.length < 3) {
+      setIndividualForm({
+        ...individualForm,
+        preferredRoles: [...roles, role]
+      });
+    } else {
+      toast({ title: 'Максимум ролей', description: 'Можно выбрать не более 3 ролей', variant: 'destructive' });
     }
   };
 
@@ -884,52 +892,38 @@ const Index = () => {
                           </div>
                         </div>
 
-                        <div className="space-y-2">
-                          <Label className="text-sm font-medium text-muted-foreground">Предпочитаемая роль</Label>
-                          <select
-                            value={individualForm.preferredRole}
-                            onChange={(e) => setIndividualForm({ ...individualForm, preferredRole: e.target.value })}
-                            className="w-full bg-background border border-border rounded-md px-3 py-2 focus:border-primary focus:outline-none"
-                            disabled={!registrationOpen}
-                          >
-                            <option value="">Не указана</option>
-                            <option value="top">Топ</option>
-                            <option value="jungle">Лес</option>
-                            <option value="mid">Мид</option>
-                            <option value="adc">АДК</option>
-                            <option value="support">Саппорт</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div className="space-y-4">
-                        <Label className="text-base font-semibold text-foreground">Пароль для входа</Label>
-                        <p className="text-sm text-muted-foreground">Используйте ваш Telegram для входа</p>
-                        
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="space-y-2">
-                            <Label className="text-sm font-medium text-muted-foreground">Пароль *</Label>
-                            <Input
-                              type="password"
-                              value={individualForm.password}
-                              onChange={(e) => setIndividualForm({ ...individualForm, password: e.target.value })}
-                              placeholder="Минимум 6 символов"
-                              className="bg-background border-border focus:border-primary"
-                              required
-                              disabled={!registrationOpen}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label className="text-sm font-medium text-muted-foreground">Подтвердите пароль *</Label>
-                            <Input
-                              type="password"
-                              value={individualForm.confirmPassword}
-                              onChange={(e) => setIndividualForm({ ...individualForm, confirmPassword: e.target.value })}
-                              placeholder="Повторите пароль"
-                              className="bg-background border-border focus:border-primary"
-                              required
-                              disabled={!registrationOpen}
-                            />
+                        <div className="space-y-3">
+                          <Label className="text-sm font-medium text-muted-foreground">
+                            Предпочитаемые роли * (выберите от 1 до 3)
+                          </Label>
+                          <p className="text-xs text-muted-foreground">
+                            Выбрано: {individualForm.preferredRoles.length}/3
+                          </p>
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                            {[
+                              { value: 'any', label: 'Любая', icon: 'Sparkles' },
+                              { value: 'top', label: 'Топ', icon: 'Shield' },
+                              { value: 'jungle', label: 'Лес', icon: 'Trees' },
+                              { value: 'mid', label: 'Мид', icon: 'Zap' },
+                              { value: 'adc', label: 'АДК', icon: 'Target' },
+                              { value: 'support', label: 'Саппорт', icon: 'Heart' }
+                            ].map((role) => (
+                              <Button
+                                key={role.value}
+                                type="button"
+                                variant={individualForm.preferredRoles.includes(role.value) ? 'default' : 'outline'}
+                                onClick={() => toggleRole(role.value)}
+                                disabled={!registrationOpen}
+                                className={
+                                  individualForm.preferredRoles.includes(role.value)
+                                    ? 'bg-primary text-primary-foreground hover:bg-primary/90'
+                                    : 'border-border hover:bg-primary/10'
+                                }
+                              >
+                                <Icon name={role.icon as any} className="w-4 h-4 mr-2" />
+                                {role.label}
+                              </Button>
+                            ))}
                           </div>
                         </div>
                       </div>
