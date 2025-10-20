@@ -32,6 +32,7 @@ const Index = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
+  const [individualPlayers, setIndividualPlayers] = useState<any[]>([]);
   const [registrationOpen, setRegistrationOpen] = useState(true);
   const [expandedTeam, setExpandedTeam] = useState<number | null>(null);
   const [teamForm, setTeamForm] = useState({
@@ -108,6 +109,7 @@ const Index = () => {
 
   useEffect(() => {
     loadApprovedTeams();
+    loadIndividualPlayers();
     loadSettings();
     if (isLoggedIn) {
       loadPendingTeams();
@@ -131,6 +133,16 @@ const Index = () => {
       setPendingTeams(data.teams || []);
     } catch (error) {
       console.error('Error loading pending teams:', error);
+    }
+  };
+
+  const loadIndividualPlayers = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URLS.teams}?type=individual`);
+      const data = await response.json();
+      setIndividualPlayers(data.players || []);
+    } catch (error) {
+      console.error('Error loading individual players:', error);
     }
   };
 
@@ -334,6 +346,7 @@ const Index = () => {
           telegram: '',
           preferredRoles: []
         });
+        loadIndividualPlayers();
       } else {
         toast({ title: 'Ошибка', description: data.error || 'Не удалось зарегистрироваться', variant: 'destructive' });
       }
@@ -391,6 +404,14 @@ const Index = () => {
                     >
                       <Icon name="Users" className="w-4 h-4 mr-2" />
                       Команды
+                    </Button>
+                    <Button 
+                      variant={selectedTab === 'players' ? 'default' : 'ghost'}
+                      onClick={() => setSelectedTab('players')}
+                      className={selectedTab === 'players' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+                    >
+                      <Icon name="UserCircle" className="w-4 h-4 mr-2" />
+                      Свободные игроки
                     </Button>
                   </nav>
                   {isLoggedIn ? (
@@ -629,6 +650,79 @@ const Index = () => {
                                   </div>
                                 </div>
                               )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="players" className="mt-8">
+                <div className="max-w-5xl mx-auto">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-bold text-foreground">Свободные игроки</h2>
+                    <Badge variant="outline" className="border-primary text-primary">
+                      {individualPlayers.length} игроков
+                    </Badge>
+                  </div>
+
+                  {individualPlayers.length === 0 ? (
+                    <Card className="bg-card/50 border-border">
+                      <CardContent className="py-12">
+                        <div className="text-center text-muted-foreground">
+                          <Icon name="UserCircle" className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                          <p className="text-lg">Пока нет зарегистрированных свободных игроков</p>
+                          <p className="text-sm mt-2">Станьте первым!</p>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {individualPlayers.map((player) => (
+                        <Card key={player.id} className="bg-card/50 border-border hover:border-primary/50 transition-all">
+                          <CardContent className="p-6">
+                            <div className="flex items-start gap-4">
+                              <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center border border-primary/50">
+                                <Icon name="User" className="w-6 h-6 text-primary" />
+                              </div>
+                              <div className="flex-1">
+                                <h3 className="text-lg font-semibold text-foreground">{player.nickname}</h3>
+                                {(!registrationOpen || isLoggedIn) && (
+                                  <p className="text-sm text-muted-foreground mt-1">{player.telegram}</p>
+                                )}
+                                
+                                {player.preferredRoles && player.preferredRoles.length > 0 && (
+                                  <div className="mt-3 space-y-2">
+                                    <p className="text-xs text-muted-foreground">Роли:</p>
+                                    <div className="flex flex-wrap gap-1">
+                                      {player.preferredRoles.map((role: string, index: number) => {
+                                        const roleConfig: Record<string, { label: string; icon: string; color: string }> = {
+                                          'any': { label: 'Любая', icon: 'Sparkles', color: 'bg-purple-500/20 text-purple-400 border-purple-500/50' },
+                                          'top': { label: 'Топ', icon: 'Shield', color: 'bg-blue-500/20 text-blue-400 border-blue-500/50' },
+                                          'jungle': { label: 'Лес', icon: 'Trees', color: 'bg-green-500/20 text-green-400 border-green-500/50' },
+                                          'mid': { label: 'Мид', icon: 'Zap', color: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' },
+                                          'adc': { label: 'АДК', icon: 'Target', color: 'bg-red-500/20 text-red-400 border-red-500/50' },
+                                          'support': { label: 'Саппорт', icon: 'Heart', color: 'bg-pink-500/20 text-pink-400 border-pink-500/50' }
+                                        };
+                                        
+                                        const config = roleConfig[role] || { label: role, icon: 'Circle', color: 'bg-primary/20 text-primary border-primary/50' };
+                                        
+                                        return (
+                                          <Badge
+                                            key={index}
+                                            className={`${config.color} border text-xs`}
+                                          >
+                                            <Icon name={config.icon as any} className="w-3 h-3 mr-1" />
+                                            {config.label}
+                                          </Badge>
+                                        );
+                                      })}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
                             </div>
                           </CardContent>
                         </Card>

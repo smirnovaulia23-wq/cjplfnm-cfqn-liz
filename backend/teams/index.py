@@ -36,6 +36,30 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
             
+            if params.get('type') == 'individual':
+                cur.execute(
+                    """SELECT id, nickname, telegram, preferred_roles, status, created_at
+                       FROM individual_players 
+                       ORDER BY created_at DESC"""
+                )
+                players = cur.fetchall()
+                
+                players_list = [{
+                    'id': p[0],
+                    'nickname': p[1],
+                    'telegram': p[2],
+                    'preferredRoles': p[3] if p[3] else [],
+                    'status': p[4],
+                    'createdAt': p[5].isoformat() if p[5] else None
+                } for p in players]
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'players': players_list}),
+                    'isBase64Encoded': False
+                }
+            
             team_id = params.get('teamId')
             if team_id:
                 cur.execute(
