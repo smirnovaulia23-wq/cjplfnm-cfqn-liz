@@ -68,13 +68,24 @@ const Index = () => {
                   </div>
                   <h1 className="text-3xl font-bold text-primary neon-glow">CYBER ARENA</h1>
                 </div>
-                <Button 
-                  variant="default"
-                  className="bg-secondary text-white hover:bg-secondary/90"
-                >
-                  <Icon name="UserPlus" className="w-4 h-4 mr-2" />
-                  Регистрация
-                </Button>
+                <nav className="flex space-x-2">
+                  <Button 
+                    variant={selectedTab === 'register' ? 'default' : 'ghost'}
+                    onClick={() => setSelectedTab('register')}
+                    className={selectedTab === 'register' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+                  >
+                    <Icon name="UserPlus" className="w-4 h-4 mr-2" />
+                    Регистрация
+                  </Button>
+                  <Button 
+                    variant={selectedTab === 'teams' ? 'default' : 'ghost'}
+                    onClick={() => setSelectedTab('teams')}
+                    className={selectedTab === 'teams' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+                  >
+                    <Icon name="Users" className="w-4 h-4 mr-2" />
+                    Команды
+                  </Button>
+                </nav>
               </div>
             </div>
           </header>
@@ -125,38 +136,39 @@ const Index = () => {
               </TabsContent>
 
               <TabsContent value="teams" className="mt-8">
-                <Card className="bg-card/50 border-border">
-                  <CardHeader>
-                    <CardTitle className="text-2xl text-primary">Рейтинг команд</CardTitle>
-                    <CardDescription>Топ команды текущего сезона</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {teams.map((team) => (
-                        <div
-                          key={team.id}
-                          className="flex items-center justify-between p-4 rounded-lg bg-background/50 border border-border hover:border-primary/50 transition-all"
-                        >
-                          <div className="flex items-center space-x-4">
-                            <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
-                              <span className="text-xl font-bold text-primary">#{team.rank}</span>
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-lg text-foreground">{team.name}</h3>
-                              <p className="text-sm text-muted-foreground">
-                                {team.wins}W - {team.losses}L
-                              </p>
-                            </div>
-                          </div>
-                          <Button variant="outline" size="sm" className="border-primary/50 text-primary hover:bg-primary/10">
-                            <Icon name="Eye" className="w-4 h-4 mr-2" />
-                            Профиль
-                          </Button>
-                        </div>
-                      ))}
+                <div className="max-w-5xl mx-auto">
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-3xl font-bold text-foreground">Зарегистрированные команды</h2>
+                    <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
+                      <Icon name="RefreshCw" className="w-4 h-4 mr-2" />
+                      Обновить
+                    </Button>
+                  </div>
+
+                  <div className="mb-6">
+                    <div className="relative">
+                      <Icon name="Search" className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                      <Input
+                        placeholder="Поиск по названию команды или капитану..."
+                        className="pl-10 bg-card/50 border-border focus:border-primary h-12"
+                      />
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+
+                  <Card className="bg-card/50 border-border">
+                    <CardContent className="p-6">
+                      <div className="text-center py-16">
+                        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted/20 flex items-center justify-center">
+                          <Icon name="Inbox" className="w-10 h-10 text-muted-foreground" />
+                        </div>
+                        <h3 className="text-xl font-semibold text-foreground mb-2">Пока нет одобренных команд</h3>
+                        <p className="text-muted-foreground">
+                          Команды появятся здесь после одобрения администрацией
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
 
               <TabsContent value="streams" className="mt-8">
