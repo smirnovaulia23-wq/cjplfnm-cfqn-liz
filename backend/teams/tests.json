@@ -1,0 +1,31 @@
+{
+  "tests": [
+    {
+      "name": "Get approved teams",
+      "method": "GET",
+      "path": "/?status=approved",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Create new team",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "teamName": "Test Team",
+        "captainNick": "CaptainTest",
+        "captainTelegram": "@captaintest",
+        "topNick": "TopPlayer",
+        "topTelegram": "@topplayer",
+        "jungleNick": "JunglePlayer",
+        "jungleTelegram": "@jungleplayer",
+        "midNick": "MidPlayer",
+        "midTelegram": "@midplayer",
+        "adcNick": "AdcPlayer",
+        "adcTelegram": "@adcplayer",
+        "supportNick": "SupportPlayer",
+        "supportTelegram": "@supportplayer"
+      },
+      "expectedStatus": 200
+    }
+  ]
+}

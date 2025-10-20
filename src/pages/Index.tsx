@@ -1,14 +1,33 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
+import LoginDialog from '@/components/LoginDialog';
+import AdminPanel from '@/components/AdminPanel';
+
+const BACKEND_URLS = {
+  auth: 'https://functions.poehali.dev/87a1a191-aacc-478d-8869-478b7969f36c',
+  teams: 'https://functions.poehali.dev/35199dac-d68a-4536-959b-4aad2fb7e7ad',
+  settings: 'https://functions.poehali.dev/9f1de6c4-8e50-4131-b3c0-0253597bdbdf'
+};
 
 const Index = () => {
   const [selectedTab, setSelectedTab] = useState('register');
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showAdminPanel, setShowAdminPanel] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userRole, setUserRole] = useState('');
+  const [username, setUsername] = useState('');
+  const [loginForm, setLoginForm] = useState({ username: '', password: '' });
+  const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
+  const [pendingTeams, setPendingTeams] = useState<any[]>([]);
+  const [registrationOpen, setRegistrationOpen] = useState(true);
+  const { toast } = useToast();
 
   const tournaments = [
     {
@@ -53,6 +72,131 @@ const Index = () => {
     },
   ];
 
+  useEffect(() => {
+    loadApprovedTeams();
+    loadSettings();
+    if (isLoggedIn) {
+      loadPendingTeams();
+    }
+  }, [isLoggedIn]);
+
+  const loadApprovedTeams = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URLS.teams}?status=approved`);
+      const data = await response.json();
+      setApprovedTeams(data.teams || []);
+    } catch (error) {
+      console.error('Error loading teams:', error);
+    }
+  };
+
+  const loadPendingTeams = async () => {
+    try {
+      const response = await fetch(`${BACKEND_URLS.teams}?status=pending`);
+      const data = await response.json();
+      setPendingTeams(data.teams || []);
+    } catch (error) {
+      console.error('Error loading pending teams:', error);
+    }
+  };
+
+  const loadSettings = async () => {
+    try {
+      const response = await fetch(BACKEND_URLS.settings);
+      const data = await response.json();
+      setRegistrationOpen(data.settings?.registration_open === 'true');
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    }
+  };
+
+  const handleLogin = async (user: string, pass: string) => {
+    try {
+      const response = await fetch(BACKEND_URLS.auth, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: user, password: pass })
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        setIsLoggedIn(true);
+        setUsername(data.username);
+        setUserRole(data.role);
+        setShowLoginDialog(false);
+        setShowAdminPanel(true);
+        toast({ title: 'Вход выполнен', description: `Добро пожаловать, ${data.username}!` });
+        loadPendingTeams();
+      } else {
+        toast({ title: 'Ошибка входа', description: data.error, variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось выполнить вход', variant: 'destructive' });
+    }
+  };
+
+  const handleToggleRegistration = async (open: boolean) => {
+    try {
+      await fetch(BACKEND_URLS.settings, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'registration_open', value: open ? 'true' : 'false' })
+      });
+      setRegistrationOpen(open);
+      toast({ title: 'Настройки обновлены', description: `Регистрация ${open ? 'открыта' : 'закрыта'}` });
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось обновить настройки', variant: 'destructive' });
+    }
+  };
+
+  const handleApproveTeam = async (teamId: number) => {
+    try {
+      await fetch(BACKEND_URLS.teams, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId, status: 'approved' })
+      });
+      toast({ title: 'Команда одобрена', description: 'Команда добавлена в список участников' });
+      loadPendingTeams();
+      loadApprovedTeams();
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось одобрить команду', variant: 'destructive' });
+    }
+  };
+
+  const handleRejectTeam = async (teamId: number) => {
+    try {
+      await fetch(BACKEND_URLS.teams, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ teamId, status: 'rejected' })
+      });
+      toast({ title: 'Заявка отклонена', description: 'Команда не будет допущена к турниру' });
+      loadPendingTeams();
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось отклонить заявку', variant: 'destructive' });
+    }
+  };
+
+  const handleTeamRegistration = async (formData: any) => {
+    try {
+      const response = await fetch(BACKEND_URLS.teams, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        toast({ title: 'Заявка отправлена!', description: 'Ожидайте одобрения администрации' });
+      } else {
+        toast({ title: 'Ошибка', description: data.error || 'Не удалось отправить заявку', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось отправить заявку', variant: 'destructive' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <div className="bg-grid">
@@ -68,24 +212,43 @@ const Index = () => {
                   </div>
                   <h1 className="text-3xl font-bold text-primary neon-glow">CYBER ARENA</h1>
                 </div>
-                <nav className="flex space-x-2">
-                  <Button 
-                    variant={selectedTab === 'register' ? 'default' : 'ghost'}
-                    onClick={() => setSelectedTab('register')}
-                    className={selectedTab === 'register' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
-                  >
-                    <Icon name="UserPlus" className="w-4 h-4 mr-2" />
-                    Регистрация
-                  </Button>
-                  <Button 
-                    variant={selectedTab === 'teams' ? 'default' : 'ghost'}
-                    onClick={() => setSelectedTab('teams')}
-                    className={selectedTab === 'teams' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
-                  >
-                    <Icon name="Users" className="w-4 h-4 mr-2" />
-                    Команды
-                  </Button>
-                </nav>
+                <div className="flex items-center gap-4">
+                  <nav className="flex space-x-2">
+                    <Button 
+                      variant={selectedTab === 'register' ? 'default' : 'ghost'}
+                      onClick={() => setSelectedTab('register')}
+                      className={selectedTab === 'register' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+                    >
+                      <Icon name="UserPlus" className="w-4 h-4 mr-2" />
+                      Регистрация
+                    </Button>
+                    <Button 
+                      variant={selectedTab === 'teams' ? 'default' : 'ghost'}
+                      onClick={() => setSelectedTab('teams')}
+                      className={selectedTab === 'teams' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+                    >
+                      <Icon name="Users" className="w-4 h-4 mr-2" />
+                      Команды
+                    </Button>
+                  </nav>
+                  {isLoggedIn ? (
+                    <Button
+                      onClick={() => setShowAdminPanel(true)}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow"
+                    >
+                      <Icon name="Settings" className="w-4 h-4 mr-2" />
+                      Админ-панель
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => setShowLoginDialog(true)}
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow"
+                    >
+                      <Icon name="LogIn" className="w-4 h-4 mr-2" />
+                      Вход
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </header>
@@ -139,7 +302,11 @@ const Index = () => {
                 <div className="max-w-5xl mx-auto">
                   <div className="flex items-center justify-between mb-6">
                     <h2 className="text-3xl font-bold text-foreground">Зарегистрированные команды</h2>
-                    <Button variant="outline" className="border-primary/50 text-primary hover:bg-primary/10">
+                    <Button 
+                      variant="outline" 
+                      className="border-primary/50 text-primary hover:bg-primary/10"
+                      onClick={loadApprovedTeams}
+                    >
                       <Icon name="RefreshCw" className="w-4 h-4 mr-2" />
                       Обновить
                     </Button>
@@ -155,19 +322,46 @@ const Index = () => {
                     </div>
                   </div>
 
-                  <Card className="bg-card/50 border-border">
-                    <CardContent className="p-6">
-                      <div className="text-center py-16">
-                        <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted/20 flex items-center justify-center">
-                          <Icon name="Inbox" className="w-10 h-10 text-muted-foreground" />
+                  {approvedTeams.length === 0 ? (
+                    <Card className="bg-card/50 border-border">
+                      <CardContent className="p-6">
+                        <div className="text-center py-16">
+                          <div className="w-20 h-20 mx-auto mb-4 rounded-full bg-muted/20 flex items-center justify-center">
+                            <Icon name="Inbox" className="w-10 h-10 text-muted-foreground" />
+                          </div>
+                          <h3 className="text-xl font-semibold text-foreground mb-2">Пока нет одобренных команд</h3>
+                          <p className="text-muted-foreground">
+                            Команды появятся здесь после одобрения администрацией
+                          </p>
                         </div>
-                        <h3 className="text-xl font-semibold text-foreground mb-2">Пока нет одобренных команд</h3>
-                        <p className="text-muted-foreground">
-                          Команды появятся здесь после одобрения администрацией
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div className="space-y-4">
+                      {approvedTeams.map((team, index) => (
+                        <Card key={team.id} className="bg-card/50 border-border hover:border-primary/50 transition-all">
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
+                                  <span className="text-xl font-bold text-primary">#{index + 1}</span>
+                                </div>
+                                <div>
+                                  <h3 className="text-xl font-semibold text-foreground">{team.teamName}</h3>
+                                  <p className="text-sm text-muted-foreground">
+                                    Капитан: {team.captainNick} • {team.captainTelegram}
+                                  </p>
+                                </div>
+                              </div>
+                              <Badge className="bg-primary/20 text-primary border border-primary/50">
+                                Одобрено
+                              </Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
@@ -350,6 +544,23 @@ const Index = () => {
           </div>
         </footer>
       </div>
+
+      <LoginDialog
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        onLogin={handleLogin}
+      />
+
+      <AdminPanel
+        open={showAdminPanel}
+        onOpenChange={setShowAdminPanel}
+        pendingTeams={pendingTeams}
+        registrationOpen={registrationOpen}
+        onToggleRegistration={handleToggleRegistration}
+        onApproveTeam={handleApproveTeam}
+        onRejectTeam={handleRejectTeam}
+        userRole={userRole}
+      />
     </div>
   );
 };

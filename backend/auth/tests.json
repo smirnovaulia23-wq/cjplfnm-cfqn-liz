@@ -1,0 +1,35 @@
+{
+  "tests": [
+    {
+      "name": "Login with correct credentials",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "username": "Xuna",
+        "password": "Smirnova2468"
+      },
+      "expectedStatus": 200,
+      "expectedBody": {
+        "success": true,
+        "username": "string",
+        "role": "string",
+        "token": "string"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login with wrong credentials",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "username": "wrong",
+        "password": "wrong"
+      },
+      "expectedStatus": 401,
+      "expectedBody": {
+        "success": false
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}
