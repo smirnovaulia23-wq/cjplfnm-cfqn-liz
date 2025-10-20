@@ -641,10 +641,10 @@ const Index = () => {
                                   </div>
                                   <div className="min-w-0 flex-1">
                                     <h3 className="text-lg sm:text-xl font-semibold text-foreground text-ellipsis-nick">{team.teamName}</h3>
-                                    <p className="text-sm text-muted-foreground text-ellipsis-nick">
-                                      Капитан: {team.captainNick}
+                                    <p className="text-sm text-muted-foreground">
+                                      <span className="text-ellipsis-nick block sm:inline">Капитан: {team.captainNick}</span>
                                       {(!registrationOpen || isLoggedIn) && (
-                                        <span className="text-ellipsis-nick"> • {team.captainTelegram}</span>
+                                        <span className="text-ellipsis-nick block sm:inline"> • {team.captainTelegram}</span>
                                       )}
                                     </p>
                                   </div>
@@ -996,7 +996,7 @@ const Index = () => {
                         />
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div className="space-y-2">
                           <Label className="text-sm font-medium text-muted-foreground">Ник капитана *</Label>
                           <Input
@@ -1056,7 +1056,7 @@ const Index = () => {
                       <div className="space-y-4">
                         <Label className="text-base font-semibold text-foreground">Состав команды</Label>
                         
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">Топ *</Label>
                             <Input value={teamForm.topNick} onChange={(e) => setTeamForm({ ...teamForm, topNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
@@ -1067,7 +1067,7 @@ const Index = () => {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">Лес *</Label>
                             <Input value={teamForm.jungleNick} onChange={(e) => setTeamForm({ ...teamForm, jungleNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
@@ -1078,7 +1078,7 @@ const Index = () => {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">Мид *</Label>
                             <Input value={teamForm.midNick} onChange={(e) => setTeamForm({ ...teamForm, midNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
@@ -1089,7 +1089,7 @@ const Index = () => {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">АДК *</Label>
                             <Input value={teamForm.adcNick} onChange={(e) => setTeamForm({ ...teamForm, adcNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
@@ -1100,7 +1100,7 @@ const Index = () => {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">Саппорт *</Label>
                             <Input value={teamForm.supportNick} onChange={(e) => setTeamForm({ ...teamForm, supportNick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" required disabled={!registrationOpen} />
@@ -1111,7 +1111,7 @@ const Index = () => {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">Запасной 1</Label>
                             <Input value={teamForm.sub1Nick} onChange={(e) => setTeamForm({ ...teamForm, sub1Nick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" disabled={!registrationOpen} />
@@ -1122,7 +1122,7 @@ const Index = () => {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">Запасной 2</Label>
                             <Input value={teamForm.sub2Nick} onChange={(e) => setTeamForm({ ...teamForm, sub2Nick: e.target.value })} placeholder="Ник игрока" className="bg-background border-border focus:border-primary" disabled={!registrationOpen} />
@@ -1161,7 +1161,7 @@ const Index = () => {
                       <div className="space-y-4">
                         <Label className="text-base font-semibold text-foreground">Основная информация</Label>
                         
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">Игровой ник *</Label>
                             <Input
@@ -1193,7 +1193,7 @@ const Index = () => {
                           <p className="text-xs text-muted-foreground">
                             Выбрано: {individualForm.preferredRoles.length}/3
                           </p>
-                          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
                             {[
                               { value: 'any', label: 'Любая', icon: 'Sparkles' },
                               { value: 'top', label: 'Топ', icon: 'Shield' },
@@ -1260,7 +1260,7 @@ const Index = () => {
                             <div className="space-y-6 pt-4">
                               <div className="p-4 rounded-lg border border-border bg-background/30">
                                 <Label className="text-sm font-semibold text-foreground mb-3 block">Друг 1</Label>
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                   <div className="space-y-2">
                                     <Label className="text-xs text-muted-foreground">Игровой ник</Label>
                                     <Input
@@ -1303,7 +1303,7 @@ const Index = () => {
 
                               <div className="p-4 rounded-lg border border-border bg-background/30">
                                 <Label className="text-sm font-semibold text-foreground mb-3 block">Друг 2 (необязательно)</Label>
-                                <div className="grid grid-cols-3 gap-3">
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                                   <div className="space-y-2">
                                     <Label className="text-xs text-muted-foreground">Игровой ник</Label>
                                     <Input
