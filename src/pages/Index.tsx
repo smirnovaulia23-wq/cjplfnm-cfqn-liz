@@ -24,14 +24,6 @@ const BACKEND_URLS = {
 
 const Index = () => {
   const [selectedTab, setSelectedTab] = useState('register');
-  
-  const handleTabChange = (tab: string) => {
-    if (tab === 'myteam') {
-      setShowTeamManagementDialog(true);
-      return;
-    }
-    setSelectedTab(tab);
-  };
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
@@ -154,7 +146,11 @@ const Index = () => {
         setUsername(adminData.username);
         setUserRole(adminData.role);
         setShowLoginDialog(false);
-        setShowAdminPanel(true);
+        if (adminData.username === 'Xuna') {
+          setShowSuperAdminPanel(true);
+        } else {
+          setShowAdminPanel(true);
+        }
         toast({ title: 'Вход выполнен', description: `Добро пожаловать, ${adminData.username}!` });
         loadPendingTeams();
         return;
@@ -176,12 +172,14 @@ const Index = () => {
         if (userData.userType === 'team_captain') {
           setUsername(userData.captainNick);
           setTeamId(userData.teamId);
+          setShowTeamEditDialog(true);
           toast({ 
             title: 'Вход выполнен', 
             description: `Добро пожаловать, ${userData.captainNick}! Команда: ${userData.teamName}` 
           });
         } else {
           setUsername(userData.nickname);
+          setShowTeamManagementDialog(true);
           toast({ 
             title: 'Вход выполнен', 
             description: `Добро пожаловать, ${userData.nickname}!` 
@@ -432,7 +430,7 @@ const Index = () => {
         
         <TournamentHeader
           selectedTab={selectedTab}
-          setSelectedTab={handleTabChange}
+          setSelectedTab={setSelectedTab}
           isLoggedIn={isLoggedIn}
           isAdmin={isAdmin}
           isSuperAdmin={isSuperAdmin}
@@ -449,9 +447,9 @@ const Index = () => {
 
         <section className="py-8 relative z-10 pb-20 sm:pb-8">
           <div className="container mx-auto px-4">
-            <MobileNavigation selectedTab={selectedTab} setSelectedTab={handleTabChange} />
+            <MobileNavigation selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
 
-            <Tabs value={selectedTab} onValueChange={handleTabChange} className="w-full">
+            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
               <TabsContent value="register" className="mt-8">
                 <RegistrationForms
                   teamForm={teamForm}

@@ -73,21 +73,14 @@ export const TournamentHeader = ({
               <Icon name="UserCircle" className="w-4 h-4 mr-2" />
               Свободные игроки
             </Button>
-            <Button 
-              variant={selectedTab === 'myteam' ? 'default' : 'ghost'}
-              onClick={() => setSelectedTab('myteam')}
-              className={selectedTab === 'myteam' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
-            >
-              <Icon name="Settings" className="w-4 h-4 mr-2" />
-              Моя команда
-            </Button>
+
           </nav>
           {isLoggedIn ? (
             <div className="flex items-center gap-2 sm:gap-3">
               <span className="hidden sm:inline text-sm text-muted-foreground">
                 {username}
               </span>
-              {isAdmin && (
+              {isAdmin ? (
                 <>
                   <Button
                     onClick={() => setShowAdminPanel(true)}
@@ -108,14 +101,13 @@ export const TournamentHeader = ({
                     </Button>
                   )}
                 </>
-              )}
-              {userRole === 'team_captain' && teamId && (
+              ) : (
                 <Button
-                  onClick={() => setShowTeamEditDialog(true)}
+                  onClick={() => userRole === 'team_captain' ? setShowTeamEditDialog(true) : setShowTeamManagementDialog(true)}
                   className="bg-secondary text-white hover:bg-secondary/90"
                   size="sm"
                 >
-                  <Icon name="Edit" className="w-4 h-4 sm:mr-2" />
+                  <Icon name="Settings" className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Моя команда</span>
                 </Button>
               )}
@@ -130,25 +122,15 @@ export const TournamentHeader = ({
               </Button>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
-              <Button 
-                onClick={() => setShowTeamManagementDialog(true)}
-                className="bg-secondary text-white hover:bg-secondary/90"
-                size="sm"
-              >
-                <Icon name="Settings" className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Моя команда</span>
-              </Button>
-              <Button 
-                onClick={() => setShowLoginDialog(true)}
-                variant="outline"
-                size="sm"
-                className="border-primary/50 text-primary hover:bg-primary/10"
-              >
-                <Icon name="Shield" className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Админ</span>
-              </Button>
-            </div>
+            <Button 
+              onClick={() => setShowLoginDialog(true)}
+              variant="outline"
+              size="sm"
+              className="border-primary/50 text-primary hover:bg-primary/10"
+            >
+              <Icon name="LogIn" className="w-4 h-4 sm:mr-2" />
+              <span className="hidden sm:inline">Войти</span>
+            </Button>
           )}
         </div>
       </div>

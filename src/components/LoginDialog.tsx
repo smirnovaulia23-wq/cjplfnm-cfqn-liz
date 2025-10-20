@@ -25,16 +25,16 @@ export const LoginDialog = ({ open, onOpenChange, onLogin }: LoginDialogProps) =
       <DialogContent className="bg-card border-border">
         <DialogHeader>
           <DialogTitle className="text-2xl text-primary">Вход</DialogTitle>
-          <DialogDescription>Используйте Telegram для входа</DialogDescription>
+          <DialogDescription>Введите Telegram-ник для игроков/капитанов или логин для админов</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div className="space-y-2">
-            <Label htmlFor="telegram">Telegram</Label>
+            <Label htmlFor="telegram">Telegram / Логин</Label>
             <Input
               id="telegram"
               value={telegram}
               onChange={(e) => setTelegram(e.target.value)}
-              placeholder="@username"
+              placeholder="@username или логин админа"
               className="bg-background border-border focus:border-primary"
               required
             />
