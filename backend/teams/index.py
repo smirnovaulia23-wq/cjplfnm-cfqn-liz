@@ -269,8 +269,27 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         elif method == 'PUT':
             body_data = json.loads(event.get('body', '{}'))
+            player_id = body_data.get('playerId')
             team_id = body_data.get('teamId')
             action = body_data.get('action')
+            
+            if player_id:
+                new_status = body_data.get('status')
+                cur.execute(
+                    "UPDATE individual_players SET status = %s WHERE id = %s",
+                    (new_status, player_id)
+                )
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
             
             if action == 'update':
                 cur.execute(

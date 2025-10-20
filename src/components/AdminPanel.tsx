@@ -16,14 +16,26 @@ interface Team {
   isEdited?: boolean;
 }
 
+interface Player {
+  id: number;
+  nickname: string;
+  telegram: string;
+  preferredRoles: string[];
+  status: string;
+  createdAt: string;
+}
+
 interface AdminPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   pendingTeams: Team[];
+  pendingPlayers: Player[];
   registrationOpen: boolean;
   onToggleRegistration: (open: boolean) => void;
   onApproveTeam: (teamId: number) => void;
   onRejectTeam: (teamId: number) => void;
+  onApprovePlayer: (playerId: number) => void;
+  onRejectPlayer: (playerId: number) => void;
   userRole: string;
 }
 
@@ -31,10 +43,13 @@ export const AdminPanel = ({
   open,
   onOpenChange,
   pendingTeams,
+  pendingPlayers,
   registrationOpen,
   onToggleRegistration,
   onApproveTeam,
   onRejectTeam,
+  onApprovePlayer,
+  onRejectPlayer,
   userRole
 }: AdminPanelProps) => {
   return (
@@ -178,6 +193,68 @@ export const AdminPanel = ({
                           variant="outline"
                           className="border-accent/50 text-accent hover:bg-accent/10"
                           onClick={() => onRejectTeam(team.id)}
+                        >
+                          <Icon name="X" className="w-4 h-4 mr-1" />
+                          Отклонить
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-background/50 border-border">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Заявки свободных игроков</CardTitle>
+                <Badge variant="outline" className="border-secondary text-secondary">
+                  {pendingPlayers.length} заявок
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {pendingPlayers.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Icon name="Inbox" className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Нет новых заявок от игроков</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pendingPlayers.map((player) => (
+                    <div
+                      key={player.id}
+                      className="p-4 rounded-lg bg-card border border-border space-y-3"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-foreground">{player.nickname}</h4>
+                          <p className="text-sm text-muted-foreground">{player.telegram}</p>
+                          <div className="flex flex-wrap gap-2 mt-2">
+                            {player.preferredRoles && player.preferredRoles.map((role) => (
+                              <Badge key={role} variant="outline" className="border-primary/50 text-primary text-xs">
+                                {role}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2 pt-2">
+                        <Button
+                          size="sm"
+                          className="bg-primary/20 text-primary border border-primary/50 hover:bg-primary hover:text-primary-foreground"
+                          onClick={() => onApprovePlayer(player.id)}
+                        >
+                          <Icon name="Check" className="w-4 h-4 mr-1" />
+                          Одобрить
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-accent/50 text-accent hover:bg-accent/10"
+                          onClick={() => onRejectPlayer(player.id)}
                         >
                           <Icon name="X" className="w-4 h-4 mr-1" />
                           Отклонить

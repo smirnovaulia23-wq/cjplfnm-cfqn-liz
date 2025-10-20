@@ -77,6 +77,13 @@
       0 0 20px currentColor;
   }
 
+  .text-ellipsis-nick {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+    max-width: 100%;
+  }
+
   .bg-grid {
     background-image:
       linear-gradient(to right, rgba(0, 217, 255, 0.1) 1px, transparent 1px),

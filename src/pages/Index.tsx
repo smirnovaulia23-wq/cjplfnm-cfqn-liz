@@ -32,6 +32,7 @@ const Index = () => {
   const [loginForm, setLoginForm] = useState({ username: '', password: '' });
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
+  const [pendingPlayers, setPendingPlayers] = useState<any[]>([]);
   const [individualPlayers, setIndividualPlayers] = useState<any[]>([]);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string | null>(null);
   const [registrationOpen, setRegistrationOpen] = useState(true);
@@ -148,7 +149,10 @@ const Index = () => {
     try {
       const response = await fetch(`${BACKEND_URLS.teams}?type=individual`);
       const data = await response.json();
-      setIndividualPlayers(data.players || []);
+      const approved = (data.players || []).filter((p: any) => p.status === 'approved');
+      const pending = (data.players || []).filter((p: any) => p.status === 'pending');
+      setIndividualPlayers(approved);
+      setPendingPlayers(pending);
     } catch (error) {
       console.error('Error loading individual players:', error);
     }
@@ -260,6 +264,34 @@ const Index = () => {
       });
       toast({ title: 'Заявка отклонена', description: 'Команда не будет допущена к турниру' });
       loadPendingTeams();
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось отклонить заявку', variant: 'destructive' });
+    }
+  };
+
+  const handleApprovePlayer = async (playerId: number) => {
+    try {
+      await fetch(BACKEND_URLS.teams, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId, status: 'approved' })
+      });
+      toast({ title: 'Игрок одобрен', description: 'Игрок добавлен в список свободных игроков' });
+      loadIndividualPlayers();
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось одобрить игрока', variant: 'destructive' });
+    }
+  };
+
+  const handleRejectPlayer = async (playerId: number) => {
+    try {
+      await fetch(BACKEND_URLS.teams, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ playerId, status: 'rejected' })
+      });
+      toast({ title: 'Заявка отклонена', description: 'Игрок не будет допущен к турниру' });
+      loadIndividualPlayers();
     } catch (error) {
       toast({ title: 'Ошибка', description: 'Не удалось отклонить заявку', variant: 'destructive' });
     }
@@ -395,14 +427,12 @@ const Index = () => {
         <header className="relative z-10 border-b border-secondary/30 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <div className="w-10 h-10 bg-secondary/20 rounded-lg flex items-center justify-center neon-border border border-secondary">
-                  <Icon name="Circle" className="w-6 h-6 text-secondary" />
-                </div>
-                <h1 className="text-3xl font-bold text-secondary neon-glow">GO TOURNAMENT</h1>
+              <div className="flex items-center space-x-3">
+                <img src="https://cdn.poehali.dev/files/55728b72-57fc-4ca5-b707-26a7a98fc664.png" alt="Logo" className="w-10 h-10 sm:w-12 sm:h-12" />
+                <h1 className="text-2xl sm:text-3xl font-bold text-secondary">GO TOURNAMENT</h1>
               </div>
-                <div className="flex items-center gap-4">
-                  <nav className="flex space-x-2">
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <nav className="hidden sm:flex space-x-2">
                     <Button 
                       variant={selectedTab === 'register' ? 'default' : 'ghost'}
                       onClick={() => setSelectedTab('register')}
@@ -429,30 +459,33 @@ const Index = () => {
                     </Button>
                   </nav>
                   {isLoggedIn ? (
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <span className="hidden sm:inline text-sm text-muted-foreground">
                         {username}
                       </span>
                       {isAdmin && (
                         <Button
                           onClick={() => setShowAdminPanel(true)}
-                          className="bg-primary text-primary-foreground hover:bg-primary/90 neon-glow"
+                          className="bg-primary text-primary-foreground hover:bg-primary/90"
+                          size="sm"
                         >
-                          <Icon name="Settings" className="w-4 h-4 mr-2" />
-                          Админ-панель
+                          <Icon name="Settings" className="w-4 h-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Админ-панель</span>
                         </Button>
                       )}
                       {userRole === 'team_captain' && teamId && (
                         <Button
                           onClick={() => setShowTeamEditDialog(true)}
                           className="bg-secondary text-white hover:bg-secondary/90"
+                          size="sm"
                         >
-                          <Icon name="Edit" className="w-4 h-4 mr-2" />
-                          Моя команда
+                          <Icon name="Edit" className="w-4 h-4 sm:mr-2" />
+                          <span className="hidden sm:inline">Моя команда</span>
                         </Button>
                       )}
                       <Button
                         variant="outline"
+                        size="sm"
                         onClick={() => {
                           setIsLoggedIn(false);
                           setIsAdmin(false);
@@ -482,8 +515,39 @@ const Index = () => {
             </div>
           </header>
 
-        <section className="py-8 relative z-10">
+        <section className="py-8 relative z-10 pb-20 sm:pb-8">
           <div className="container mx-auto px-4">
+            <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border/50 px-2 py-2">
+              <div className="grid grid-cols-3 gap-2">
+                <Button
+                  variant={selectedTab === 'register' ? 'default' : 'ghost'}
+                  onClick={() => setSelectedTab('register')}
+                  className={selectedTab === 'register' ? 'bg-secondary text-white' : 'text-foreground'}
+                  size="sm"
+                >
+                  <Icon name="UserPlus" className="w-4 h-4 mr-1" />
+                  <span className="text-xs">Регистрация</span>
+                </Button>
+                <Button
+                  variant={selectedTab === 'teams' ? 'default' : 'ghost'}
+                  onClick={() => setSelectedTab('teams')}
+                  className={selectedTab === 'teams' ? 'bg-secondary text-white' : 'text-foreground'}
+                  size="sm"
+                >
+                  <Icon name="Users" className="w-4 h-4 mr-1" />
+                  <span className="text-xs">Команды</span>
+                </Button>
+                <Button
+                  variant={selectedTab === 'players' ? 'default' : 'ghost'}
+                  onClick={() => setSelectedTab('players')}
+                  className={selectedTab === 'players' ? 'bg-secondary text-white' : 'text-foreground'}
+                  size="sm"
+                >
+                  <Icon name="UserCircle" className="w-4 h-4 mr-1" />
+                  <span className="text-xs">Игроки</span>
+                </Button>
+              </div>
+            </div>
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
 
               <TabsContent value="tournaments" className="mt-8">
@@ -570,17 +634,17 @@ const Index = () => {
                         <Card key={team.id} className="bg-card/50 border-border hover:border-primary/50 transition-all">
                           <CardContent className="p-6">
                             <div className="space-y-4">
-                              <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-4">
-                                  <div className="w-12 h-12 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50">
-                                    <span className="text-xl font-bold text-primary">#{index + 1}</span>
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+                                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50 flex-shrink-0">
+                                    <span className="text-lg sm:text-xl font-bold text-primary">#{index + 1}</span>
                                   </div>
-                                  <div>
-                                    <h3 className="text-xl font-semibold text-foreground">{team.teamName}</h3>
-                                    <p className="text-sm text-muted-foreground">
+                                  <div className="min-w-0 flex-1">
+                                    <h3 className="text-lg sm:text-xl font-semibold text-foreground text-ellipsis-nick">{team.teamName}</h3>
+                                    <p className="text-sm text-muted-foreground text-ellipsis-nick">
                                       Капитан: {team.captainNick}
                                       {(!registrationOpen || isLoggedIn) && (
-                                        <span> • {team.captainTelegram}</span>
+                                        <span className="text-ellipsis-nick"> • {team.captainTelegram}</span>
                                       )}
                                     </p>
                                   </div>
@@ -606,40 +670,40 @@ const Index = () => {
                               {(expandedTeam === team.id || isLoggedIn) && (
                                 <div className="pt-4 border-t border-border/50 space-y-3">
                                   <h4 className="font-semibold text-foreground mb-3">Состав команды:</h4>
-                                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                                       <p className="text-xs text-muted-foreground mb-1">Топ</p>
-                                      <p className="font-medium text-foreground">{team.topNick}</p>
+                                      <p className="font-medium text-foreground text-ellipsis-nick">{team.topNick}</p>
                                       {(!registrationOpen || isLoggedIn) && (
-                                        <p className="text-xs text-muted-foreground mt-1">{team.topTelegram}</p>
+                                        <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.topTelegram}</p>
                                       )}
                                     </div>
-                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                                       <p className="text-xs text-muted-foreground mb-1">Лес</p>
-                                      <p className="font-medium text-foreground">{team.jungleNick}</p>
+                                      <p className="font-medium text-foreground text-ellipsis-nick">{team.jungleNick}</p>
                                       {(!registrationOpen || isLoggedIn) && (
-                                        <p className="text-xs text-muted-foreground mt-1">{team.jungleTelegram}</p>
+                                        <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.jungleTelegram}</p>
                                       )}
                                     </div>
-                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                                       <p className="text-xs text-muted-foreground mb-1">Мид</p>
-                                      <p className="font-medium text-foreground">{team.midNick}</p>
+                                      <p className="font-medium text-foreground text-ellipsis-nick">{team.midNick}</p>
                                       {(!registrationOpen || isLoggedIn) && (
-                                        <p className="text-xs text-muted-foreground mt-1">{team.midTelegram}</p>
+                                        <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.midTelegram}</p>
                                       )}
                                     </div>
-                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                                       <p className="text-xs text-muted-foreground mb-1">АДК</p>
-                                      <p className="font-medium text-foreground">{team.adcNick}</p>
+                                      <p className="font-medium text-foreground text-ellipsis-nick">{team.adcNick}</p>
                                       {(!registrationOpen || isLoggedIn) && (
-                                        <p className="text-xs text-muted-foreground mt-1">{team.adcTelegram}</p>
+                                        <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.adcTelegram}</p>
                                       )}
                                     </div>
-                                    <div className="p-3 rounded-lg bg-background/50 border border-border">
+                                    <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                                       <p className="text-xs text-muted-foreground mb-1">Саппорт</p>
-                                      <p className="font-medium text-foreground">{team.supportNick}</p>
+                                      <p className="font-medium text-foreground text-ellipsis-nick">{team.supportNick}</p>
                                       {(!registrationOpen || isLoggedIn) && (
-                                        <p className="text-xs text-muted-foreground mt-1">{team.supportTelegram}</p>
+                                        <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.supportTelegram}</p>
                                       )}
                                     </div>
                                     {team.sub1Nick && (
@@ -1303,9 +1367,7 @@ const Index = () => {
           <div className="container mx-auto px-4">
             <div className="flex flex-col md:flex-row items-center justify-between">
               <div className="flex items-center space-x-2 mb-4 md:mb-0">
-                <div className="w-8 h-8 bg-secondary/20 rounded-lg flex items-center justify-center border border-secondary/50">
-                  <Icon name="Circle" className="w-5 h-5 text-secondary" />
-                </div>
+                <img src="https://cdn.poehali.dev/files/55728b72-57fc-4ca5-b707-26a7a98fc664.png" alt="Logo" className="w-8 h-8" />
                 <span className="font-bold text-secondary">GO TOURNAMENT</span>
               </div>
               <div className="flex space-x-6 text-sm text-muted-foreground">
@@ -1328,10 +1390,13 @@ const Index = () => {
         open={showAdminPanel}
         onOpenChange={setShowAdminPanel}
         pendingTeams={pendingTeams}
+        pendingPlayers={pendingPlayers}
         registrationOpen={registrationOpen}
         onToggleRegistration={handleToggleRegistration}
         onApproveTeam={handleApproveTeam}
         onRejectTeam={handleRejectTeam}
+        onApprovePlayer={handleApprovePlayer}
+        onRejectPlayer={handleRejectPlayer}
         userRole={userRole}
       />
 
