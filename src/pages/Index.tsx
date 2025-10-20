@@ -89,43 +89,61 @@ const Index = () => {
   const loadApprovedTeams = async () => {
     try {
       const response = await fetch(`${BACKEND_URLS.teams}?status=approved`);
+      if (!response.ok) {
+        setApprovedTeams([]);
+        return;
+      }
       const data = await response.json();
       setApprovedTeams(data.teams || []);
     } catch (error) {
-      console.error('Error loading teams:', error);
+      setApprovedTeams([]);
     }
   };
 
   const loadPendingTeams = async () => {
     try {
       const response = await fetch(`${BACKEND_URLS.teams}?status=pending`);
+      if (!response.ok) {
+        setPendingTeams([]);
+        return;
+      }
       const data = await response.json();
       setPendingTeams(data.teams || []);
     } catch (error) {
-      console.error('Error loading pending teams:', error);
+      setPendingTeams([]);
     }
   };
 
   const loadIndividualPlayers = async () => {
     try {
       const response = await fetch(`${BACKEND_URLS.teams}?type=individual`);
+      if (!response.ok) {
+        setIndividualPlayers([]);
+        setPendingPlayers([]);
+        return;
+      }
       const data = await response.json();
       const approved = (data.players || []).filter((p: any) => p.status === 'approved');
       const pending = (data.players || []).filter((p: any) => p.status === 'pending');
       setIndividualPlayers(approved);
       setPendingPlayers(pending);
     } catch (error) {
-      console.error('Error loading individual players:', error);
+      setIndividualPlayers([]);
+      setPendingPlayers([]);
     }
   };
 
   const loadSettings = async () => {
     try {
       const response = await fetch(BACKEND_URLS.settings);
+      if (!response.ok) {
+        setRegistrationOpen(true);
+        return;
+      }
       const data = await response.json();
       setRegistrationOpen(data.settings?.registration_open === 'true');
     } catch (error) {
-      console.error('Error loading settings:', error);
+      setRegistrationOpen(true);
     }
   };
 
