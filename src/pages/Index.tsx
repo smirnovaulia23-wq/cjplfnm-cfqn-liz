@@ -33,6 +33,7 @@ const Index = () => {
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
   const [individualPlayers, setIndividualPlayers] = useState<any[]>([]);
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string | null>(null);
   const [registrationOpen, setRegistrationOpen] = useState(true);
   const [expandedTeam, setExpandedTeam] = useState<number | null>(null);
   const [teamForm, setTeamForm] = useState({
@@ -661,11 +662,51 @@ const Index = () => {
 
               <TabsContent value="players" className="mt-8">
                 <div className="max-w-5xl mx-auto">
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                     <h2 className="text-3xl font-bold text-foreground">Свободные игроки</h2>
                     <Badge variant="outline" className="border-primary text-primary">
-                      {individualPlayers.length} игроков
+                      {selectedRoleFilter 
+                        ? individualPlayers.filter(p => 
+                            p.preferredRoles?.includes(selectedRoleFilter) || 
+                            (selectedRoleFilter === 'any' && p.preferredRoles?.includes('any'))
+                          ).length 
+                        : individualPlayers.length} игроков
                     </Badge>
+                  </div>
+
+                  <div className="mb-6">
+                    <p className="text-sm text-muted-foreground mb-3">Фильтр по ролям:</p>
+                    <div className="flex flex-wrap gap-2">
+                      <Button
+                        variant={selectedRoleFilter === null ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setSelectedRoleFilter(null)}
+                        className="transition-all"
+                      >
+                        <Icon name="Users" className="w-4 h-4 mr-1" />
+                        Все
+                      </Button>
+                      
+                      {[
+                        { key: 'any', label: 'Любая', icon: 'Sparkles', color: selectedRoleFilter === 'any' ? 'bg-purple-500 hover:bg-purple-600 border-purple-500' : '' },
+                        { key: 'top', label: 'Топ', icon: 'Shield', color: selectedRoleFilter === 'top' ? 'bg-blue-500 hover:bg-blue-600 border-blue-500' : '' },
+                        { key: 'jungle', label: 'Лес', icon: 'Trees', color: selectedRoleFilter === 'jungle' ? 'bg-green-500 hover:bg-green-600 border-green-500' : '' },
+                        { key: 'mid', label: 'Мид', icon: 'Zap', color: selectedRoleFilter === 'mid' ? 'bg-yellow-500 hover:bg-yellow-600 border-yellow-500' : '' },
+                        { key: 'adc', label: 'АДК', icon: 'Target', color: selectedRoleFilter === 'adc' ? 'bg-red-500 hover:bg-red-600 border-red-500' : '' },
+                        { key: 'support', label: 'Саппорт', icon: 'Heart', color: selectedRoleFilter === 'support' ? 'bg-pink-500 hover:bg-pink-600 border-pink-500' : '' }
+                      ].map((role) => (
+                        <Button
+                          key={role.key}
+                          variant={selectedRoleFilter === role.key ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setSelectedRoleFilter(role.key)}
+                          className={`transition-all ${selectedRoleFilter === role.key ? role.color : ''}`}
+                        >
+                          <Icon name={role.icon as any} className="w-4 h-4 mr-1" />
+                          {role.label}
+                        </Button>
+                      ))}
+                    </div>
                   </div>
 
                   {individualPlayers.length === 0 ? (
@@ -680,7 +721,13 @@ const Index = () => {
                     </Card>
                   ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {individualPlayers.map((player) => (
+                      {individualPlayers
+                        .filter(player => {
+                          if (!selectedRoleFilter) return true;
+                          return player.preferredRoles?.includes(selectedRoleFilter) || 
+                                 (selectedRoleFilter === 'any' && player.preferredRoles?.includes('any'));
+                        })
+                        .map((player) => (
                         <Card key={player.id} className="bg-card/50 border-border hover:border-primary/50 transition-all">
                           <CardContent className="p-6">
                             <div className="flex items-start gap-4">
@@ -727,6 +774,24 @@ const Index = () => {
                           </CardContent>
                         </Card>
                       ))}
+                      
+                      {individualPlayers.filter(player => {
+                        if (!selectedRoleFilter) return true;
+                        return player.preferredRoles?.includes(selectedRoleFilter) || 
+                               (selectedRoleFilter === 'any' && player.preferredRoles?.includes('any'));
+                      }).length === 0 && selectedRoleFilter && (
+                        <div className="col-span-full">
+                          <Card className="bg-card/50 border-border">
+                            <CardContent className="py-12">
+                              <div className="text-center text-muted-foreground">
+                                <Icon name="SearchX" className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                                <p className="text-lg">Нет игроков с выбранной ролью</p>
+                                <p className="text-sm mt-2">Попробуйте выбрать другую роль</p>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
