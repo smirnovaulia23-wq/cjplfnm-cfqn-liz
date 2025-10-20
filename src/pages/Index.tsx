@@ -481,7 +481,6 @@ const Index = () => {
               </div>
             </div>
           </header>
-        </div>
 
         <section className="py-8 relative z-10">
           <div className="container mx-auto px-4">
@@ -1316,6 +1315,7 @@ const Index = () => {
             </div>
           </div>
         </footer>
+        </div>
       </div>
 
       <LoginDialog
