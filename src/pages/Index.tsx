@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { LoginDialog } from '@/components/LoginDialog';
 import AdminPanel from '@/components/AdminPanel';
@@ -10,9 +9,8 @@ import { MobileNavigation } from '@/components/MobileNavigation';
 import { TeamsList } from '@/components/TeamsList';
 import { PlayersList } from '@/components/PlayersList';
 import { RegistrationForms } from '@/components/RegistrationForms';
+import { ApprovedApplicationsManager } from '@/components/ApprovedApplicationsManager';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
-import TeamManagementDialog from '@/components/TeamManagementDialog';
-import Icon from '@/components/ui/icon';
 
 const BACKEND_URLS = {
   auth: 'https://functions.poehali.dev/87a1a191-aacc-478d-8869-478b7969f36c',
@@ -35,7 +33,6 @@ const Index = () => {
   const [sessionToken, setSessionToken] = useState('');
   const [teamId, setTeamId] = useState<number | null>(null);
   const [showTeamEditDialog, setShowTeamEditDialog] = useState(false);
-  const [showTeamManagementDialog, setShowTeamManagementDialog] = useState(false);
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
   const [pendingPlayers, setPendingPlayers] = useState<any[]>([]);
@@ -88,74 +85,44 @@ const Index = () => {
 
   const loadApprovedTeams = async () => {
     try {
-      const response = await fetch(`${BACKEND_URLS.teams}?status=approved`, {
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      if (!response.ok) {
-        setApprovedTeams([]);
-        return;
-      }
+      const response = await fetch(`${BACKEND_URLS.teams}?status=approved`);
       const data = await response.json();
       setApprovedTeams(data.teams || []);
     } catch (error) {
-      setApprovedTeams([]);
+      console.error('Error loading teams:', error);
     }
   };
 
   const loadPendingTeams = async () => {
     try {
-      const response = await fetch(`${BACKEND_URLS.teams}?status=pending`, {
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      if (!response.ok) {
-        setPendingTeams([]);
-        return;
-      }
+      const response = await fetch(`${BACKEND_URLS.teams}?status=pending`);
       const data = await response.json();
       setPendingTeams(data.teams || []);
     } catch (error) {
-      setPendingTeams([]);
+      console.error('Error loading pending teams:', error);
     }
   };
 
   const loadIndividualPlayers = async () => {
     try {
-      const response = await fetch(`${BACKEND_URLS.teams}?type=individual`, {
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      if (!response.ok) {
-        setIndividualPlayers([]);
-        setPendingPlayers([]);
-        return;
-      }
+      const response = await fetch(`${BACKEND_URLS.teams}?type=individual`);
       const data = await response.json();
       const approved = (data.players || []).filter((p: any) => p.status === 'approved');
       const pending = (data.players || []).filter((p: any) => p.status === 'pending');
       setIndividualPlayers(approved);
       setPendingPlayers(pending);
     } catch (error) {
-      setIndividualPlayers([]);
-      setPendingPlayers([]);
+      console.error('Error loading individual players:', error);
     }
   };
 
   const loadSettings = async () => {
     try {
-      const response = await fetch(BACKEND_URLS.settings, {
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      if (!response.ok) {
-        setRegistrationOpen(true);
-        return;
-      }
+      const response = await fetch(BACKEND_URLS.settings);
       const data = await response.json();
       setRegistrationOpen(data.settings?.registration_open === 'true');
     } catch (error) {
-      setRegistrationOpen(true);
+      console.error('Error loading settings:', error);
     }
   };
 
@@ -163,12 +130,9 @@ const Index = () => {
     try {
       const adminResponse = await fetch(BACKEND_URLS.auth, {
         method: 'POST',
-        mode: 'cors',
-        credentials: 'omit',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: telegram, password })
       });
-      
       const adminData = await adminResponse.json();
 
       if (adminData.success) {
@@ -179,11 +143,7 @@ const Index = () => {
         setUsername(adminData.username);
         setUserRole(adminData.role);
         setShowLoginDialog(false);
-        if (adminData.username === 'Xuna') {
-          setShowSuperAdminPanel(true);
-        } else {
-          setShowAdminPanel(true);
-        }
+        setShowAdminPanel(true);
         toast({ title: 'Вход выполнен', description: `Добро пожаловать, ${adminData.username}!` });
         loadPendingTeams();
         return;
@@ -191,12 +151,9 @@ const Index = () => {
 
       const userResponse = await fetch(BACKEND_URLS.userAuth, {
         method: 'POST',
-        mode: 'cors',
-        credentials: 'omit',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'login', telegram, password })
       });
-      
       const userData = await userResponse.json();
 
       if (userData.success) {
@@ -208,14 +165,12 @@ const Index = () => {
         if (userData.userType === 'team_captain') {
           setUsername(userData.captainNick);
           setTeamId(userData.teamId);
-          setShowTeamEditDialog(true);
           toast({ 
             title: 'Вход выполнен', 
             description: `Добро пожаловать, ${userData.captainNick}! Команда: ${userData.teamName}` 
           });
         } else {
           setUsername(userData.nickname);
-          setShowTeamManagementDialog(true);
           toast({ 
             title: 'Вход выполнен', 
             description: `Добро пожаловать, ${userData.nickname}!` 
@@ -227,7 +182,7 @@ const Index = () => {
         toast({ title: 'Ошибка входа', description: userData.error || 'Неверный логин или пароль', variant: 'destructive' });
       }
     } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось выполнить вход. Попробуйте обновить страницу', variant: 'destructive' });
+      toast({ title: 'Ошибка', description: 'Не удалось выполнить вход', variant: 'destructive' });
     }
   };
 
@@ -477,7 +432,6 @@ const Index = () => {
           setShowAdminPanel={setShowAdminPanel}
           setShowSuperAdminPanel={setShowSuperAdminPanel}
           setShowTeamEditDialog={setShowTeamEditDialog}
-          setShowTeamManagementDialog={setShowTeamManagementDialog}
           onLogout={handleLogout}
         />
 
@@ -516,26 +470,18 @@ const Index = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="myteam" className="mt-8">
-                <div className="max-w-2xl mx-auto text-center py-12">
-                  <div className="mb-6">
-                    <div className="w-16 h-16 bg-secondary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                      <Icon name="Settings" className="w-8 h-8 text-secondary" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2">Управление командой</h2>
-                    <p className="text-muted-foreground mb-6">
-                      Войдите с помощью названия команды и пароля, указанных при регистрации
-                    </p>
-                  </div>
-                  <Button 
-                    onClick={() => setShowTeamManagementDialog(true)}
-                    size="lg"
-                    className="bg-secondary hover:bg-secondary/90"
-                  >
-                    <Icon name="LogIn" className="w-5 h-5 mr-2" />
-                    Войти в управление командой
-                  </Button>
-                </div>
+              <TabsContent value="manage" className="mt-8">
+                <ApprovedApplicationsManager
+                  approvedTeams={approvedTeams}
+                  individualPlayers={individualPlayers}
+                  onRefresh={() => {
+                    loadApprovedTeams();
+                    loadIndividualPlayers();
+                  }}
+                  backendUrl={BACKEND_URLS.teams}
+                  isAdmin={isAdmin}
+                  sessionToken={sessionToken}
+                />
               </TabsContent>
             </Tabs>
           </div>
@@ -581,12 +527,6 @@ const Index = () => {
           sessionToken={sessionToken}
         />
       )}
-
-      <TeamManagementDialog
-        open={showTeamManagementDialog}
-        onOpenChange={setShowTeamManagementDialog}
-        backendUrl={BACKEND_URLS.teams}
-      />
     </div>
   );
 };

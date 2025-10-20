@@ -5,8 +5,8 @@
       "method": "POST",
       "path": "/",
       "body": {
-        "username": "testadmin",
-        "password": "test123"
+        "username": "Xuna",
+        "password": "Smirnova2468"
       },
       "expectedStatus": 200,
       "expectedBody": {

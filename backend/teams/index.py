@@ -36,14 +36,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         if method == 'GET':
             params = event.get('queryStringParameters') or {}
             
-            if params.get('action') == 'team-login':
-                return {
-                    'statusCode': 405,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'error': 'Use POST method for team login'}),
-                    'isBase64Encoded': False
-                }
-            
             if params.get('type') == 'individual':
                 cur.execute(
                     """SELECT id, nickname, telegram, preferred_roles, status, created_at,
@@ -178,70 +170,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         
         elif method == 'POST':
             body_data = json.loads(event.get('body', '{}'))
-            
-            params = event.get('queryStringParameters') or {}
-            if params.get('action') == 'team-login' or body_data.get('action') == 'team-login':
-                team_name = body_data.get('teamName', '')
-                password = body_data.get('password', '')
-                
-                if not team_name or not password:
-                    return {
-                        'statusCode': 400,
-                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'success': False, 'error': 'Требуется название команды и пароль'}),
-                        'isBase64Encoded': False
-                    }
-                
-                password_hash = hash_password(password)
-                
-                cur.execute(
-                    """SELECT id, team_name, captain_nick, captain_telegram, status,
-                              top_nick, top_telegram, jungle_nick, jungle_telegram,
-                              mid_nick, mid_telegram, adc_nick, adc_telegram,
-                              support_nick, support_telegram, sub1_nick, sub1_telegram,
-                              sub2_nick, sub2_telegram
-                       FROM teams 
-                       WHERE team_name = %s AND password_hash = %s""",
-                    (team_name, password_hash)
-                )
-                team = cur.fetchone()
-                
-                if not team:
-                    return {
-                        'statusCode': 401,
-                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                        'body': json.dumps({'success': False, 'error': 'Неверное название команды или пароль'}),
-                        'isBase64Encoded': False
-                    }
-                
-                team_data = {
-                    'id': team[0],
-                    'teamName': team[1],
-                    'captainNick': team[2],
-                    'captainTelegram': team[3],
-                    'status': team[4],
-                    'topNick': team[5],
-                    'topTelegram': team[6],
-                    'jungleNick': team[7],
-                    'jungleTelegram': team[8],
-                    'midNick': team[9],
-                    'midTelegram': team[10],
-                    'adcNick': team[11],
-                    'adcTelegram': team[12],
-                    'supportNick': team[13],
-                    'supportTelegram': team[14],
-                    'sub1Nick': team[15],
-                    'sub1Telegram': team[16],
-                    'sub2Nick': team[17],
-                    'sub2Telegram': team[18]
-                }
-                
-                return {
-                    'statusCode': 200,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'success': True, 'team': team_data}),
-                    'isBase64Encoded': False
-                }
             
             cur.execute("SELECT value FROM settings WHERE key = 'registration_open'")
             reg_status = cur.fetchone()

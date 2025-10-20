@@ -14,7 +14,6 @@ interface TournamentHeaderProps {
   setShowAdminPanel: (show: boolean) => void;
   setShowSuperAdminPanel?: (show: boolean) => void;
   setShowTeamEditDialog: (show: boolean) => void;
-  setShowTeamManagementDialog: (show: boolean) => void;
   onLogout: () => void;
 }
 
@@ -31,7 +30,6 @@ export const TournamentHeader = ({
   setShowAdminPanel,
   setShowSuperAdminPanel,
   setShowTeamEditDialog,
-  setShowTeamManagementDialog,
   onLogout
 }: TournamentHeaderProps) => {
   return (
@@ -73,14 +71,21 @@ export const TournamentHeader = ({
               <Icon name="UserCircle" className="w-4 h-4 mr-2" />
               Свободные игроки
             </Button>
-
+            <Button 
+              variant={selectedTab === 'manage' ? 'default' : 'ghost'}
+              onClick={() => setSelectedTab('manage')}
+              className={selectedTab === 'manage' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+            >
+              <Icon name="Edit" className="w-4 h-4 mr-2" />
+              Управление
+            </Button>
           </nav>
           {isLoggedIn ? (
             <div className="flex items-center gap-2 sm:gap-3">
               <span className="hidden sm:inline text-sm text-muted-foreground">
                 {username}
               </span>
-              {isAdmin ? (
+              {isAdmin && (
                 <>
                   <Button
                     onClick={() => setShowAdminPanel(true)}
@@ -101,13 +106,14 @@ export const TournamentHeader = ({
                     </Button>
                   )}
                 </>
-              ) : (
+              )}
+              {userRole === 'team_captain' && teamId && (
                 <Button
-                  onClick={() => userRole === 'team_captain' ? setShowTeamEditDialog(true) : setShowTeamManagementDialog(true)}
+                  onClick={() => setShowTeamEditDialog(true)}
                   className="bg-secondary text-white hover:bg-secondary/90"
                   size="sm"
                 >
-                  <Icon name="Settings" className="w-4 h-4 sm:mr-2" />
+                  <Icon name="Edit" className="w-4 h-4 sm:mr-2" />
                   <span className="hidden sm:inline">Моя команда</span>
                 </Button>
               )}
@@ -124,12 +130,10 @@ export const TournamentHeader = ({
           ) : (
             <Button 
               onClick={() => setShowLoginDialog(true)}
-              variant="outline"
-              size="sm"
-              className="border-primary/50 text-primary hover:bg-primary/10"
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
             >
               <Icon name="LogIn" className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Войти</span>
+              <span className="hidden sm:inline">Вход</span>
             </Button>
           )}
         </div>

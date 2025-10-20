@@ -150,28 +150,18 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             username = body_data.get('username', '')
             password = body_data.get('password', '')
             
-            if not username or not password:
-                return {
-                    'statusCode': 400,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'success': False, 'error': 'Username and password required'}),
-                    'isBase64Encoded': False
-                }
-            
-            hashed_password = hash_password(password)
-            
             cur.execute(
-                "SELECT id, username, role, password_hash FROM admin_users WHERE username = %s",
-                (username,)
+                "SELECT id, username, role FROM admin_users WHERE username = %s AND password_hash = %s",
+                (username, password)
             )
-            user_data = cur.fetchone()
+            user = cur.fetchone()
             
-            if user_data and user_data[3] == hashed_password:
+            if user:
                 session_token = generate_session_token()
                 
                 cur.execute(
                     "UPDATE admin_users SET session_token = %s WHERE id = %s",
-                    (session_token, user_data[0])
+                    (session_token, user[0])
                 )
                 conn.commit()
                 
@@ -183,8 +173,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     },
                     'body': json.dumps({
                         'success': True,
-                        'username': user_data[1],
-                        'role': user_data[2],
+                        'username': user[1],
+                        'role': user[2],
                         'token': session_token
                     }),
                     'isBase64Encoded': False

@@ -63,17 +63,44 @@ export const AdminPanel = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border max-w-4xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl text-primary">Панель модерации</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle className="text-2xl text-primary">Админ-панель</DialogTitle>
+            {userRole === 'super_admin' && (
+              <Badge className="bg-accent/20 text-accent border border-accent/50">
+                Супер Админ
+              </Badge>
+            )}
+          </div>
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
+          <Card className="bg-background/50 border-border">
+            <CardHeader>
+              <CardTitle className="text-lg">Настройки регистрации</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="space-y-1">
+                  <Label htmlFor="registration-toggle">Регистрация команд</Label>
+                  <p className="text-sm text-muted-foreground">
+                    {registrationOpen ? 'Регистрация открыта' : 'Регистрация закрыта'}
+                  </p>
+                </div>
+                <Switch
+                  id="registration-toggle"
+                  checked={registrationOpen}
+                  onCheckedChange={onToggleRegistration}
+                />
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="bg-background/50 border-border">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Заявки команд на модерацию</CardTitle>
+                <CardTitle className="text-lg">Заявки на регистрацию</CardTitle>
                 <Badge variant="outline" className="border-secondary text-secondary">
-                  {pendingTeams.length}
+                  {pendingTeams.length} заявок
                 </Badge>
               </div>
             </CardHeader>
