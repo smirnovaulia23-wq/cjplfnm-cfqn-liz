@@ -25,6 +25,8 @@ const Index = () => {
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
@@ -126,16 +128,28 @@ const Index = () => {
     }
   };
 
+  const addLog = (message: string) => {
+    const timestamp = new Date().toLocaleTimeString();
+    setDebugLogs(prev => [`[${timestamp}] ${message}`, ...prev].slice(0, 50));
+  };
+
   const handleLogin = async (telegram: string, password: string) => {
     try {
+      addLog(`🔐 Попытка входа: ${telegram}`);
+      addLog(`📡 Admin URL: ${BACKEND_URLS.auth}`);
+      
       const adminResponse = await fetch(BACKEND_URLS.auth, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: telegram, password })
       });
+      
+      addLog(`✅ Ответ админа: статус ${adminResponse.status}`);
       const adminData = await adminResponse.json();
+      addLog(`📦 Данные админа: ${JSON.stringify(adminData).substring(0, 100)}`);
 
       if (adminData.success) {
+        addLog(`🎉 Успешный вход как админ: ${adminData.username}`);
         setIsLoggedIn(true);
         setIsAdmin(true);
         setIsSuperAdmin(adminData.username === 'Xuna');
@@ -148,15 +162,22 @@ const Index = () => {
         loadPendingTeams();
         return;
       }
+      
+      addLog(`❌ Не админ, проверяю пользователя...`);
 
+      addLog(`📡 User URL: ${BACKEND_URLS.userAuth}`);
       const userResponse = await fetch(BACKEND_URLS.userAuth, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'login', telegram, password })
       });
+      
+      addLog(`✅ Ответ пользователя: статус ${userResponse.status}`);
       const userData = await userResponse.json();
+      addLog(`📦 Данные пользователя: ${JSON.stringify(userData).substring(0, 100)}`);
 
       if (userData.success) {
+        addLog(`🎉 Успешный вход как пользователь`);
         setIsLoggedIn(true);
         setIsAdmin(false);
         setSessionToken(userData.token);
@@ -179,9 +200,12 @@ const Index = () => {
         
         setShowLoginDialog(false);
       } else {
+        addLog(`❌ Неверный логин или пароль: ${userData.error}`);
         toast({ title: 'Ошибка входа', description: userData.error || 'Неверный логин или пароль', variant: 'destructive' });
       }
     } catch (error) {
+      addLog(`🔥 ОШИБКА: ${error}`);
+      console.error('Login error:', error);
       toast({ title: 'Ошибка', description: 'Не удалось выполнить вход', variant: 'destructive' });
     }
   };
@@ -416,6 +440,29 @@ const Index = () => {
 
   return (
     <div className="min-h-screen go-board-pattern">
+      {showDebugPanel && (
+        <div className="fixed bottom-4 right-4 bg-black/90 text-green-400 p-4 rounded-lg shadow-xl max-w-2xl max-h-96 overflow-auto z-50 font-mono text-sm">
+          <div className="flex justify-between items-center mb-2">
+            <span className="font-bold">🔍 Debug Logs</span>
+            <button onClick={() => setShowDebugPanel(false)} className="text-red-400 hover:text-red-300">✕</button>
+          </div>
+          <div className="space-y-1">
+            {debugLogs.length === 0 ? (
+              <div className="text-gray-500">Логи появятся при попытке входа...</div>
+            ) : (
+              debugLogs.map((log, i) => <div key={i} className="border-b border-gray-800 pb-1">{log}</div>)
+            )}
+          </div>
+        </div>
+      )}
+      
+      <button 
+        onClick={() => setShowDebugPanel(!showDebugPanel)}
+        className="fixed bottom-4 left-4 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow-lg z-50 text-sm font-medium"
+      >
+        {showDebugPanel ? '🔍 Скрыть логи' : '🔍 Показать логи'}
+      </button>
+      
       <div className="relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background"></div>
         
