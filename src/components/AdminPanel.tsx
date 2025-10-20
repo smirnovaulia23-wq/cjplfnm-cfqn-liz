@@ -26,10 +26,10 @@ interface Player {
   hasFriends?: boolean;
   friend1Nickname?: string;
   friend1Telegram?: string;
-  friend1Role?: string;
+  friend1Roles?: string[];
   friend2Nickname?: string;
   friend2Telegram?: string;
-  friend2Role?: string;
+  friend2Roles?: string[];
 }
 
 interface AdminPanelProps {
@@ -256,26 +256,34 @@ export const AdminPanel = ({
                           <p className="text-sm font-medium text-muted-foreground mb-2">Хочет играть с друзьями:</p>
                           <div className="space-y-1">
                             {player.friend1Nickname && (
-                              <div className="flex items-center gap-2 text-sm">
+                              <div className="flex items-center gap-2 text-sm flex-wrap">
                                 <Icon name="UserPlus" className="w-4 h-4 text-muted-foreground" />
                                 <span className="text-foreground">{player.friend1Nickname}</span>
                                 {player.friend1Telegram && (
                                   <span className="text-muted-foreground">({player.friend1Telegram})</span>
                                 )}
-                                {player.friend1Role && (
-                                  <Badge variant="outline" className="text-xs">{player.friend1Role}</Badge>
+                                {player.friend1Roles && player.friend1Roles.length > 0 && (
+                                  <div className="flex gap-1">
+                                    {player.friend1Roles.map((role: string) => (
+                                      <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
+                                    ))}
+                                  </div>
                                 )}
                               </div>
                             )}
                             {player.friend2Nickname && (
-                              <div className="flex items-center gap-2 text-sm">
+                              <div className="flex items-center gap-2 text-sm flex-wrap">
                                 <Icon name="UserPlus" className="w-4 h-4 text-muted-foreground" />
                                 <span className="text-foreground">{player.friend2Nickname}</span>
                                 {player.friend2Telegram && (
                                   <span className="text-muted-foreground">({player.friend2Telegram})</span>
                                 )}
-                                {player.friend2Role && (
-                                  <Badge variant="outline" className="text-xs">{player.friend2Role}</Badge>
+                                {player.friend2Roles && player.friend2Roles.length > 0 && (
+                                  <div className="flex gap-1">
+                                    {player.friend2Roles.map((role: string) => (
+                                      <Badge key={role} variant="outline" className="text-xs">{role}</Badge>
+                                    ))}
+                                  </div>
                                 )}
                               </div>
                             )}

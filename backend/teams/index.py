@@ -39,8 +39,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             if params.get('type') == 'individual':
                 cur.execute(
                     """SELECT id, nickname, telegram, preferred_roles, status, created_at,
-                              has_friends, friend1_nickname, friend1_telegram, friend1_role,
-                              friend2_nickname, friend2_telegram, friend2_role
+                              has_friends, friend1_nickname, friend1_telegram, friend1_roles,
+                              friend2_nickname, friend2_telegram, friend2_roles
                        FROM individual_players 
                        ORDER BY created_at DESC"""
                 )
@@ -56,10 +56,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'hasFriends': p[6] if p[6] is not None else False,
                     'friend1Nickname': p[7],
                     'friend1Telegram': p[8],
-                    'friend1Role': p[9],
+                    'friend1Roles': p[9] if p[9] else [],
                     'friend2Nickname': p[10],
                     'friend2Telegram': p[11],
-                    'friend2Role': p[12]
+                    'friend2Roles': p[12] if p[12] else []
                 } for p in players]
                 
                 return {
@@ -192,8 +192,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 cur.execute(
                     """INSERT INTO individual_players (
                         nickname, telegram, preferred_roles, status,
-                        has_friends, friend1_nickname, friend1_telegram, friend1_role,
-                        friend2_nickname, friend2_telegram, friend2_role
+                        has_friends, friend1_nickname, friend1_telegram, friend1_roles,
+                        friend2_nickname, friend2_telegram, friend2_roles
                     ) VALUES (%s, %s, %s, 'pending', %s, %s, %s, %s, %s, %s, %s)
                     RETURNING id""",
                     (
@@ -203,10 +203,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         has_friends,
                         body_data.get('friend1Nickname') if has_friends else None,
                         body_data.get('friend1Telegram') if has_friends else None,
-                        body_data.get('friend1Role') if has_friends else None,
+                        body_data.get('friend1Roles') if has_friends else None,
                         body_data.get('friend2Nickname') if has_friends else None,
                         body_data.get('friend2Telegram') if has_friends else None,
-                        body_data.get('friend2Role') if has_friends else None
+                        body_data.get('friend2Roles') if has_friends else None
                     )
                 )
                 player_id = cur.fetchone()[0]

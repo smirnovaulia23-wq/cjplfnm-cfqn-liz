@@ -348,38 +348,21 @@ const Index = () => {
     }
 
     try {
-      const registrationData = {
-        type: 'individual',
-        playerNick: individualForm.nickname,
-        playerTelegram: individualForm.telegram,
-        mainRole: individualForm.preferredRoles[0],
-        alternativeRole: individualForm.preferredRoles[1] || null,
-        friend1Nick: individualForm.hasFriends ? individualForm.friend1Nickname : null,
-        friend1Telegram: individualForm.hasFriends ? individualForm.friend1Telegram : null,
-        friend2Nick: individualForm.hasFriends ? individualForm.friend2Nickname : null,
-        friend2Telegram: individualForm.hasFriends ? individualForm.friend2Telegram : null
-      };
-
-      const registerResponse = await fetch(BACKEND_URLS.register, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(registrationData)
-      });
-      const registerData = await registerResponse.json();
-
-      if (!registerData.success) {
-        toast({ title: 'Ошибка', description: registerData.error || 'Не удалось сохранить регистрацию', variant: 'destructive' });
-        return;
-      }
-
       const response = await fetch(BACKEND_URLS.teams, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          ...individualForm,
           type: 'individual',
-          friend1Role: individualForm.friend1Roles?.join(',') || '',
-          friend2Role: individualForm.friend2Roles?.join(',') || ''
+          nickname: individualForm.nickname,
+          telegram: individualForm.telegram,
+          preferredRoles: individualForm.preferredRoles,
+          hasFriends: individualForm.hasFriends,
+          friend1Nickname: individualForm.friend1Nickname,
+          friend1Telegram: individualForm.friend1Telegram,
+          friend1Roles: individualForm.friend1Roles,
+          friend2Nickname: individualForm.friend2Nickname,
+          friend2Telegram: individualForm.friend2Telegram,
+          friend2Roles: individualForm.friend2Roles
         })
       });
       const data = await response.json();

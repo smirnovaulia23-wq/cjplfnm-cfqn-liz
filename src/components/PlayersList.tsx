@@ -11,10 +11,10 @@ interface Player {
   preferredRoles: string[];
   friend1Nickname?: string;
   friend1Telegram?: string;
-  friend1Role?: string;
+  friend1Roles?: string[];
   friend2Nickname?: string;
   friend2Telegram?: string;
-  friend2Role?: string;
+  friend2Roles?: string[];
 }
 
 interface PlayersListProps {
@@ -145,24 +145,32 @@ export const PlayersList = ({
                       <p className="text-sm text-muted-foreground mb-2">Предпочитает играть с:</p>
                       <div className="space-y-2">
                         {player.friend1Nickname && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <Icon name="UserPlus" className="w-4 h-4 text-muted-foreground" />
                             <span className="text-sm text-foreground text-ellipsis-nick">{player.friend1Nickname}</span>
-                            {player.friend1Role && (
-                              <Badge className="text-xs" variant="outline">
-                                {roleLabels[player.friend1Role] || player.friend1Role}
-                              </Badge>
+                            {player.friend1Roles && player.friend1Roles.length > 0 && (
+                              <div className="flex gap-1">
+                                {player.friend1Roles.map((role: string) => (
+                                  <Badge key={role} className="text-xs" variant="outline">
+                                    {roleLabels[role] || role}
+                                  </Badge>
+                                ))}
+                              </div>
                             )}
                           </div>
                         )}
                         {player.friend2Nickname && (
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <Icon name="UserPlus" className="w-4 h-4 text-muted-foreground" />
                             <span className="text-sm text-foreground text-ellipsis-nick">{player.friend2Nickname}</span>
-                            {player.friend2Role && (
-                              <Badge className="text-xs" variant="outline">
-                                {roleLabels[player.friend2Role] || player.friend2Role}
-                              </Badge>
+                            {player.friend2Roles && player.friend2Roles.length > 0 && (
+                              <div className="flex gap-1">
+                                {player.friend2Roles.map((role: string) => (
+                                  <Badge key={role} className="text-xs" variant="outline">
+                                    {roleLabels[role] || role}
+                                  </Badge>
+                                ))}
+                              </div>
                             )}
                           </div>
                         )}
