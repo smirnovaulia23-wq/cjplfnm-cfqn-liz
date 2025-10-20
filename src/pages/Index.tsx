@@ -1317,7 +1317,6 @@ const Index = () => {
           </div>
         </footer>
         </div>
-      </div>
 
       <LoginDialog
         open={showLoginDialog}
