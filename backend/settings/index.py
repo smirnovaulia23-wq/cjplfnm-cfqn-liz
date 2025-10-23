@@ -51,8 +51,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             value = body_data.get('value')
             
             cur.execute(
-                "UPDATE settings SET value = %s, updated_at = CURRENT_TIMESTAMP WHERE key = %s",
-                (value, key)
+                """
+                INSERT INTO settings (key, value, updated_at) 
+                VALUES (%s, %s, CURRENT_TIMESTAMP)
+                ON CONFLICT (key) DO UPDATE 
+                SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP
+                """,
+                (key, value)
             )
             conn.commit()
             

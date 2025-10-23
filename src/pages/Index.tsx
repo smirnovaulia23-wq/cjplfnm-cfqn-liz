@@ -12,6 +12,7 @@ import { PlayersList } from '@/components/PlayersList';
 import { RegistrationForms } from '@/components/RegistrationForms';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
 import TeamManagementDialog from '@/components/TeamManagementDialog';
+import TournamentBracket from '@/components/TournamentBracket';
 import Icon from '@/components/ui/icon';
 
 const BACKEND_URLS = {
@@ -41,6 +42,7 @@ const Index = () => {
   const [pendingPlayers, setPendingPlayers] = useState<any[]>([]);
   const [individualPlayers, setIndividualPlayers] = useState<any[]>([]);
   const [registrationOpen, setRegistrationOpen] = useState(true);
+  const [challongeUrl, setChallongeUrl] = useState('');
   const [teamForm, setTeamForm] = useState({
     teamName: '',
     captainNick: '',
@@ -154,6 +156,7 @@ const Index = () => {
       }
       const data = await response.json();
       setRegistrationOpen(data.settings?.registration_open === 'true');
+      setChallongeUrl(data.settings?.challonge_url || '');
     } catch (error) {
       setRegistrationOpen(true);
     }
@@ -240,6 +243,21 @@ const Index = () => {
     setSessionToken('');
     setTeamId(null);
     toast({ title: 'Выход выполнен' });
+  };
+
+  const handleChallongeUrlChange = async (url: string) => {
+    try {
+      await fetch(BACKEND_URLS.settings, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'challonge_url', value: url })
+      });
+      setChallongeUrl(url);
+      toast({ title: 'Успешно', description: 'URL турнирной сетки обновлен' });
+      loadSettings();
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось обновить URL', variant: 'destructive' });
+    }
   };
 
   const handleToggleRegistration = async (open: boolean) => {
@@ -516,6 +534,12 @@ const Index = () => {
                 />
               </TabsContent>
 
+              <TabsContent value="bracket" className="mt-8">
+                <div className="max-w-6xl mx-auto">
+                  <TournamentBracket challongeUrl={challongeUrl} />
+                </div>
+              </TabsContent>
+
               <TabsContent value="myteam" className="mt-8">
                 <div className="max-w-2xl mx-auto text-center py-12">
                   <div className="mb-6">
@@ -561,6 +585,8 @@ const Index = () => {
           onRejectPlayer={handleRejectPlayer}
           onToggleRegistration={handleToggleRegistration}
           userRole={userRole}
+          challongeUrl={challongeUrl}
+          onChallongeUrlChange={handleChallongeUrlChange}
         />
       )}
 

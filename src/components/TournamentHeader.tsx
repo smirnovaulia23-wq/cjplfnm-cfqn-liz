@@ -73,6 +73,14 @@ export const TournamentHeader = ({
               <Icon name="UserCircle" className="w-4 h-4 mr-2" />
               Свободные игроки
             </Button>
+            <Button 
+              variant={selectedTab === 'bracket' ? 'default' : 'ghost'}
+              onClick={() => setSelectedTab('bracket')}
+              className={selectedTab === 'bracket' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+            >
+              <Icon name="Trophy" className="w-4 h-4 mr-2" />
+              Турнирная сетка
+            </Button>
 
           </nav>
           {isLoggedIn ? (

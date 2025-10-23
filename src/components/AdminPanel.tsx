@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
+import { useState } from 'react';
 
 interface Team {
   id: number;
@@ -44,6 +46,8 @@ interface AdminPanelProps {
   onApprovePlayer: (playerId: number) => void;
   onRejectPlayer: (playerId: number) => void;
   userRole: string;
+  challongeUrl?: string;
+  onChallongeUrlChange?: (url: string) => void;
 }
 
 export const AdminPanel = ({
@@ -57,8 +61,11 @@ export const AdminPanel = ({
   onRejectTeam,
   onApprovePlayer,
   onRejectPlayer,
-  userRole
+  userRole,
+  challongeUrl,
+  onChallongeUrlChange
 }: AdminPanelProps) => {
+  const [tempChallongeUrl, setTempChallongeUrl] = useState(challongeUrl || '');
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -67,6 +74,37 @@ export const AdminPanel = ({
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
+          <Card className="bg-background/50 border-border">
+            <CardHeader>
+              <CardTitle className="text-lg">Турнирная сетка Challonge</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="https://challonge.com/tournament_id"
+                    value={tempChallongeUrl}
+                    onChange={(e) => setTempChallongeUrl(e.target.value)}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={() => {
+                      if (onChallongeUrlChange) {
+                        onChallongeUrlChange(tempChallongeUrl);
+                      }
+                    }}
+                    className="bg-primary hover:bg-primary/80"
+                  >
+                    <Icon name="Save" className="w-4 h-4 mr-2" />
+                    Сохранить
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Вставьте ссылку на турнир Challonge. Сетка будет обновляться автоматически каждые 30 секунд.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
 
           <Card className="bg-background/50 border-border">
             <CardHeader>
