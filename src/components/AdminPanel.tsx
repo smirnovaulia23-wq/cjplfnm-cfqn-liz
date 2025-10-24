@@ -66,6 +66,7 @@ export const AdminPanel = ({
   onChallongeUrlChange
 }: AdminPanelProps) => {
   const [tempChallongeUrl, setTempChallongeUrl] = useState(challongeUrl || '');
+  const [useIframeMode, setUseIframeMode] = useState(false);
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -82,7 +83,7 @@ export const AdminPanel = ({
               <div className="space-y-3">
                 <div className="flex gap-2">
                   <Input
-                    placeholder="https://challonge.com/tournament_id"
+                    placeholder={useIframeMode ? "q3oa03t9" : "https://challonge.com/q3oa03t9"}
                     value={tempChallongeUrl}
                     onChange={(e) => setTempChallongeUrl(e.target.value)}
                     className="flex-1"
@@ -90,17 +91,33 @@ export const AdminPanel = ({
                   <Button
                     onClick={() => {
                       if (onChallongeUrlChange) {
-                        onChallongeUrlChange(tempChallongeUrl);
+                        let urlToSave = tempChallongeUrl;
+                        if (useIframeMode && !tempChallongeUrl.includes('challonge.com')) {
+                          urlToSave = `https://challonge.com/${tempChallongeUrl}`;
+                        }
+                        onChallongeUrlChange(urlToSave);
                       }
                     }}
                     className="bg-primary hover:bg-primary/80"
                   >
                     <Icon name="Save" className="w-4 h-4 mr-2" />
-                    Сохранить
+                    Подключить
                   </Button>
                 </div>
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="iframe-mode"
+                    checked={useIframeMode}
+                    onCheckedChange={setUseIframeMode}
+                  />
+                  <Label htmlFor="iframe-mode" className="text-sm cursor-pointer">
+                    Использовать iframe режим (только ID турнира)
+                  </Label>
+                </div>
                 <p className="text-xs text-muted-foreground">
-                  Вставьте ссылку на турнир Challonge. Сетка будет обновляться автоматически каждые 30 секунд.
+                  {useIframeMode 
+                    ? "Введите только ID турнира (например: q3oa03t9). Виджет отобразится через встроенный iframe."
+                    : "Вставьте полную ссылку на турнир Challonge. Сетка будет обновляться автоматически каждые 30 секунд."}
                 </p>
               </div>
             </CardContent>
