@@ -9,7 +9,7 @@ interface MobileNavigationProps {
 export const MobileNavigation = ({ selectedTab, setSelectedTab }: MobileNavigationProps) => {
   return (
     <div className="sm:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border/50 px-2 py-2">
-      <div className="grid grid-cols-4 gap-1">
+      <div className="grid grid-cols-5 gap-1">
         <Button
           variant={selectedTab === 'register' ? 'default' : 'ghost'}
           onClick={() => setSelectedTab('register')}
@@ -45,6 +45,14 @@ export const MobileNavigation = ({ selectedTab, setSelectedTab }: MobileNavigati
         >
           <Icon name="Trophy" className="w-4 h-4 mr-1" />
           <span className="text-xs">Сетка</span>
+        </Button>
+        <Button
+          variant={selectedTab === 'schedule' ? 'default' : 'ghost'}
+          onClick={() => setSelectedTab('schedule')}
+          className={selectedTab === 'schedule' ? 'bg-secondary text-white' : 'text-foreground'}
+          size="sm"
+        >
+          <Icon name="Calendar" className="w-4 h-4" />
         </Button>
       </div>
     </div>

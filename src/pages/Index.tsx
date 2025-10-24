@@ -13,6 +13,7 @@ import { RegistrationForms } from '@/components/RegistrationForms';
 import SuperAdminPanel from '@/components/SuperAdminPanel';
 import TeamManagementDialog from '@/components/TeamManagementDialog';
 import TournamentBracket from '@/components/TournamentBracket';
+import { ScheduleView } from '@/components/ScheduleView';
 import Icon from '@/components/ui/icon';
 
 const BACKEND_URLS = {
@@ -20,7 +21,8 @@ const BACKEND_URLS = {
   userAuth: 'https://functions.poehali.dev/6593734f-22cc-4ee2-b697-635b5817a9bd',
   teams: 'https://functions.poehali.dev/35199dac-d68a-4536-959b-4aad2fb7e7ad',
   settings: 'https://functions.poehali.dev/9f1de6c4-8e50-4131-b3c0-0253597bdbdf',
-  register: 'https://functions.poehali.dev/aa5c695c-a493-4e80-8b18-578f26f15470'
+  register: 'https://functions.poehali.dev/aa5c695c-a493-4e80-8b18-578f26f15470',
+  schedule: 'https://functions.poehali.dev/90fb9334-17bb-4511-9ac9-ccd72a79c3aa'
 };
 
 const Index = () => {
@@ -571,6 +573,12 @@ const Index = () => {
               <TabsContent value="bracket" className="mt-8">
                 <div className="max-w-6xl mx-auto">
                   <TournamentBracket challongeUrl={challongeUrl} />
+                </div>
+              </TabsContent>
+
+              <TabsContent value="schedule" className="mt-8">
+                <div className="max-w-5xl mx-auto">
+                  <ScheduleView backendUrl={BACKEND_URLS.schedule} />
                 </div>
               </TabsContent>
 
