@@ -10,12 +10,19 @@ import { useToast } from '@/hooks/use-toast';
 
 interface TournamentInfo {
   tournamentName: string;
+  tournamentNameImage: string;
   prizeFund: string;
+  prizeFundImage: string;
   prizeCount: string;
+  prizeCountImage: string;
   streamLinks: string;
+  streamLinksImage: string;
   sponsor: string;
+  sponsorImage: string;
   startDate: string;
+  startDateImage: string;
   registrationEnd: string;
+  registrationEndImage: string;
   rules: string;
   regulationsLink: string;
 }
@@ -33,12 +40,19 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
   const [description, setDescription] = useState('');
   const [tournamentInfo, setTournamentInfo] = useState<TournamentInfo>({
     tournamentName: '',
+    tournamentNameImage: '',
     prizeFund: '',
+    prizeFundImage: '',
     prizeCount: '',
+    prizeCountImage: '',
     streamLinks: '',
+    streamLinksImage: '',
     sponsor: '',
+    sponsorImage: '',
     startDate: '',
+    startDateImage: '',
     registrationEnd: '',
+    registrationEndImage: '',
     rules: '',
     regulationsLink: ''
   });
@@ -65,24 +79,38 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
         const info = JSON.parse(data.settings?.tournament_info || '{}');
         setTournamentInfo({
           tournamentName: info.tournamentName || '',
+          tournamentNameImage: info.tournamentNameImage || '',
           prizeFund: info.prizeFund || '',
+          prizeFundImage: info.prizeFundImage || '',
           prizeCount: info.prizeCount || '',
+          prizeCountImage: info.prizeCountImage || '',
           streamLinks: info.streamLinks || '',
+          streamLinksImage: info.streamLinksImage || '',
           sponsor: info.sponsor || '',
+          sponsorImage: info.sponsorImage || '',
           startDate: info.startDate || '',
+          startDateImage: info.startDateImage || '',
           registrationEnd: info.registrationEnd || '',
+          registrationEndImage: info.registrationEndImage || '',
           rules: info.rules || '',
           regulationsLink: info.regulationsLink || ''
         });
       } catch {
         setTournamentInfo({
           tournamentName: '',
+          tournamentNameImage: '',
           prizeFund: '',
+          prizeFundImage: '',
           prizeCount: '',
+          prizeCountImage: '',
           streamLinks: '',
+          streamLinksImage: '',
           sponsor: '',
+          sponsorImage: '',
           startDate: '',
+          startDateImage: '',
           registrationEnd: '',
+          registrationEndImage: '',
           rules: '',
           regulationsLink: ''
         });
@@ -183,9 +211,13 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
           <Card className="bg-background/50 border-border">
             <CardHeader>
               <CardTitle className="text-lg">Информационные блоки</CardTitle>
+              <p className="text-sm text-muted-foreground mt-2">
+                💡 Для каждого блока можно добавить картинку. Вставьте ссылку на изображение в поле "Картинка (URL)". 
+                Изображения будут отображаться слева от текста.
+              </p>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="tournamentName">Название турнира</Label>
                   <Input
@@ -196,6 +228,18 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
                   />
                 </div>
                 <div>
+                  <Label htmlFor="tournamentNameImage">Картинка для "Название турнира" (URL)</Label>
+                  <Input
+                    id="tournamentNameImage"
+                    value={tournamentInfo.tournamentNameImage}
+                    onChange={(e) => updateTournamentInfo('tournamentNameImage', e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
                   <Label htmlFor="prizeFund">Призовой фонд</Label>
                   <Input
                     id="prizeFund"
@@ -204,9 +248,18 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
                     placeholder="100 000 ₽"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="prizeFundImage">Картинка для "Призовой фонд" (URL)</Label>
+                  <Input
+                    id="prizeFundImage"
+                    value={tournamentInfo.prizeFundImage}
+                    onChange={(e) => updateTournamentInfo('prizeFundImage', e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="prizeCount">Количество призовых мест</Label>
                   <Input
@@ -217,6 +270,40 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
                   />
                 </div>
                 <div>
+                  <Label htmlFor="prizeCountImage">Картинка для "Количество призовых мест" (URL)</Label>
+                  <Input
+                    id="prizeCountImage"
+                    value={tournamentInfo.prizeCountImage}
+                    onChange={(e) => updateTournamentInfo('prizeCountImage', e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="streamLinks">Стрим-трансляции</Label>
+                  <Textarea
+                    id="streamLinks"
+                    value={tournamentInfo.streamLinks}
+                    onChange={(e) => updateTournamentInfo('streamLinks', e.target.value)}
+                    placeholder="Ссылки на стримы (каждая с новой строки)"
+                    rows={3}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="streamLinksImage">Картинка для "Стрим-трансляции" (URL)</Label>
+                  <Input
+                    id="streamLinksImage"
+                    value={tournamentInfo.streamLinksImage}
+                    onChange={(e) => updateTournamentInfo('streamLinksImage', e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
                   <Label htmlFor="sponsor">Спонсор</Label>
                   <Input
                     id="sponsor"
@@ -225,9 +312,18 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
                     placeholder="Компания XYZ"
                   />
                 </div>
+                <div>
+                  <Label htmlFor="sponsorImage">Картинка для "Спонсор" (URL)</Label>
+                  <Input
+                    id="sponsorImage"
+                    value={tournamentInfo.sponsorImage}
+                    onChange={(e) => updateTournamentInfo('sponsorImage', e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div>
                   <Label htmlFor="startDate">Начало турнира</Label>
                   <Input
@@ -238,12 +334,33 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
                   />
                 </div>
                 <div>
+                  <Label htmlFor="startDateImage">Картинка для "Начало турнира" (URL)</Label>
+                  <Input
+                    id="startDateImage"
+                    value={tournamentInfo.startDateImage}
+                    onChange={(e) => updateTournamentInfo('startDateImage', e.target.value)}
+                    placeholder="https://example.com/image.jpg"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
                   <Label htmlFor="registrationEnd">Окончание регистрации</Label>
                   <Input
                     id="registrationEnd"
                     value={tournamentInfo.registrationEnd}
                     onChange={(e) => updateTournamentInfo('registrationEnd', e.target.value)}
                     placeholder="10 ноября 2024"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="registrationEndImage">Картинка для "Окончание регистрации" (URL)</Label>
+                  <Input
+                    id="registrationEndImage"
+                    value={tournamentInfo.registrationEndImage}
+                    onChange={(e) => updateTournamentInfo('registrationEndImage', e.target.value)}
+                    placeholder="https://example.com/image.jpg"
                   />
                 </div>
               </div>
