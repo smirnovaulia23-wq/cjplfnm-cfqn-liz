@@ -650,17 +650,21 @@ const Index = () => {
                           </div>
                         )}
                         
-                        {tournamentInfo.startDate && (
-                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
-                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Начало турнира</h3>
-                            <p className="text-xl font-bold text-secondary">{tournamentInfo.startDate}</p>
-                          </div>
-                        )}
-                        
-                        {tournamentInfo.registrationEnd && (
-                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
-                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Окончание регистрации</h3>
-                            <p className="text-xl font-bold text-accent">{tournamentInfo.registrationEnd}</p>
+                        {(tournamentInfo.startDate || tournamentInfo.registrationEnd) && (
+                          <div className="grid md:grid-cols-2 gap-6">
+                            {tournamentInfo.startDate && (
+                              <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
+                                <h3 className="text-sm font-semibold text-muted-foreground mb-2">Начало турнира</h3>
+                                <p className="text-xl font-bold text-secondary">{tournamentInfo.startDate}</p>
+                              </div>
+                            )}
+                            
+                            {tournamentInfo.registrationEnd && (
+                              <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
+                                <h3 className="text-sm font-semibold text-muted-foreground mb-2">Окончание регистрации</h3>
+                                <p className="text-xl font-bold text-accent">{tournamentInfo.registrationEnd}</p>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
