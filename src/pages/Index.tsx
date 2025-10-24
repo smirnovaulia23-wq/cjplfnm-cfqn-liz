@@ -392,6 +392,11 @@ const Index = () => {
     }
 
     try {
+      if (!registrationOpen) {
+        toast({ title: 'Регистрация закрыта', description: 'В данный момент регистрация команд недоступна', variant: 'destructive' });
+        return;
+      }
+
       const registerResponse = await fetch(BACKEND_URLS.register, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -456,6 +461,11 @@ const Index = () => {
     }
 
     try {
+      if (!registrationOpen) {
+        toast({ title: 'Регистрация закрыта', description: 'В данный момент регистрация недоступна', variant: 'destructive' });
+        return;
+      }
+
       const response = await fetch(BACKEND_URLS.teams, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

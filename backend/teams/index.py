@@ -384,6 +384,21 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     admin_result = cur.fetchone()
                     is_admin_update = admin_result is not None
                 
+                if not is_admin_update:
+                    cur.execute("SELECT value FROM settings WHERE key = 'registration_open'")
+                    reg_status = cur.fetchone()
+                    
+                    if reg_status and reg_status[0] == 'false':
+                        return {
+                            'statusCode': 403,
+                            'headers': {
+                                'Content-Type': 'application/json',
+                                'Access-Control-Allow-Origin': '*'
+                            },
+                            'body': json.dumps({'success': False, 'error': 'Регистрация закрыта'}),
+                            'isBase64Encoded': False
+                        }
+                
                 team_name = escape_sql(body_data.get('teamName', ''))
                 top_nick = escape_sql(body_data.get('topNick', ''))
                 top_telegram = escape_sql(body_data.get('topTelegram', ''))
@@ -577,6 +592,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'statusCode': 400,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
                     'body': json.dumps({'error': 'Missing id, password or type'}),
+                    'isBase64Encoded': False
+                }
+            
+            cur.execute("SELECT value FROM settings WHERE key = 'registration_open'")
+            reg_status = cur.fetchone()
+            
+            if reg_status and reg_status[0] == 'false':
+                return {
+                    'statusCode': 403,
+                    'headers': {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    'body': json.dumps({'success': False, 'error': 'Регистрация закрыта'}),
                     'isBase64Encoded': False
                 }
             

@@ -136,6 +136,31 @@ export const AdminPanel = ({
           <Card className="bg-background/50 border-border">
             <CardHeader>
               <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Регистрация</CardTitle>
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="registration-toggle"
+                    checked={registrationOpen}
+                    onCheckedChange={onToggleRegistration}
+                  />
+                  <Label htmlFor="registration-toggle" className="text-sm cursor-pointer">
+                    {registrationOpen ? 'Открыта' : 'Закрыта'}
+                  </Label>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm text-muted-foreground">
+                {registrationOpen 
+                  ? 'Капитаны могут регистрировать команды и вносить изменения' 
+                  : 'Регистрация закрыта. Капитаны не могут создавать или редактировать команды'}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-background/50 border-border">
+            <CardHeader>
+              <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Заявки команд на модерацию</CardTitle>
                 <Badge variant="outline" className="border-secondary text-secondary">
                   {pendingTeams.length}

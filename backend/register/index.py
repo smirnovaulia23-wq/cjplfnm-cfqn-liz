@@ -59,6 +59,22 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     conn = psycopg2.connect(database_url)
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
+    cur.execute("SELECT value FROM settings WHERE key = 'registration_open'")
+    reg_status = cur.fetchone()
+    
+    if not reg_status or reg_status['value'] != 'true':
+        cur.close()
+        conn.close()
+        return {
+            'statusCode': 403,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({'error': 'Registration is closed'}),
+            'isBase64Encoded': False
+        }
+    
     if reg_type == 'team':
         team_name = escape_sql(body_data.get('teamName', ''))
         captain_nick = escape_sql(body_data.get('captainNick', ''))
