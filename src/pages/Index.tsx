@@ -14,6 +14,7 @@ import SuperAdminPanel from '@/components/SuperAdminPanel';
 import TeamManagementDialog from '@/components/TeamManagementDialog';
 import TournamentBracket from '@/components/TournamentBracket';
 import { ScheduleView } from '@/components/ScheduleView';
+import { ScheduleAdminPanel } from '@/components/ScheduleAdminPanel';
 import Icon from '@/components/ui/icon';
 
 const BACKEND_URLS = {
@@ -39,6 +40,7 @@ const Index = () => {
   const [teamId, setTeamId] = useState<number | null>(null);
   const [showTeamEditDialog, setShowTeamEditDialog] = useState(false);
   const [showTeamManagementDialog, setShowTeamManagementDialog] = useState(false);
+  const [showScheduleAdminPanel, setShowScheduleAdminPanel] = useState(false);
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
   const [pendingPlayers, setPendingPlayers] = useState<any[]>([]);
@@ -578,6 +580,17 @@ const Index = () => {
 
               <TabsContent value="schedule" className="mt-8">
                 <div className="max-w-5xl mx-auto">
+                  {isAdmin && (
+                    <div className="mb-4">
+                      <Button 
+                        onClick={() => setShowScheduleAdminPanel(true)}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        <Icon name="Settings" className="w-4 h-4 mr-2" />
+                        Управление расписанием
+                      </Button>
+                    </div>
+                  )}
                   <ScheduleView backendUrl={BACKEND_URLS.schedule} />
                 </div>
               </TabsContent>
@@ -647,6 +660,16 @@ const Index = () => {
           sessionToken={sessionToken}
           authUrl={BACKEND_URLS.auth}
           teamsUrl={BACKEND_URLS.teams}
+        />
+      )}
+
+      {isAdmin && (
+        <ScheduleAdminPanel
+          open={showScheduleAdminPanel}
+          onOpenChange={setShowScheduleAdminPanel}
+          sessionToken={sessionToken}
+          teamsUrl={BACKEND_URLS.teams}
+          scheduleUrl={BACKEND_URLS.schedule}
         />
       )}
 
