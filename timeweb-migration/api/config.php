@@ -2,10 +2,10 @@
 // Конфигурация подключения к MySQL базе данных Timeweb
 // ВАЖНО: Замените данные на свои из панели Timeweb
 
-define('DB_HOST', 'localhost'); // Обычно localhost
-define('DB_NAME', 'ваше_имя_базы'); // Имя базы из панели Timeweb
-define('DB_USER', 'ваш_пользователь'); // Пользователь из панели Timeweb  
-define('DB_PASS', 'ваш_пароль'); // Пароль из панели Timeweb
+define('DB_HOST', 'localhost');
+define('DB_NAME', 'ce876244_tournam');
+define('DB_USER', 'ce876244_phpMyAdmin');
+define('DB_PASS', 'kh5-XQi-EWE-9gS');
 define('DB_CHARSET', 'utf8mb4');
 
 // CORS заголовки для разрешения запросов с frontend
