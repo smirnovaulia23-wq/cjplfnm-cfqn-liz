@@ -1,0 +1,1 @@
+UPDATE settings SET value = 'https://challonge.com/q3oa03t9', updated_at = CURRENT_TIMESTAMP WHERE key = 'challonge_url';
