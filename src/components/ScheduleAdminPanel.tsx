@@ -79,11 +79,6 @@ export const ScheduleAdminPanel = ({
       return;
     }
 
-    if (newMatch.team1_name.trim() === newMatch.team2_name.trim()) {
-      toast({ title: 'Команды должны быть разными', variant: 'destructive' });
-      return;
-    }
-
     setLoading(true);
     try {
       const response = await fetch(scheduleUrl, {
