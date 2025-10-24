@@ -8,11 +8,16 @@ import { Textarea } from '@/components/ui/textarea';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
 
-interface InfoBlock {
-  id: string;
-  title: string;
-  content: string;
-  imageUrl: string;
+interface TournamentInfo {
+  tournamentName: string;
+  prizeFund: string;
+  prizeCount: string;
+  streamLinks: string;
+  sponsor: string;
+  startDate: string;
+  registrationEnd: string;
+  rules: string;
+  regulationsLink: string;
 }
 
 interface HomePageEditorProps {
@@ -26,7 +31,17 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [description, setDescription] = useState('');
-  const [infoBlocks, setInfoBlocks] = useState<InfoBlock[]>([]);
+  const [tournamentInfo, setTournamentInfo] = useState<TournamentInfo>({
+    tournamentName: '',
+    prizeFund: '',
+    prizeCount: '',
+    streamLinks: '',
+    sponsor: '',
+    startDate: '',
+    registrationEnd: '',
+    rules: '',
+    regulationsLink: ''
+  });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -47,10 +62,30 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
       setDescription(data.settings?.home_description || 'Соберите команду и докажите своё мастерство в «Диком ущелье»');
       
       try {
-        const blocks = JSON.parse(data.settings?.home_info_blocks || '[]');
-        setInfoBlocks(blocks);
+        const info = JSON.parse(data.settings?.tournament_info || '{}');
+        setTournamentInfo({
+          tournamentName: info.tournamentName || '',
+          prizeFund: info.prizeFund || '',
+          prizeCount: info.prizeCount || '',
+          streamLinks: info.streamLinks || '',
+          sponsor: info.sponsor || '',
+          startDate: info.startDate || '',
+          registrationEnd: info.registrationEnd || '',
+          rules: info.rules || '',
+          regulationsLink: info.regulationsLink || ''
+        });
       } catch {
-        setInfoBlocks([]);
+        setTournamentInfo({
+          tournamentName: '',
+          prizeFund: '',
+          prizeCount: '',
+          streamLinks: '',
+          sponsor: '',
+          startDate: '',
+          registrationEnd: '',
+          rules: '',
+          regulationsLink: ''
+        });
       }
     } catch (error) {
       console.error('Error loading settings:', error);
@@ -64,7 +99,7 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
         { key: 'home_title', value: title },
         { key: 'home_subtitle', value: subtitle },
         { key: 'home_description', value: description },
-        { key: 'home_info_blocks', value: JSON.stringify(infoBlocks) }
+        { key: 'tournament_info', value: JSON.stringify(tournamentInfo) }
       ];
 
       for (const update of updates) {
@@ -91,24 +126,8 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
     }
   };
 
-  const addInfoBlock = () => {
-    const newBlock: InfoBlock = {
-      id: Date.now().toString(),
-      title: 'Новый блок',
-      content: 'Описание блока',
-      imageUrl: ''
-    };
-    setInfoBlocks([...infoBlocks, newBlock]);
-  };
-
-  const updateInfoBlock = (id: string, field: keyof InfoBlock, value: string) => {
-    setInfoBlocks(infoBlocks.map(block => 
-      block.id === id ? { ...block, [field]: value } : block
-    ));
-  };
-
-  const deleteInfoBlock = (id: string) => {
-    setInfoBlocks(infoBlocks.filter(block => block.id !== id));
+  const updateTournamentInfo = (field: keyof TournamentInfo, value: string) => {
+    setTournamentInfo({ ...tournamentInfo, [field]: value });
   };
 
   return (
@@ -157,71 +176,103 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
 
           <Card className="bg-background/50 border-border">
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Информационные блоки</CardTitle>
-                <Button onClick={addInfoBlock} size="sm" className="bg-primary hover:bg-primary/90">
-                  <Icon name="Plus" className="w-4 h-4 mr-2" />
-                  Добавить блок
-                </Button>
-              </div>
+              <CardTitle className="text-lg">Информационные блоки</CardTitle>
             </CardHeader>
-            <CardContent>
-              {infoBlocks.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  <Icon name="Inbox" className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Нет информационных блоков</p>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="tournamentName">Название турнира</Label>
+                  <Input
+                    id="tournamentName"
+                    value={tournamentInfo.tournamentName}
+                    onChange={(e) => updateTournamentInfo('tournamentName', e.target.value)}
+                    placeholder="Кубок League of Legends: Wild Rift"
+                  />
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  {infoBlocks.map((block) => (
-                    <div key={block.id} className="p-4 border border-border rounded-lg space-y-3">
-                      <div className="flex items-center justify-between">
-                        <Label className="font-semibold">Блок #{block.id.slice(-4)}</Label>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => deleteInfoBlock(block.id)}
-                          className="border-destructive/50 text-destructive hover:bg-destructive/10"
-                        >
-                          <Icon name="Trash2" className="w-4 h-4" />
-                        </Button>
-                      </div>
-                      <div>
-                        <Label>Заголовок блока</Label>
-                        <Input
-                          value={block.title}
-                          onChange={(e) => updateInfoBlock(block.id, 'title', e.target.value)}
-                          placeholder="Заголовок"
-                        />
-                      </div>
-                      <div>
-                        <Label>Содержание</Label>
-                        <Textarea
-                          value={block.content}
-                          onChange={(e) => updateInfoBlock(block.id, 'content', e.target.value)}
-                          placeholder="Текст блока"
-                          rows={3}
-                        />
-                      </div>
-                      <div>
-                        <Label>URL изображения</Label>
-                        <Input
-                          value={block.imageUrl}
-                          onChange={(e) => updateInfoBlock(block.id, 'imageUrl', e.target.value)}
-                          placeholder="https://example.com/image.jpg"
-                        />
-                        {block.imageUrl && (
-                          <img 
-                            src={block.imageUrl} 
-                            alt={block.title}
-                            className="mt-2 w-full h-32 object-cover rounded-lg"
-                          />
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                <div>
+                  <Label htmlFor="prizeFund">Призовой фонд</Label>
+                  <Input
+                    id="prizeFund"
+                    value={tournamentInfo.prizeFund}
+                    onChange={(e) => updateTournamentInfo('prizeFund', e.target.value)}
+                    placeholder="100 000 ₽"
+                  />
                 </div>
-              )}
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="prizeCount">Количество призовых мест</Label>
+                  <Input
+                    id="prizeCount"
+                    value={tournamentInfo.prizeCount}
+                    onChange={(e) => updateTournamentInfo('prizeCount', e.target.value)}
+                    placeholder="3"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="sponsor">Спонсор</Label>
+                  <Input
+                    id="sponsor"
+                    value={tournamentInfo.sponsor}
+                    onChange={(e) => updateTournamentInfo('sponsor', e.target.value)}
+                    placeholder="Компания XYZ"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="startDate">Начало турнира</Label>
+                  <Input
+                    id="startDate"
+                    value={tournamentInfo.startDate}
+                    onChange={(e) => updateTournamentInfo('startDate', e.target.value)}
+                    placeholder="15 ноября 2024"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="registrationEnd">Окончание регистрации</Label>
+                  <Input
+                    id="registrationEnd"
+                    value={tournamentInfo.registrationEnd}
+                    onChange={(e) => updateTournamentInfo('registrationEnd', e.target.value)}
+                    placeholder="10 ноября 2024"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="streamLinks">Стрим-трансляции</Label>
+                <Textarea
+                  id="streamLinks"
+                  value={tournamentInfo.streamLinks}
+                  onChange={(e) => updateTournamentInfo('streamLinks', e.target.value)}
+                  placeholder="Ссылки на стримы (каждая с новой строки)"
+                  rows={3}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="rules">Основные правила и условия</Label>
+                <Textarea
+                  id="rules"
+                  value={tournamentInfo.rules}
+                  onChange={(e) => updateTournamentInfo('rules', e.target.value)}
+                  placeholder="Перечислите основные правила турнира"
+                  rows={6}
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="regulationsLink">Ссылка на регламент</Label>
+                <Input
+                  id="regulationsLink"
+                  value={tournamentInfo.regulationsLink}
+                  onChange={(e) => updateTournamentInfo('regulationsLink', e.target.value)}
+                  placeholder="https://example.com/regulations.pdf"
+                />
+              </div>
             </CardContent>
           </Card>
 

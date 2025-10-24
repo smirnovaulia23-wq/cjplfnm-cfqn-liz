@@ -52,7 +52,7 @@ const Index = () => {
   const [homeTitle, setHomeTitle] = useState('League of Legends: Wild Rift');
   const [homeSubtitle, setHomeSubtitle] = useState('Турнир 5x5');
   const [homeDescription, setHomeDescription] = useState('Соберите команду и докажите своё мастерство в «Диком ущелье»');
-  const [homeInfoBlocks, setHomeInfoBlocks] = useState<any[]>([]);
+  const [tournamentInfo, setTournamentInfo] = useState<any>({});
   const [teamForm, setTeamForm] = useState({
     teamName: '',
     captainNick: '',
@@ -172,10 +172,10 @@ const Index = () => {
       setHomeDescription(data.settings?.home_description || 'Соберите команду и докажите своё мастерство в «Диком ущелье»');
       
       try {
-        const blocks = JSON.parse(data.settings?.home_info_blocks || '[]');
-        setHomeInfoBlocks(blocks);
+        const info = JSON.parse(data.settings?.tournament_info || '{}');
+        setTournamentInfo(info);
       } catch {
-        setHomeInfoBlocks([]);
+        setTournamentInfo({});
       }
     } catch (error) {
       setRegistrationOpen(true);
@@ -599,23 +599,84 @@ const Index = () => {
                     </div>
                   </div>
 
-                  {homeInfoBlocks.length > 0 && (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {homeInfoBlocks.map((block: any) => (
-                        <div key={block.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10">
-                          {block.imageUrl && (
-                            <img 
-                              src={block.imageUrl} 
-                              alt={block.title}
-                              className="w-full h-48 object-cover"
-                            />
-                          )}
-                          <div className="p-6">
-                            <h3 className="text-xl font-bold text-foreground mb-3">{block.title}</h3>
-                            <p className="text-muted-foreground whitespace-pre-wrap">{block.content}</p>
+                  {Object.keys(tournamentInfo).length > 0 && (
+                    <div className="space-y-8">
+                      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {tournamentInfo.tournamentName && (
+                          <div className="bg-card border border-border rounded-xl p-6">
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Название турнира</h3>
+                            <p className="text-lg font-bold text-foreground">{tournamentInfo.tournamentName}</p>
                           </div>
+                        )}
+                        {tournamentInfo.prizeFund && (
+                          <div className="bg-card border border-border rounded-xl p-6">
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Призовой фонд</h3>
+                            <p className="text-lg font-bold text-primary">{tournamentInfo.prizeFund}</p>
+                          </div>
+                        )}
+                        {tournamentInfo.prizeCount && (
+                          <div className="bg-card border border-border rounded-xl p-6">
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Количество призовых мест</h3>
+                            <p className="text-lg font-bold text-foreground">{tournamentInfo.prizeCount}</p>
+                          </div>
+                        )}
+                        {tournamentInfo.sponsor && (
+                          <div className="bg-card border border-border rounded-xl p-6">
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Спонсор</h3>
+                            <p className="text-lg font-bold text-foreground">{tournamentInfo.sponsor}</p>
+                          </div>
+                        )}
+                        {tournamentInfo.startDate && (
+                          <div className="bg-card border border-border rounded-xl p-6">
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Начало турнира</h3>
+                            <p className="text-lg font-bold text-secondary">{tournamentInfo.startDate}</p>
+                          </div>
+                        )}
+                        {tournamentInfo.registrationEnd && (
+                          <div className="bg-card border border-border rounded-xl p-6">
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Окончание регистрации</h3>
+                            <p className="text-lg font-bold text-accent">{tournamentInfo.registrationEnd}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {tournamentInfo.streamLinks && (
+                        <div className="bg-card border border-border rounded-xl p-6">
+                          <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                            <Icon name="Video" className="w-5 h-5 text-primary" />
+                            Стрим-трансляции
+                          </h3>
+                          <div className="text-muted-foreground whitespace-pre-wrap">{tournamentInfo.streamLinks}</div>
                         </div>
-                      ))}
+                      )}
+
+                      {tournamentInfo.rules && (
+                        <div className="bg-card border border-border rounded-xl p-6">
+                          <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                            <Icon name="FileText" className="w-5 h-5 text-primary" />
+                            Основные правила и условия
+                          </h3>
+                          <div className="text-muted-foreground whitespace-pre-wrap">{tournamentInfo.rules}</div>
+                        </div>
+                      )}
+
+                      {tournamentInfo.regulationsLink && (
+                        <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-6">
+                          <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                            <Icon name="Book" className="w-5 h-5 text-primary" />
+                            Регламент турнира
+                          </h3>
+                          <a 
+                            href={tournamentInfo.regulationsLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-primary hover:underline font-semibold"
+                          >
+                            Скачать полный регламент
+                            <Icon name="ExternalLink" className="w-4 h-4" />
+                          </a>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
