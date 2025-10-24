@@ -331,6 +331,40 @@ const Index = () => {
     }
   };
 
+  const handleDeleteApprovedTeam = async (teamId: number) => {
+    try {
+      await fetch(BACKEND_URLS.teams, {
+        method: 'DELETE',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Auth-Token': sessionToken
+        },
+        body: JSON.stringify({ teamId })
+      });
+      toast({ title: 'Команда удалена', description: 'Команда была удалена из списка' });
+      loadApprovedTeams();
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось удалить команду', variant: 'destructive' });
+    }
+  };
+
+  const handleDeleteApprovedPlayer = async (playerId: number) => {
+    try {
+      await fetch(BACKEND_URLS.teams, {
+        method: 'DELETE',
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Auth-Token': sessionToken
+        },
+        body: JSON.stringify({ playerId })
+      });
+      toast({ title: 'Игрок удален', description: 'Игрок был удален из списка' });
+      loadIndividualPlayers();
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось удалить игрока', variant: 'destructive' });
+    }
+  };
+
   const handleTeamRegistration = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -578,11 +612,19 @@ const Index = () => {
           onOpenChange={setShowAdminPanel}
           pendingTeams={pendingTeams}
           pendingPlayers={pendingPlayers}
+          approvedTeams={approvedTeams}
+          approvedPlayers={individualPlayers}
           registrationOpen={registrationOpen}
           onApproveTeam={handleApproveTeam}
           onRejectTeam={handleRejectTeam}
           onApprovePlayer={handleApprovePlayer}
           onRejectPlayer={handleRejectPlayer}
+          onDeleteApprovedTeam={handleDeleteApprovedTeam}
+          onDeleteApprovedPlayer={handleDeleteApprovedPlayer}
+          onEditApprovedTeam={(teamId) => {
+            setTeamId(teamId);
+            setShowTeamManagementDialog(true);
+          }}
           onToggleRegistration={handleToggleRegistration}
           userRole={userRole}
           challongeUrl={challongeUrl}
@@ -596,6 +638,7 @@ const Index = () => {
           onOpenChange={setShowSuperAdminPanel}
           sessionToken={sessionToken}
           authUrl={BACKEND_URLS.auth}
+          teamsUrl={BACKEND_URLS.teams}
         />
       )}
 

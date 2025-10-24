@@ -39,12 +39,17 @@ interface AdminPanelProps {
   onOpenChange: (open: boolean) => void;
   pendingTeams: Team[];
   pendingPlayers: Player[];
+  approvedTeams?: Team[];
+  approvedPlayers?: Player[];
   registrationOpen: boolean;
   onToggleRegistration: (open: boolean) => void;
   onApproveTeam: (teamId: number) => void;
   onRejectTeam: (teamId: number) => void;
   onApprovePlayer: (playerId: number) => void;
   onRejectPlayer: (playerId: number) => void;
+  onDeleteApprovedTeam?: (teamId: number) => void;
+  onDeleteApprovedPlayer?: (playerId: number) => void;
+  onEditApprovedTeam?: (teamId: number) => void;
   userRole: string;
   challongeUrl?: string;
   onChallongeUrlChange?: (url: string) => void;
@@ -55,12 +60,17 @@ export const AdminPanel = ({
   onOpenChange,
   pendingTeams,
   pendingPlayers,
+  approvedTeams = [],
+  approvedPlayers = [],
   registrationOpen,
   onToggleRegistration,
   onApproveTeam,
   onRejectTeam,
   onApprovePlayer,
   onRejectPlayer,
+  onDeleteApprovedTeam,
+  onDeleteApprovedPlayer,
+  onEditApprovedTeam,
   userRole,
   challongeUrl,
   onChallongeUrlChange
@@ -344,6 +354,125 @@ export const AdminPanel = ({
                           <Icon name="X" className="w-4 h-4 mr-1" />
                           Отклонить
                         </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-background/50 border-border">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Одобренные команды</CardTitle>
+                <Badge variant="outline" className="border-primary text-primary">
+                  {approvedTeams.length}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {approvedTeams.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Icon name="Inbox" className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Нет одобренных команд</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {approvedTeams.map((team) => (
+                    <div
+                      key={team.id}
+                      className="p-4 rounded-lg bg-card border border-border"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-lg text-foreground">{team.teamName}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Капитан: {team.captainNick}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          {onEditApprovedTeam && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => onEditApprovedTeam(team.id)}
+                              className="border-primary/50 text-primary hover:bg-primary/10"
+                            >
+                              <Icon name="Edit" className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {onDeleteApprovedTeam && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                if (confirm(`Удалить команду ${team.teamName}?`)) {
+                                  onDeleteApprovedTeam(team.id);
+                                }
+                              }}
+                              className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                            >
+                              <Icon name="Trash2" className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-background/50 border-border">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Одобренные игроки</CardTitle>
+                <Badge variant="outline" className="border-primary text-primary">
+                  {approvedPlayers.length}
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {approvedPlayers.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <Icon name="Inbox" className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Нет одобренных игроков</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {approvedPlayers.map((player) => (
+                    <div
+                      key={player.id}
+                      className="p-4 rounded-lg bg-card border border-border"
+                    >
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <h3 className="font-semibold text-lg text-foreground">{player.nickname}</h3>
+                          <p className="text-sm text-muted-foreground">{player.telegram}</p>
+                          <div className="flex gap-2 mt-2">
+                            {player.preferredRoles.map((role) => (
+                              <Badge key={role} variant="outline" className="text-xs">
+                                {role}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                        {onDeleteApprovedPlayer && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => {
+                              if (confirm(`Удалить игрока ${player.nickname}?`)) {
+                                onDeleteApprovedPlayer(player.id);
+                              }
+                            }}
+                            className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                          >
+                            <Icon name="Trash2" className="w-4 h-4" />
+                          </Button>
+                        )}
                       </div>
                     </div>
                   ))}

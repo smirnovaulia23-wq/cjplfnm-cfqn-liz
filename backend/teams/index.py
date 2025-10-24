@@ -444,10 +444,72 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             password = body_data.get('password')
             item_type = body_data.get('type')
             admin_action = body_data.get('adminAction', False)
+            team_id = body_data.get('teamId')
+            player_id = body_data.get('playerId')
+            action = body_data.get('action')
+            
+            auth_token = event.get('headers', {}).get('X-Auth-Token') or event.get('headers', {}).get('x-auth-token')
+            
+            if action == 'clear_all' and auth_token:
+                cur.execute(
+                    f"SELECT role FROM admin_users WHERE session_token = '{escape_sql(auth_token)}'"
+                )
+                admin_result = cur.fetchone()
+                
+                if not admin_result or admin_result[0] != 'super_admin':
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Требуется супер-админ'}),
+                        'isBase64Encoded': False
+                    }
+                
+                cur.execute("DELETE FROM teams")
+                teams_deleted = cur.rowcount
+                cur.execute("DELETE FROM individual_players")
+                players_deleted = cur.rowcount
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({
+                        'success': True,
+                        'deletedTeams': teams_deleted,
+                        'deletedPlayers': players_deleted
+                    }),
+                    'isBase64Encoded': False
+                }
+            
+            if (team_id or player_id) and auth_token:
+                cur.execute(
+                    f"SELECT role FROM admin_users WHERE session_token = '{escape_sql(auth_token)}'"
+                )
+                admin_result = cur.fetchone()
+                
+                if not admin_result:
+                    return {
+                        'statusCode': 403,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'error': 'Требуется админ доступ'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if team_id:
+                    cur.execute(f"DELETE FROM teams WHERE id = {team_id}")
+                elif player_id:
+                    cur.execute(f"DELETE FROM individual_players WHERE id = {player_id}")
+                
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'success': True}),
+                    'isBase64Encoded': False
+                }
             
             if admin_action:
-                auth_token = event.get('headers', {}).get('X-Auth-Token') or event.get('headers', {}).get('x-auth-token')
-                
                 if not auth_token:
                     return {
                         'statusCode': 401,

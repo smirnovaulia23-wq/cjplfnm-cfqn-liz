@@ -20,18 +20,21 @@ interface SuperAdminPanelProps {
   onOpenChange: (open: boolean) => void;
   sessionToken: string;
   authUrl: string;
+  teamsUrl: string;
 }
 
 export const SuperAdminPanel = ({
   open,
   onOpenChange,
   sessionToken,
-  authUrl
+  authUrl,
+  teamsUrl
 }: SuperAdminPanelProps) => {
   const [admins, setAdmins] = useState<Admin[]>([]);
   const [newAdminUsername, setNewAdminUsername] = useState('');
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (open) {
@@ -152,6 +155,51 @@ export const SuperAdminPanel = ({
     }
   };
 
+  const handleClearAllApplications = async () => {
+    if (!confirm('⚠️ ВНИМАНИЕ! Вы уверены, что хотите удалить ВСЕ заявки (команды и игроки)? Это действие необратимо!')) {
+      return;
+    }
+
+    if (!confirm('Подтвердите ещё раз: удалить все заявки для подготовки к новому турниру?')) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch(teamsUrl, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Auth-Token': sessionToken
+        },
+        body: JSON.stringify({
+          action: 'clear_all'
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Ошибка при удалении заявок');
+      }
+
+      toast({
+        title: 'Успешно',
+        description: `Удалено заявок: ${data.deletedTeams} команд, ${data.deletedPlayers} игроков`
+      });
+
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({
+        title: 'Ошибка',
+        description: error.message,
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
@@ -257,6 +305,29 @@ export const SuperAdminPanel = ({
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-destructive/10 border-destructive/50">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 text-destructive">
+                <Icon name="AlertTriangle" className="w-5 h-5" />
+                Опасная зона
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Это действие удалит ВСЕ заявки (команды и игроков) из базы данных. 
+                Используйте для подготовки к новому турниру.
+              </p>
+              <Button
+                onClick={handleClearAllApplications}
+                disabled={isDeleting}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full"
+              >
+                <Icon name="Trash2" className="w-4 h-4 mr-2" />
+                {isDeleting ? 'Удаление...' : 'Удалить все заявки'}
+              </Button>
             </CardContent>
           </Card>
         </div>
