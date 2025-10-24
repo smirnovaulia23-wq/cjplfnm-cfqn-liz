@@ -39,11 +39,13 @@ export const TournamentHeader = ({
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-lg shadow-primary/20">
-              <Icon name="Trophy" className="w-6 h-6 text-white" />
-            </div>
+            <img 
+              src="https://cdn.poehali.dev/files/eac5fadf-b016-4656-a234-d2674a27b6d9.png" 
+              alt="Go Tournament Logo" 
+              className="w-10 h-10 object-contain"
+            />
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-primary">Лига Легенд</h1>
+              <h1 className="text-xl sm:text-2xl font-bold text-primary">Go Tournament</h1>
               <p className="text-xs text-muted-foreground hidden sm:block">Турнирная платформа</p>
             </div>
           </div>
