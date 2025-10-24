@@ -105,8 +105,7 @@ export const TournamentHeader = ({
                     className="bg-primary text-primary-foreground hover:bg-primary/90"
                     size="sm"
                   >
-                    <Icon name="Settings" className="w-4 h-4 sm:mr-2" />
-                    <span className="hidden sm:inline">Админ-панель</span>
+                    <Icon name="Settings" className="w-4 h-4" />
                   </Button>
                   {isSuperAdmin && setShowSuperAdminPanel && (
                     <Button
@@ -114,8 +113,7 @@ export const TournamentHeader = ({
                       className="bg-secondary text-white hover:bg-secondary/90"
                       size="sm"
                     >
-                      <Icon name="Shield" className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Админ</span>
+                      <Icon name="Shield" className="w-4 h-4" />
                     </Button>
                   )}
                 </>
@@ -125,8 +123,7 @@ export const TournamentHeader = ({
                   className="bg-secondary text-white hover:bg-secondary/90"
                   size="sm"
                 >
-                  <Icon name="Settings" className="w-4 h-4 sm:mr-2" />
-                  <span className="hidden sm:inline">Моя команда</span>
+                  <Icon name="Settings" className="w-4 h-4" />
                 </Button>
               )}
               <Button
@@ -135,8 +132,7 @@ export const TournamentHeader = ({
                 onClick={onLogout}
                 className="border-primary/50 text-primary hover:bg-primary/10"
               >
-                <Icon name="LogOut" className="w-4 h-4 sm:mr-2" />
-                <span className="hidden sm:inline">Выход</span>
+                <Icon name="LogOut" className="w-4 h-4" />
               </Button>
             </div>
           ) : (
@@ -146,8 +142,7 @@ export const TournamentHeader = ({
               size="sm"
               className="border-primary/50 text-primary hover:bg-primary/10"
             >
-              <Icon name="LogIn" className="w-4 h-4 sm:mr-2" />
-              <span className="hidden sm:inline">Войти</span>
+              <Icon name="LogIn" className="w-4 h-4" />
             </Button>
           )}
         </div>
