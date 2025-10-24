@@ -705,7 +705,7 @@ const Index = () => {
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-2 text-primary hover:underline font-semibold"
                       >
-                        Скачать полный регламент
+                        Посмотреть полный регламент
                         <Icon name="ExternalLink" className="w-4 h-4" />
                       </a>
                     </div>
