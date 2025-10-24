@@ -19,6 +19,7 @@ interface TournamentInfo {
   verticalBanner: string;
   rules: string;
   regulationsLink: string;
+  participantTips: string;
 }
 
 interface HomePageEditorProps {
@@ -42,7 +43,8 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
     registrationEnd: '',
     verticalBanner: '',
     rules: '',
-    regulationsLink: ''
+    regulationsLink: '',
+    participantTips: ''
   });
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -75,7 +77,8 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
           registrationEnd: info.registrationEnd || '',
           verticalBanner: info.verticalBanner || '',
           rules: info.rules || '',
-          regulationsLink: info.regulationsLink || ''
+          regulationsLink: info.regulationsLink || '',
+          participantTips: info.participantTips || ''
         });
       } catch {
         setTournamentInfo({
@@ -88,7 +91,8 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
           registrationEnd: '',
           verticalBanner: '',
           rules: '',
-          regulationsLink: ''
+          regulationsLink: '',
+          participantTips: ''
         });
       }
     } catch (error) {
@@ -313,6 +317,17 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
                   value={tournamentInfo.regulationsLink}
                   onChange={(e) => updateTournamentInfo('regulationsLink', e.target.value)}
                   placeholder="https://example.com/regulations.pdf"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="participantTips">Подсказки для участников</Label>
+                <Textarea
+                  id="participantTips"
+                  value={tournamentInfo.participantTips}
+                  onChange={(e) => updateTournamentInfo('participantTips', e.target.value)}
+                  placeholder="Полезные советы и рекомендации для участников турнира"
+                  rows={5}
                 />
               </div>
             </CardContent>

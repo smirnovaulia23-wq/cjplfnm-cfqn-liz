@@ -710,6 +710,16 @@ const Index = () => {
                       </a>
                     </div>
                   )}
+
+                  {tournamentInfo.participantTips && (
+                    <div className="bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-xl p-6 mt-6">
+                      <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
+                        <Icon name="Lightbulb" className="w-5 h-5 text-accent" />
+                        Подсказки для участников
+                      </h3>
+                      <div className="text-muted-foreground whitespace-pre-wrap">{tournamentInfo.participantTips}</div>
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
