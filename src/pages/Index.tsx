@@ -685,7 +685,6 @@ const Index = () => {
           open={showScheduleAdminPanel}
           onOpenChange={setShowScheduleAdminPanel}
           sessionToken={sessionToken}
-          teamsUrl={BACKEND_URLS.teams}
           scheduleUrl={BACKEND_URLS.schedule}
         />
       )}

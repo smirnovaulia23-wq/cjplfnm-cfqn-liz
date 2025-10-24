@@ -9,11 +9,6 @@ import Icon from '@/components/ui/icon';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
-interface Team {
-  id: number;
-  team_name: string;
-}
-
 interface Match {
   id: number;
   match_date: string;
@@ -34,7 +29,6 @@ interface ScheduleAdminPanelProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   sessionToken: string;
-  teamsUrl: string;
   scheduleUrl: string;
 }
 
@@ -42,10 +36,8 @@ export const ScheduleAdminPanel = ({
   open,
   onOpenChange,
   sessionToken,
-  teamsUrl,
   scheduleUrl
 }: ScheduleAdminPanelProps) => {
-  const [teams, setTeams] = useState<Team[]>([]);
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -53,8 +45,8 @@ export const ScheduleAdminPanel = ({
   const [newMatch, setNewMatch] = useState({
     match_date: '',
     match_time: '',
-    team1_id: '',
-    team2_id: '',
+    team1_name: '',
+    team2_name: '',
     round: ''
   });
 
@@ -62,25 +54,9 @@ export const ScheduleAdminPanel = ({
 
   useEffect(() => {
     if (open) {
-      loadTeams();
       loadMatches();
     }
   }, [open]);
-
-  const loadTeams = async () => {
-    try {
-      const response = await fetch(`${teamsUrl}?status=approved`, {
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setTeams(data.teams || []);
-      }
-    } catch (error) {
-      console.error('Ошибка загрузки команд:', error);
-    }
-  };
 
   const loadMatches = async () => {
     try {
@@ -98,21 +74,18 @@ export const ScheduleAdminPanel = ({
   };
 
   const handleCreateMatch = async () => {
-    if (!newMatch.match_date || !newMatch.match_time || !newMatch.team1_id || !newMatch.team2_id || !newMatch.round) {
+    if (!newMatch.match_date || !newMatch.match_time || !newMatch.team1_name || !newMatch.team2_name || !newMatch.round) {
       toast({ title: 'Заполните все поля', variant: 'destructive' });
       return;
     }
 
-    if (newMatch.team1_id === newMatch.team2_id) {
+    if (newMatch.team1_name.trim() === newMatch.team2_name.trim()) {
       toast({ title: 'Команды должны быть разными', variant: 'destructive' });
       return;
     }
 
     setLoading(true);
     try {
-      const team1 = teams.find(t => t.id === parseInt(newMatch.team1_id));
-      const team2 = teams.find(t => t.id === parseInt(newMatch.team2_id));
-
       const response = await fetch(scheduleUrl, {
         method: 'POST',
         mode: 'cors',
@@ -124,10 +97,8 @@ export const ScheduleAdminPanel = ({
         body: JSON.stringify({
           match_date: newMatch.match_date,
           match_time: newMatch.match_time,
-          team1_id: parseInt(newMatch.team1_id),
-          team2_id: parseInt(newMatch.team2_id),
-          team1_name: team1?.team_name || '',
-          team2_name: team2?.team_name || '',
+          team1_name: newMatch.team1_name.trim(),
+          team2_name: newMatch.team2_name.trim(),
           round: newMatch.round,
           status: 'waiting'
         })
@@ -140,8 +111,8 @@ export const ScheduleAdminPanel = ({
         setNewMatch({
           match_date: '',
           match_time: '',
-          team1_id: '',
-          team2_id: '',
+          team1_name: '',
+          team2_name: '',
           round: ''
         });
         loadMatches();
@@ -256,33 +227,19 @@ export const ScheduleAdminPanel = ({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>Команда 1</Label>
-                  <Select value={newMatch.team1_id} onValueChange={(value) => setNewMatch({ ...newMatch, team1_id: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите команду" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams.map(team => (
-                        <SelectItem key={team.id} value={team.id.toString()}>
-                          {team.team_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    placeholder="Введите название команды"
+                    value={newMatch.team1_name}
+                    onChange={(e) => setNewMatch({ ...newMatch, team1_name: e.target.value })}
+                  />
                 </div>
                 <div>
                   <Label>Команда 2</Label>
-                  <Select value={newMatch.team2_id} onValueChange={(value) => setNewMatch({ ...newMatch, team2_id: value })}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Выберите команду" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {teams.map(team => (
-                        <SelectItem key={team.id} value={team.id.toString()}>
-                          {team.team_name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Input
+                    placeholder="Введите название команды"
+                    value={newMatch.team2_name}
+                    onChange={(e) => setNewMatch({ ...newMatch, team2_name: e.target.value })}
+                  />
                 </div>
               </div>
 

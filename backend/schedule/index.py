@@ -96,14 +96,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cursor.execute("""
                 INSERT INTO matches 
-                (match_date, match_time, team1_id, team2_id, team1_name, team2_name, round, status, stream_url)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+                (match_date, match_time, team1_name, team2_name, round, status, stream_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             """, (
                 body_data['match_date'],
                 body_data['match_time'],
-                body_data['team1_id'],
-                body_data['team2_id'],
                 body_data['team1_name'],
                 body_data['team2_name'],
                 body_data['round'],
