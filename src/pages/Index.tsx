@@ -610,89 +610,89 @@ const Index = () => {
                         )}
                         
                         {tournamentInfo.prizeFund && (
-                          <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
-                            <div className="relative h-32 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                              <Icon name="Trophy" className="w-16 h-16 text-primary/40 group-hover:scale-110 transition-transform" />
+                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <Icon name="Trophy" className="w-5 h-5 text-primary" />
+                              </div>
+                              <h3 className="text-sm font-semibold text-muted-foreground">Призовой фонд</h3>
                             </div>
-                            <div className="p-6">
-                              <h3 className="text-sm font-semibold text-muted-foreground mb-2">Призовой фонд</h3>
-                              <p className="text-xl font-bold text-primary">{tournamentInfo.prizeFund}</p>
-                            </div>
+                            <p className="text-xl font-bold text-primary">{tournamentInfo.prizeFund}</p>
                           </div>
                         )}
                         
                         {tournamentInfo.prizeCount && (
-                          <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
-                            <div className="relative h-32 bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center">
-                              <Icon name="Award" className="w-16 h-16 text-secondary/40 group-hover:scale-110 transition-transform" />
+                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
+                                <Icon name="Award" className="w-5 h-5 text-secondary" />
+                              </div>
+                              <h3 className="text-sm font-semibold text-muted-foreground">Количество призовых мест</h3>
                             </div>
-                            <div className="p-6">
-                              <h3 className="text-sm font-semibold text-muted-foreground mb-2">Количество призовых мест</h3>
-                              <p className="text-xl font-bold text-foreground">{tournamentInfo.prizeCount}</p>
-                            </div>
+                            <p className="text-xl font-bold text-foreground">{tournamentInfo.prizeCount}</p>
                           </div>
                         )}
                         
                         {tournamentInfo.streamLinks && (
-                          <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
-                            <div className="relative h-32 bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center">
-                              <Icon name="Video" className="w-16 h-16 text-accent/40 group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div className="p-6">
-                              <h3 className="text-sm font-semibold text-muted-foreground mb-2">Стрим-трансляции</h3>
-                              <div className="space-y-2">
-                                {tournamentInfo.streamLinks.split('\n').filter(link => link.trim()).map((link, idx) => (
-                                  <a 
-                                    key={idx}
-                                    href={link.trim()}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-2 text-primary hover:underline"
-                                  >
-                                    <Icon name="ExternalLink" className="w-4 h-4" />
-                                    {link.trim()}
-                                  </a>
-                                ))}
+                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
+                                <Icon name="Video" className="w-5 h-5 text-accent" />
                               </div>
+                              <h3 className="text-sm font-semibold text-muted-foreground">Стрим-трансляции</h3>
+                            </div>
+                            <div className="space-y-2">
+                              {tournamentInfo.streamLinks.split('\n').filter(link => link.trim()).map((link, idx) => (
+                                <a 
+                                  key={idx}
+                                  href={link.trim()}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 text-primary hover:underline"
+                                >
+                                  <Icon name="ExternalLink" className="w-4 h-4" />
+                                  {link.trim()}
+                                </a>
+                              ))}
                             </div>
                           </div>
                         )}
                         
                         {tournamentInfo.sponsor && (
-                          <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
-                            <div className="relative h-32 bg-gradient-to-br from-purple-500/20 to-purple-500/5 flex items-center justify-center">
-                              <Icon name="Handshake" className="w-16 h-16 text-purple-500/40 group-hover:scale-110 transition-transform" />
+                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
+                            <div className="flex items-center gap-3 mb-3">
+                              <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
+                                <Icon name="Handshake" className="w-5 h-5 text-purple-500" />
+                              </div>
+                              <h3 className="text-sm font-semibold text-muted-foreground">Спонсор</h3>
                             </div>
-                            <div className="p-6">
-                              <h3 className="text-sm font-semibold text-muted-foreground mb-2">Спонсор</h3>
-                              <p className="text-xl font-bold text-foreground">{tournamentInfo.sponsor}</p>
-                            </div>
+                            <p className="text-xl font-bold text-foreground">{tournamentInfo.sponsor}</p>
                           </div>
                         )}
                         
                         {(tournamentInfo.startDate || tournamentInfo.registrationEnd) && (
                           <div className="grid md:grid-cols-2 gap-6">
                             {tournamentInfo.startDate && (
-                              <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
-                                <div className="relative h-32 bg-gradient-to-br from-blue-500/20 to-blue-500/5 flex items-center justify-center">
-                                  <Icon name="CalendarCheck" className="w-16 h-16 text-blue-500/40 group-hover:scale-110 transition-transform" />
+                              <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                                    <Icon name="CalendarCheck" className="w-5 h-5 text-blue-500" />
+                                  </div>
+                                  <h3 className="text-sm font-semibold text-muted-foreground">Начало турнира</h3>
                                 </div>
-                                <div className="p-6">
-                                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">Начало турнира</h3>
-                                  <p className="text-xl font-bold text-secondary">{tournamentInfo.startDate}</p>
-                                </div>
+                                <p className="text-xl font-bold text-secondary">{tournamentInfo.startDate}</p>
                               </div>
                             )}
                             
                             {tournamentInfo.registrationEnd && (
-                              <div className="bg-card border border-border rounded-xl overflow-hidden hover:border-primary/50 transition-colors group">
-                                <div className="relative h-32 bg-gradient-to-br from-orange-500/20 to-orange-500/5 flex items-center justify-center">
-                                  <Icon name="Clock" className="w-16 h-16 text-orange-500/40 group-hover:scale-110 transition-transform" />
+                              <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
+                                <div className="flex items-center gap-3 mb-3">
+                                  <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
+                                    <Icon name="Clock" className="w-5 h-5 text-orange-500" />
+                                  </div>
+                                  <h3 className="text-sm font-semibold text-muted-foreground">Окончание регистрации</h3>
                                 </div>
-                                <div className="p-6">
-                                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">Окончание регистрации</h3>
-                                  <p className="text-xl font-bold text-accent">{tournamentInfo.registrationEnd}</p>
-                                </div>
+                                <p className="text-xl font-bold text-accent">{tournamentInfo.registrationEnd}</p>
                               </div>
                             )}
                           </div>
