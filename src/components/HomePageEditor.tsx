@@ -99,11 +99,11 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
         { key: 'home_title', value: title },
         { key: 'home_subtitle', value: subtitle },
         { key: 'home_description', value: description },
-        { key: 'tournament_info', value: JSON.stringify(tournamentInfo) }
+        { key: 'tournament_info', value: tournamentInfo }
       ];
 
       for (const update of updates) {
-        await fetch(settingsUrl, {
+        const response = await fetch(settingsUrl, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
@@ -111,14 +111,20 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
           },
           body: JSON.stringify(update)
         });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Ошибка при сохранении');
+        }
       }
 
       toast({ title: 'Сохранено', description: 'Настройки главной страницы обновлены' });
       onOpenChange(false);
     } catch (error) {
+      console.error('Save error:', error);
       toast({ 
         title: 'Ошибка', 
-        description: 'Не удалось сохранить настройки',
+        description: error instanceof Error ? error.message : 'Не удалось сохранить настройки',
         variant: 'destructive' 
       });
     } finally {
