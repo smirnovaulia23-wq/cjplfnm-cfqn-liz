@@ -667,11 +667,13 @@ const Index = () => {
 
                       {tournamentInfo.verticalBanner && (
                         <div className="hidden lg:block w-80 flex-shrink-0">
-                          <img 
-                            src={tournamentInfo.verticalBanner} 
-                            alt="Баннер турнира"
-                            className="w-full h-auto rounded-xl border border-border sticky top-8"
-                          />
+                          <div className="sticky top-8">
+                            <img 
+                              src={tournamentInfo.verticalBanner} 
+                              alt="Баннер турнира"
+                              className="w-full h-auto rounded-xl border border-border object-cover"
+                            />
+                          </div>
                         </div>
                       )}
                     </div>

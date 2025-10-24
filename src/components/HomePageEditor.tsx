@@ -188,6 +188,7 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
             <CardHeader>
               <CardTitle className="text-lg">Вертикальный баннер</CardTitle>
               <p className="text-sm text-muted-foreground mt-2">
+                📐 Рекомендуемые размеры: 600x1200px (вертикальное изображение)<br />
                 Баннер будет отображаться справа от информационных блоков
               </p>
             </CardHeader>
@@ -200,6 +201,9 @@ export const HomePageEditor = ({ open, onOpenChange, settingsUrl, adminToken }: 
                   onChange={(e) => updateTournamentInfo('verticalBanner', e.target.value)}
                   placeholder="https://example.com/banner.jpg"
                 />
+                <p className="text-xs text-muted-foreground mt-2">
+                  Форматы: JPG, PNG. Пропорции: 1:2 (например, 400x800, 600x1200, 800x1600)
+                </p>
               </div>
             </CardContent>
           </Card>
