@@ -281,7 +281,7 @@ export const SuperAdminPanel = ({
                             {admin.username}
                             {admin.username === 'Xuna' && (
                               <Badge className="bg-primary/20 text-primary border border-primary/50">
-                                Супер-админ
+                                Адм
                               </Badge>
                             )}
                           </h4>
