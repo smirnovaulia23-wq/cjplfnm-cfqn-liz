@@ -120,9 +120,7 @@ export const PlayersList = ({
                         <Icon name="User" className="w-5 h-5 text-primary flex-shrink-0" />
                         <h3 className="text-lg font-semibold text-foreground text-ellipsis-nick">{player.nickname}</h3>
                       </div>
-                      {!registrationOpen && (
-                        <p className="text-sm text-muted-foreground text-ellipsis-nick">{player.telegram}</p>
-                      )}
+                      <p className="text-sm text-muted-foreground text-ellipsis-nick">{player.telegram}</p>
                     </div>
                     <Badge className="bg-primary/20 text-primary border border-primary/50 ml-2">
                       Свободен
