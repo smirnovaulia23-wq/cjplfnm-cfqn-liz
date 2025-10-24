@@ -15,6 +15,7 @@ import TeamManagementDialog from '@/components/TeamManagementDialog';
 import TournamentBracket from '@/components/TournamentBracket';
 import { ScheduleView } from '@/components/ScheduleView';
 import { ScheduleAdminPanel } from '@/components/ScheduleAdminPanel';
+import { HomePageEditor } from '@/components/HomePageEditor';
 import Icon from '@/components/ui/icon';
 
 const BACKEND_URLS = {
@@ -41,12 +42,17 @@ const Index = () => {
   const [showTeamEditDialog, setShowTeamEditDialog] = useState(false);
   const [showTeamManagementDialog, setShowTeamManagementDialog] = useState(false);
   const [showScheduleAdminPanel, setShowScheduleAdminPanel] = useState(false);
+  const [showHomePageEditor, setShowHomePageEditor] = useState(false);
   const [approvedTeams, setApprovedTeams] = useState<any[]>([]);
   const [pendingTeams, setPendingTeams] = useState<any[]>([]);
   const [pendingPlayers, setPendingPlayers] = useState<any[]>([]);
   const [individualPlayers, setIndividualPlayers] = useState<any[]>([]);
   const [registrationOpen, setRegistrationOpen] = useState(true);
   const [challongeUrl, setChallongeUrl] = useState('');
+  const [homeTitle, setHomeTitle] = useState('League of Legends: Wild Rift');
+  const [homeSubtitle, setHomeSubtitle] = useState('Турнир 5x5');
+  const [homeDescription, setHomeDescription] = useState('Соберите команду и докажите своё мастерство в «Диком ущелье»');
+  const [homeInfoBlocks, setHomeInfoBlocks] = useState<any[]>([]);
   const [teamForm, setTeamForm] = useState({
     teamName: '',
     captainNick: '',
@@ -161,6 +167,16 @@ const Index = () => {
       const data = await response.json();
       setRegistrationOpen(data.settings?.registration_open === 'true');
       setChallongeUrl(data.settings?.challonge_url || '');
+      setHomeTitle(data.settings?.home_title || 'League of Legends: Wild Rift');
+      setHomeSubtitle(data.settings?.home_subtitle || 'Турнир 5x5');
+      setHomeDescription(data.settings?.home_description || 'Соберите команду и докажите своё мастерство в «Диком ущелье»');
+      
+      try {
+        const blocks = JSON.parse(data.settings?.home_info_blocks || '[]');
+        setHomeInfoBlocks(blocks);
+      } catch {
+        setHomeInfoBlocks([]);
+      }
     } catch (error) {
       setRegistrationOpen(true);
     }
@@ -554,21 +570,54 @@ const Index = () => {
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
               <TabsContent value="home" className="mt-0">
                 <div className="max-w-6xl mx-auto">
+                  {isAdmin && (
+                    <div className="mb-4 flex justify-end">
+                      <Button 
+                        onClick={() => setShowHomePageEditor(true)}
+                        className="bg-primary hover:bg-primary/90"
+                        size="sm"
+                      >
+                        <Icon name="Edit" className="w-4 h-4 mr-2" />
+                        Редактировать страницу
+                      </Button>
+                    </div>
+                  )}
+                  
                   <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 p-12 mb-12 backdrop-blur-sm border border-primary/20">
                     <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
                     <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
                     <div className="relative z-10 text-center">
                       <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                        League of Legends: Wild Rift
+                        {homeTitle}
                       </h1>
                       <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                        Турнир 5x5
+                        {homeSubtitle}
                       </h2>
-                      <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                        Соберите команду и докажите своё мастерство в «Диком ущелье»
+                      <p className="text-xl text-muted-foreground max-w-2xl mx-auto whitespace-pre-wrap">
+                        {homeDescription}
                       </p>
                     </div>
                   </div>
+
+                  {homeInfoBlocks.length > 0 && (
+                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {homeInfoBlocks.map((block: any) => (
+                        <div key={block.id} className="bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10">
+                          {block.imageUrl && (
+                            <img 
+                              src={block.imageUrl} 
+                              alt={block.title}
+                              className="w-full h-48 object-cover"
+                            />
+                          )}
+                          <div className="p-6">
+                            <h3 className="text-xl font-bold text-foreground mb-3">{block.title}</h3>
+                            <p className="text-muted-foreground whitespace-pre-wrap">{block.content}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </TabsContent>
 
@@ -726,6 +775,18 @@ const Index = () => {
         sessionToken={sessionToken}
         isAdmin={isAdmin}
       />
+
+      {isAdmin && (
+        <HomePageEditor
+          open={showHomePageEditor}
+          onOpenChange={(open) => {
+            setShowHomePageEditor(open);
+            if (!open) loadSettings();
+          }}
+          settingsUrl={BACKEND_URLS.settings}
+          adminToken={sessionToken}
+        />
+      )}
     </div>
   );
 };
