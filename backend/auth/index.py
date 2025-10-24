@@ -161,11 +161,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             hashed_password = hash_password(password)
+            print(f"Login attempt - Username: {username}, Password hash: {hashed_password}")
             
             cur.execute(
                 f"SELECT id, username, role, password_hash FROM admin_users WHERE username = '{escape_sql(username)}'"
             )
             user_data = cur.fetchone()
+            
+            if user_data:
+                print(f"User found - DB hash: {user_data[3]}, Match: {user_data[3] == hashed_password}")
+            else:
+                print(f"User not found: {username}")
             
             if user_data and user_data[3] == hashed_password:
                 session_token = generate_session_token()
