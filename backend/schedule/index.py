@@ -94,6 +94,25 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             body_data = json.loads(event.get('body', '{}'))
             
+            team1_name = body_data['team1_name']
+            team2_name = body_data['team2_name']
+            
+            cursor.execute("SELECT id FROM teams WHERE name = %s", (team1_name,))
+            team1 = cursor.fetchone()
+            team1_id = team1['id'] if team1 else None
+            
+            if not team1_id:
+                cursor.execute("INSERT INTO teams (name) VALUES (%s) RETURNING id", (team1_name,))
+                team1_id = cursor.fetchone()['id']
+            
+            cursor.execute("SELECT id FROM teams WHERE name = %s", (team2_name,))
+            team2 = cursor.fetchone()
+            team2_id = team2['id'] if team2 else None
+            
+            if not team2_id:
+                cursor.execute("INSERT INTO teams (name) VALUES (%s) RETURNING id", (team2_name,))
+                team2_id = cursor.fetchone()['id']
+            
             cursor.execute("""
                 INSERT INTO matches 
                 (match_date, match_time, team1_id, team2_id, team1_name, team2_name, round, status, stream_url)
@@ -102,10 +121,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             """, (
                 body_data['match_date'],
                 body_data['match_time'],
-                0,  # team1_id placeholder
-                0,  # team2_id placeholder
-                body_data['team1_name'],
-                body_data['team2_name'],
+                team1_id,
+                team2_id,
+                team1_name,
+                team2_name,
                 body_data['round'],
                 body_data.get('status', 'waiting'),
                 body_data.get('stream_url', '')
