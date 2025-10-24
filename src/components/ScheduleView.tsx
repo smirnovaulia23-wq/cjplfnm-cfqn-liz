@@ -27,6 +27,8 @@ export const ScheduleView = ({ backendUrl }: ScheduleViewProps) => {
 
   useEffect(() => {
     loadMatches();
+    const interval = setInterval(loadMatches, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const loadMatches = async () => {

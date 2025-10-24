@@ -157,6 +157,60 @@ export const ScheduleAdminPanel = ({
     }
   };
 
+  const handleDeleteMatch = async (matchId: number) => {
+    if (!confirm('Удалить этот матч?')) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${scheduleUrl}?id=${matchId}`, {
+        method: 'DELETE',
+        mode: 'cors',
+        credentials: 'omit',
+        headers: {
+          'X-Admin-Token': sessionToken
+        }
+      });
+
+      if (response.ok) {
+        toast({ title: 'Матч удалён!' });
+        loadMatches();
+      } else {
+        toast({ title: 'Ошибка', description: 'Не удалось удалить матч', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось удалить матч', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleClearAll = async () => {
+    if (!confirm('Удалить ВСЕ матчи? Это действие необратимо!')) return;
+
+    setLoading(true);
+    try {
+      const response = await fetch(`${scheduleUrl}?clear_all=true`, {
+        method: 'DELETE',
+        mode: 'cors',
+        credentials: 'omit',
+        headers: {
+          'X-Admin-Token': sessionToken
+        }
+      });
+
+      if (response.ok) {
+        toast({ title: 'Все матчи удалены!' });
+        loadMatches();
+      } else {
+        toast({ title: 'Ошибка', description: 'Не удалось очистить расписание', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось очистить расписание', variant: 'destructive' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'waiting':
@@ -246,8 +300,19 @@ export const ScheduleAdminPanel = ({
           </Card>
 
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Список матчей</CardTitle>
+              {matches.length > 0 && (
+                <Button 
+                  onClick={handleClearAll} 
+                  variant="destructive" 
+                  size="sm"
+                  disabled={loading}
+                >
+                  <Icon name="Trash2" className="w-4 h-4 mr-2" />
+                  Очистить всё
+                </Button>
+              )}
             </CardHeader>
             <CardContent className="space-y-3">
               {matches.length === 0 ? (
@@ -357,10 +422,20 @@ export const ScheduleAdminPanel = ({
                           </div>
                         </div>
                       ) : (
-                        <Button onClick={() => setEditMatch(match)} variant="outline" size="sm" className="w-full">
-                          <Icon name="Edit" className="w-4 h-4 mr-2" />
-                          Редактировать
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button onClick={() => setEditMatch(match)} variant="outline" size="sm" className="flex-1">
+                            <Icon name="Edit" className="w-4 h-4 mr-2" />
+                            Редактировать
+                          </Button>
+                          <Button 
+                            onClick={() => handleDeleteMatch(match.id)} 
+                            variant="destructive" 
+                            size="sm"
+                            disabled={loading}
+                          >
+                            <Icon name="Trash2" className="w-4 h-4" />
+                          </Button>
+                        </div>
                       )}
                     </CardContent>
                   </Card>

@@ -186,6 +186,58 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'isBase64Encoded': False
             }
         
+        elif method == 'DELETE':
+            headers = event.get('headers', {})
+            admin_token = headers.get('X-Admin-Token', headers.get('x-admin-token', ''))
+            
+            if not admin_token:
+                return {
+                    'statusCode': 401,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Unauthorized'})
+                }
+            
+            cursor.execute("SELECT id, role FROM admin_users WHERE session_token = %s", (admin_token,))
+            admin = cursor.fetchone()
+            
+            if not admin:
+                return {
+                    'statusCode': 403,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Invalid token'})
+                }
+            
+            query_params = event.get('queryStringParameters', {})
+            match_id = query_params.get('id')
+            clear_all = query_params.get('clear_all')
+            
+            if clear_all == 'true':
+                cursor.execute("DELETE FROM matches")
+                conn.commit()
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'message': 'All matches cleared'}),
+                    'isBase64Encoded': False
+                }
+            
+            if not match_id:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'error': 'Match ID required'})
+                }
+            
+            cursor.execute("DELETE FROM matches WHERE id = %s", (match_id,))
+            conn.commit()
+            
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'message': 'Match deleted'}),
+                'isBase64Encoded': False
+            }
+        
         return {
             'statusCode': 405,
             'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
