@@ -114,7 +114,7 @@ export const TeamsList = ({
 
                   <div className="text-sm text-muted-foreground">
                     <span className="text-ellipsis-nick block sm:inline">Капитан: {team.captainNick}</span>
-                    {isLoggedIn && (
+                    {(!registrationOpen || isLoggedIn) && (
                       <span className="text-ellipsis-nick block sm:inline"> • {team.captainTelegram}</span>
                     )}
                   </div>
@@ -126,35 +126,35 @@ export const TeamsList = ({
                         <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                           <p className="text-xs text-muted-foreground mb-1">Топ</p>
                           <p className="font-medium text-foreground text-ellipsis-nick">{team.topNick}</p>
-                          {isLoggedIn && (
+                          {(!registrationOpen || isLoggedIn) && (
                             <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.topTelegram}</p>
                           )}
                         </div>
                         <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                           <p className="text-xs text-muted-foreground mb-1">Лес</p>
                           <p className="font-medium text-foreground text-ellipsis-nick">{team.jungleNick}</p>
-                          {isLoggedIn && (
+                          {(!registrationOpen || isLoggedIn) && (
                             <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.jungleTelegram}</p>
                           )}
                         </div>
                         <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                           <p className="text-xs text-muted-foreground mb-1">Мид</p>
                           <p className="font-medium text-foreground text-ellipsis-nick">{team.midNick}</p>
-                          {isLoggedIn && (
+                          {(!registrationOpen || isLoggedIn) && (
                             <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.midTelegram}</p>
                           )}
                         </div>
                         <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                           <p className="text-xs text-muted-foreground mb-1">АДК</p>
                           <p className="font-medium text-foreground text-ellipsis-nick">{team.adcNick}</p>
-                          {isLoggedIn && (
+                          {(!registrationOpen || isLoggedIn) && (
                             <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.adcTelegram}</p>
                           )}
                         </div>
                         <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                           <p className="text-xs text-muted-foreground mb-1">Саппорт</p>
                           <p className="font-medium text-foreground text-ellipsis-nick">{team.supportNick}</p>
-                          {isLoggedIn && (
+                          {(!registrationOpen || isLoggedIn) && (
                             <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.supportTelegram}</p>
                           )}
                         </div>
@@ -162,7 +162,7 @@ export const TeamsList = ({
                           <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                             <p className="text-xs text-muted-foreground mb-1">Запасной 1</p>
                             <p className="font-medium text-foreground text-ellipsis-nick">{team.sub1Nick}</p>
-                            {isLoggedIn && team.sub1Telegram && (
+                            {(!registrationOpen || isLoggedIn) && team.sub1Telegram && (
                               <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.sub1Telegram}</p>
                             )}
                           </div>
@@ -171,7 +171,7 @@ export const TeamsList = ({
                           <div className="p-3 rounded-lg bg-background/50 border border-border min-w-0">
                             <p className="text-xs text-muted-foreground mb-1">Запасной 2</p>
                             <p className="font-medium text-foreground text-ellipsis-nick">{team.sub2Nick}</p>
-                            {isLoggedIn && team.sub2Telegram && (
+                            {(!registrationOpen || isLoggedIn) && team.sub2Telegram && (
                               <p className="text-xs text-muted-foreground mt-1 text-ellipsis-nick">{team.sub2Telegram}</p>
                             )}
                           </div>
