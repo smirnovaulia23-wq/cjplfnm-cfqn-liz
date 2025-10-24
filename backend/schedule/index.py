@@ -97,20 +97,20 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             team1_name = body_data['team1_name']
             team2_name = body_data['team2_name']
             
-            cursor.execute("SELECT id FROM teams WHERE name = %s", (team1_name,))
+            cursor.execute("SELECT id FROM schedule_teams WHERE name = %s", (team1_name,))
             team1 = cursor.fetchone()
             team1_id = team1['id'] if team1 else None
             
             if not team1_id:
-                cursor.execute("INSERT INTO teams (name) VALUES (%s) RETURNING id", (team1_name,))
+                cursor.execute("INSERT INTO schedule_teams (name) VALUES (%s) RETURNING id", (team1_name,))
                 team1_id = cursor.fetchone()['id']
             
-            cursor.execute("SELECT id FROM teams WHERE name = %s", (team2_name,))
+            cursor.execute("SELECT id FROM schedule_teams WHERE name = %s", (team2_name,))
             team2 = cursor.fetchone()
             team2_id = team2['id'] if team2 else None
             
             if not team2_id:
-                cursor.execute("INSERT INTO teams (name) VALUES (%s) RETURNING id", (team2_name,))
+                cursor.execute("INSERT INTO schedule_teams (name) VALUES (%s) RETURNING id", (team2_name,))
                 team2_id = cursor.fetchone()['id']
             
             cursor.execute("""
