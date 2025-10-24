@@ -40,10 +40,8 @@ export const TournamentBracket = ({ challongeUrl }: TournamentBracketProps) => {
         src={bracketUrl}
         width="100%" 
         height="500" 
-        frameBorder="0" 
-        scrolling="auto" 
-        allowTransparency={true}
         className="rounded-lg border border-white/10"
+        style={{ border: 0 }}
       />
     </div>
   );
