@@ -1,0 +1,177 @@
+<?php
+// API для управления командами
+require_once 'config.php';
+
+$pdo = getDbConnection();
+$method = $_SERVER['REQUEST_METHOD'];
+
+try {
+    // GET - получение команд
+    if ($method === 'GET') {
+        $action = $_GET['action'] ?? '';
+        
+        // Список одобренных команд
+        if ($action === 'approved') {
+            $stmt = $pdo->query("
+                SELECT id, team_name, captain_nick, captain_telegram,
+                       top_nick, jungle_nick, mid_nick, adc_nick, support_nick,
+                       sub1_nick, sub2_nick, created_at
+                FROM teams 
+                WHERE is_approved = TRUE 
+                ORDER BY created_at DESC
+            ");
+            $teams = $stmt->fetchAll();
+            jsonResponse(['teams' => $teams]);
+        }
+        
+        // Список заявок (для админа)
+        if ($action === 'pending') {
+            $token = $_SERVER['HTTP_X_AUTH_TOKEN'] ?? '';
+            $admin = verifyAdminSession($pdo, $token);
+            
+            if (!$admin) {
+                errorResponse('Unauthorized', 403);
+            }
+            
+            $stmt = $pdo->query("
+                SELECT * FROM teams 
+                WHERE is_approved = FALSE 
+                ORDER BY created_at DESC
+            ");
+            $teams = $stmt->fetchAll();
+            jsonResponse(['teams' => $teams]);
+        }
+        
+        // Информация о конкретной команде
+        $teamId = $_GET['team_id'] ?? 0;
+        if ($teamId) {
+            $stmt = $pdo->prepare("SELECT * FROM teams WHERE id = ?");
+            $stmt->execute([$teamId]);
+            $team = $stmt->fetch();
+            
+            if (!$team) {
+                errorResponse('Team not found', 404);
+            }
+            
+            jsonResponse(['team' => $team]);
+        }
+        
+        errorResponse('Invalid action');
+    }
+    
+    // POST - одобрение/отклонение команды
+    if ($method === 'POST') {
+        $token = $_SERVER['HTTP_X_AUTH_TOKEN'] ?? '';
+        $admin = verifyAdminSession($pdo, $token);
+        
+        if (!$admin) {
+            errorResponse('Unauthorized', 403);
+        }
+        
+        $data = getJsonBody();
+        $action = $data['action'] ?? '';
+        $teamId = $data['team_id'] ?? 0;
+        
+        if (!$teamId) {
+            errorResponse('Team ID required');
+        }
+        
+        // Одобрение команды
+        if ($action === 'approve') {
+            $stmt = $pdo->prepare("
+                UPDATE teams 
+                SET is_approved = TRUE 
+                WHERE id = ?
+            ");
+            $stmt->execute([$teamId]);
+            jsonResponse(['message' => 'Team approved']);
+        }
+        
+        // Отклонение (удаление) команды
+        if ($action === 'reject') {
+            $stmt = $pdo->prepare("DELETE FROM teams WHERE id = ?");
+            $stmt->execute([$teamId]);
+            jsonResponse(['message' => 'Team rejected']);
+        }
+        
+        errorResponse('Invalid action');
+    }
+    
+    // PUT - обновление данных команды
+    if ($method === 'PUT') {
+        $userToken = $_SERVER['HTTP_X_USER_ID'] ?? '';
+        
+        if (!$userToken) {
+            errorResponse('Unauthorized', 403);
+        }
+        
+        // Проверка сессии команды
+        $stmt = $pdo->prepare("
+            SELECT team_id FROM user_sessions WHERE session_token = ?
+        ");
+        $stmt->execute([$userToken]);
+        $session = $stmt->fetch();
+        
+        if (!$session) {
+            errorResponse('Invalid session', 403);
+        }
+        
+        $data = getJsonBody();
+        
+        // Обновление данных команды
+        $stmt = $pdo->prepare("
+            UPDATE teams SET
+                captain_telegram = ?,
+                top_nick = ?, top_telegram = ?,
+                jungle_nick = ?, jungle_telegram = ?,
+                mid_nick = ?, mid_telegram = ?,
+                adc_nick = ?, adc_telegram = ?,
+                support_nick = ?, support_telegram = ?,
+                sub1_nick = ?, sub1_telegram = ?,
+                sub2_nick = ?, sub2_telegram = ?
+            WHERE id = ?
+        ");
+        
+        $stmt->execute([
+            $data['captain_telegram'] ?? '',
+            $data['top_nick'] ?? '', $data['top_telegram'] ?? '',
+            $data['jungle_nick'] ?? '', $data['jungle_telegram'] ?? '',
+            $data['mid_nick'] ?? '', $data['mid_telegram'] ?? '',
+            $data['adc_nick'] ?? '', $data['adc_telegram'] ?? '',
+            $data['support_nick'] ?? '', $data['support_telegram'] ?? '',
+            $data['sub1_nick'] ?? '', $data['sub1_telegram'] ?? '',
+            $data['sub2_nick'] ?? '', $data['sub2_telegram'] ?? '',
+            $session['team_id']
+        ]);
+        
+        jsonResponse(['message' => 'Team updated']);
+    }
+    
+    // DELETE - удаление команды
+    if ($method === 'DELETE') {
+        $token = $_SERVER['HTTP_X_AUTH_TOKEN'] ?? '';
+        $admin = verifyAdminSession($pdo, $token);
+        
+        if (!$admin) {
+            errorResponse('Unauthorized', 403);
+        }
+        
+        $data = getJsonBody();
+        $teamId = $data['team_id'] ?? 0;
+        
+        if (!$teamId) {
+            errorResponse('Team ID required');
+        }
+        
+        $stmt = $pdo->prepare("DELETE FROM teams WHERE id = ?");
+        $stmt->execute([$teamId]);
+        
+        jsonResponse(['message' => 'Team deleted']);
+    }
+    
+    errorResponse('Method not allowed', 405);
+    
+} catch (Exception $e) {
+    error_log('Teams API error: ' . $e->getMessage());
+    errorResponse('Server error', 500);
+}
