@@ -558,14 +558,14 @@ const Index = () => {
                     <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
                     <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
                     <div className="relative z-10 text-center">
-                      <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                        League of Legends
+                      <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                        League of Legends: Wild Rift
                       </h1>
                       <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
                         Турнир 5x5
                       </h2>
                       <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                        Соберите команду и докажите своё мастерство на Поле Правосудия
+                        Соберите команду и докажите своё мастерство в «Диком ущелье»
                       </p>
                     </div>
                   </div>
