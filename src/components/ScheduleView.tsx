@@ -24,6 +24,7 @@ interface ScheduleViewProps {
 export const ScheduleView = ({ backendUrl }: ScheduleViewProps) => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(true);
+  const [published, setPublished] = useState(false);
 
   useEffect(() => {
     loadMatches();
@@ -33,7 +34,16 @@ export const ScheduleView = ({ backendUrl }: ScheduleViewProps) => {
 
   const loadMatches = async () => {
     try {
-      const response = await fetch(`${backendUrl}/matches`, {
+      const publishedResponse = await fetch(`${backendUrl}?check_published=true`, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      if (publishedResponse.ok) {
+        const publishedData = await publishedResponse.json();
+        setPublished(publishedData.published);
+      }
+
+      const response = await fetch(backendUrl, {
         mode: 'cors',
         credentials: 'omit'
       });
@@ -87,12 +97,23 @@ export const ScheduleView = ({ backendUrl }: ScheduleViewProps) => {
     );
   }
 
-  if (matches.length === 0) {
+  if (!published && matches.length === 0) {
     return (
       <Card className="border-secondary/30 bg-card/50 backdrop-blur-sm">
         <CardContent className="py-12 text-center">
           <Icon name="Calendar" className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
           <p className="text-muted-foreground">Расписание матчей пока не опубликовано</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (matches.length === 0) {
+    return (
+      <Card className="border-secondary/30 bg-card/50 backdrop-blur-sm">
+        <CardContent className="py-12 text-center">
+          <Icon name="Calendar" className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+          <p className="text-muted-foreground">Матчи ещё не добавлены</p>
         </CardContent>
       </Card>
     );

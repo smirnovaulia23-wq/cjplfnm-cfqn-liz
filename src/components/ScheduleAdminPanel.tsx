@@ -40,6 +40,7 @@ export const ScheduleAdminPanel = ({
 }: ScheduleAdminPanelProps) => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [loading, setLoading] = useState(false);
+  const [published, setPublished] = useState(false);
   const { toast } = useToast();
 
   const [newMatch, setNewMatch] = useState({
@@ -55,6 +56,7 @@ export const ScheduleAdminPanel = ({
   useEffect(() => {
     if (open) {
       loadMatches();
+      loadPublishedStatus();
     }
   }, [open]);
 
@@ -62,7 +64,10 @@ export const ScheduleAdminPanel = ({
     try {
       const response = await fetch(scheduleUrl, {
         mode: 'cors',
-        credentials: 'omit'
+        credentials: 'omit',
+        headers: {
+          'X-Admin-Token': sessionToken
+        }
       });
       if (response.ok) {
         const data = await response.json();
@@ -70,6 +75,51 @@ export const ScheduleAdminPanel = ({
       }
     } catch (error) {
       console.error('Ошибка загрузки матчей:', error);
+    }
+  };
+
+  const loadPublishedStatus = async () => {
+    try {
+      const response = await fetch(`${scheduleUrl}?check_published=true`, {
+        mode: 'cors',
+        credentials: 'omit'
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setPublished(data.published);
+      }
+    } catch (error) {
+      console.error('Ошибка загрузки статуса публикации:', error);
+    }
+  };
+
+  const handleTogglePublish = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(scheduleUrl, {
+        method: 'PUT',
+        mode: 'cors',
+        credentials: 'omit',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Admin-Token': sessionToken
+        },
+        body: JSON.stringify({ publish_schedule: !published })
+      });
+
+      if (response.ok) {
+        setPublished(!published);
+        toast({ 
+          title: !published ? 'Расписание опубликовано!' : 'Расписание скрыто',
+          description: !published ? 'Теперь все пользователи видят матчи' : 'Расписание видно только админам'
+        });
+      } else {
+        toast({ title: 'Ошибка', description: 'Не удалось изменить статус публикации', variant: 'destructive' });
+      }
+    } catch (error) {
+      toast({ title: 'Ошибка', description: 'Не удалось изменить статус публикации', variant: 'destructive' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -240,6 +290,28 @@ export const ScheduleAdminPanel = ({
         </DialogHeader>
 
         <div className="space-y-6">
+          <Card className={published ? "border-green-500/50" : "border-orange-500/50"}>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-lg">Статус публикации</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {published ? 'Расписание видно всем пользователям' : 'Расписание видно только админам'}
+                  </p>
+                </div>
+                <Button 
+                  onClick={handleTogglePublish}
+                  disabled={loading}
+                  variant={published ? "destructive" : "default"}
+                  size="lg"
+                >
+                  <Icon name={published ? "EyeOff" : "Eye"} className="w-4 h-4 mr-2" />
+                  {published ? 'Скрыть расписание' : 'Опубликовать расписание'}
+                </Button>
+              </div>
+            </CardHeader>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle className="text-lg">Создать новый матч</CardTitle>

@@ -38,6 +38,42 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     
     try:
         if method == 'GET':
+            query_params = event.get('queryStringParameters', {})
+            check_published = query_params.get('check_published')
+            
+            if check_published == 'true':
+                cursor.execute("SELECT value FROM settings WHERE key = 'schedule_published'")
+                setting = cursor.fetchone()
+                published = setting['value'] == 'true' if setting else False
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'published': published}),
+                    'isBase64Encoded': False
+                }
+            
+            cursor.execute("SELECT value FROM settings WHERE key = 'schedule_published'")
+            setting = cursor.fetchone()
+            published = setting['value'] == 'true' if setting else False
+            
+            headers = event.get('headers', {})
+            admin_token = headers.get('X-Admin-Token', headers.get('x-admin-token', ''))
+            is_admin = False
+            
+            if admin_token:
+                cursor.execute("SELECT id, role FROM admin_users WHERE session_token = %s", (admin_token,))
+                admin = cursor.fetchone()
+                is_admin = admin is not None
+            
+            if not published and not is_admin:
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps([]),
+                    'isBase64Encoded': False
+                }
+            
             cursor.execute("""
                 SELECT 
                     id, match_date, match_time, 
@@ -162,6 +198,23 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             body_data = json.loads(event.get('body', '{}'))
+            
+            if 'publish_schedule' in body_data:
+                publish = body_data['publish_schedule']
+                cursor.execute("""
+                    UPDATE settings 
+                    SET value = %s 
+                    WHERE key = 'schedule_published'
+                """, (str(publish).lower(),))
+                conn.commit()
+                
+                return {
+                    'statusCode': 200,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'message': 'Schedule publication status updated'}),
+                    'isBase64Encoded': False
+                }
+            
             match_id = body_data.get('id')
             
             cursor.execute("""
