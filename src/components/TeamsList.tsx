@@ -3,8 +3,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { useToast } from '@/hooks/use-toast';
 import Icon from '@/components/ui/icon';
 
 interface Team {
@@ -33,79 +31,15 @@ interface TeamsListProps {
   isLoggedIn: boolean;
   registrationOpen: boolean;
   loadApprovedTeams: () => void;
-  teamsBackendUrl: string;
 }
 
 export const TeamsList = ({
   approvedTeams,
   isLoggedIn,
   registrationOpen,
-  loadApprovedTeams,
-  teamsBackendUrl
+  loadApprovedTeams
 }: TeamsListProps) => {
   const [expandedTeam, setExpandedTeam] = useState<number | null>(null);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [deleteTeamId, setDeleteTeamId] = useState<number | null>(null);
-  const [deletePassword, setDeletePassword] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { toast } = useToast();
-
-  const handleDeleteClick = (teamId: number) => {
-    setDeleteTeamId(teamId);
-    setDeletePassword('');
-    setShowDeleteDialog(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deleteTeamId || !deletePassword) {
-      toast({
-        title: 'Ошибка',
-        description: 'Введите пароль команды',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    setIsDeleting(true);
-    try {
-      const response = await fetch(teamsBackendUrl, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: deleteTeamId,
-          password: deletePassword,
-          type: 'team'
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        toast({
-          title: 'Команда удалена',
-          description: 'Ваша команда успешно удалена из турнира'
-        });
-        setShowDeleteDialog(false);
-        setDeletePassword('');
-        setDeleteTeamId(null);
-        loadApprovedTeams();
-      } else {
-        toast({
-          title: 'Ошибка',
-          description: data.error || 'Неверный пароль',
-          variant: 'destructive'
-        });
-      }
-    } catch (error) {
-      toast({
-        title: 'Ошибка',
-        description: 'Не удалось удалить команду',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -165,25 +99,15 @@ export const TeamsList = ({
                         Одобрено
                       </Badge>
                       {!isLoggedIn && (
-                        <>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-primary/50 text-primary hover:bg-primary/10"
-                            onClick={() => setExpandedTeam(expandedTeam === team.id ? null : team.id)}
-                          >
-                            <Icon name={expandedTeam === team.id ? "ChevronUp" : "ChevronDown"} className="w-4 h-4 mr-1" />
-                            Подробнее
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-red-500/50 text-red-500 hover:bg-red-500/10"
-                            onClick={() => handleDeleteClick(team.id)}
-                          >
-                            <Icon name="Trash2" className="w-4 h-4" />
-                          </Button>
-                        </>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-primary/50 text-primary hover:bg-primary/10"
+                          onClick={() => setExpandedTeam(expandedTeam === team.id ? null : team.id)}
+                        >
+                          <Icon name={expandedTeam === team.id ? "ChevronUp" : "ChevronDown"} className="w-4 h-4 mr-1" />
+                          Подробнее
+                        </Button>
                       )}
                     </div>
                   </div>
@@ -261,42 +185,6 @@ export const TeamsList = ({
           ))}
         </div>
       )}
-
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="bg-card border-border">
-          <DialogHeader>
-            <DialogTitle className="text-foreground">Удалить команду</DialogTitle>
-            <DialogDescription className="text-muted-foreground">
-              Введите пароль команды для подтверждения удаления. Это действие нельзя отменить.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="py-4">
-            <Input
-              type="password"
-              placeholder="Пароль команды"
-              value={deletePassword}
-              onChange={(e) => setDeletePassword(e.target.value)}
-              className="bg-background border-border"
-            />
-          </div>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={isDeleting}
-            >
-              Отмена
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleDeleteConfirm}
-              disabled={isDeleting || !deletePassword}
-            >
-              {isDeleting ? 'Удаление...' : 'Удалить команду'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };

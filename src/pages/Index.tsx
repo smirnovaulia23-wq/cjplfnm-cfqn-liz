@@ -571,7 +571,6 @@ const Index = () => {
                   isLoggedIn={isLoggedIn}
                   registrationOpen={registrationOpen}
                   loadApprovedTeams={loadApprovedTeams}
-                  teamsBackendUrl={BACKEND_URLS.teams}
                 />
               </TabsContent>
 
