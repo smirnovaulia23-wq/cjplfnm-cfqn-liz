@@ -30,19 +30,19 @@ export const TournamentBracket = ({ challongeUrl }: TournamentBracketProps) => {
 
   if (!bracketUrl) {
     return (
-      <div className="flex items-center justify-center h-[500px] bg-gradient-to-br from-[#1A1F2C] to-[#221F26] rounded-lg border border-white/10">
+      <div className="flex items-center justify-center h-[1000px] bg-gradient-to-br from-[#1A1F2C] to-[#221F26] rounded-lg border border-white/10">
         <p className="text-white/60">Турнирная сетка будет доступна после начала турнира</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full min-h-[500px]">
+    <div className="w-full h-full min-h-[1000px]">
       <iframe 
         key={key}
         src={bracketUrl}
         width="100%" 
-        height="500" 
+        height="1000" 
         className="rounded-lg border border-white/10"
         style={{ border: 0 }}
         title="Tournament Bracket"
