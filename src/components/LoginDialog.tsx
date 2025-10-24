@@ -22,7 +22,7 @@ export const LoginDialog = ({ open, onOpenChange, onLogin }: LoginDialogProps) =
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="bg-card border-border">
+      <DialogContent className="bg-card border-border max-w-md">
         <DialogHeader>
           <DialogTitle className="text-2xl text-primary">Вход</DialogTitle>
           <DialogDescription>Введите Telegram-ник для игроков/капитанов или логин для админов</DialogDescription>
