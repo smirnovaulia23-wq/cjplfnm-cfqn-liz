@@ -5,7 +5,6 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Icon from '@/components/ui/icon';
 import { useState } from 'react';
 
@@ -404,73 +403,48 @@ export const AdminPanel = ({
                   <p>Нет одобренных команд</p>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="font-semibold">№</TableHead>
-                        <TableHead className="font-semibold">Название команды</TableHead>
-                        <TableHead className="font-semibold">Капитан</TableHead>
-                        <TableHead className="font-semibold">Telegram</TableHead>
-                        <TableHead className="text-right font-semibold">Действия</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {approvedTeams.map((team, index) => (
-                        <TableRow key={team.id}>
-                          <TableCell className="font-medium">{index + 1}</TableCell>
-                          <TableCell className="font-semibold text-foreground">
-                            {team.teamName}
-                            {team.isEdited && (
-                              <Badge variant="outline" className="ml-2 text-xs border-yellow-500 text-yellow-500">
-                                изменено
-                              </Badge>
-                            )}
-                          </TableCell>
-                          <TableCell>{team.captainNick}</TableCell>
-                          <TableCell>
-                            <a 
-                              href={`https://t.me/${team.captainTelegram.replace('@', '')}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:underline inline-flex items-center gap-1"
+                <div className="space-y-4">
+                  {approvedTeams.map((team) => (
+                    <div
+                      key={team.id}
+                      className="p-4 rounded-lg bg-card border border-border"
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div>
+                          <h3 className="font-semibold text-lg text-foreground">{team.teamName}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            Капитан: {team.captainNick}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          {onEditApprovedTeam && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => onEditApprovedTeam(team.id)}
+                              className="border-primary/50 text-primary hover:bg-primary/10"
                             >
-                              {team.captainTelegram}
-                              <Icon name="ExternalLink" className="w-3 h-3" />
-                            </a>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex gap-2 justify-end">
-                              {onEditApprovedTeam && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => onEditApprovedTeam(team.id)}
-                                  className="border-primary/50 text-primary hover:bg-primary/10"
-                                >
-                                  <Icon name="Edit" className="w-4 h-4" />
-                                </Button>
-                              )}
-                              {onDeleteApprovedTeam && (
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={() => {
-                                    if (confirm(`Удалить команду ${team.teamName}?`)) {
-                                      onDeleteApprovedTeam(team.id);
-                                    }
-                                  }}
-                                  className="border-destructive/50 text-destructive hover:bg-destructive/10"
-                                >
-                                  <Icon name="Trash2" className="w-4 h-4" />
-                                </Button>
-                              )}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                              <Icon name="Edit" className="w-4 h-4" />
+                            </Button>
+                          )}
+                          {onDeleteApprovedTeam && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => {
+                                if (confirm(`Удалить команду ${team.teamName}?`)) {
+                                  onDeleteApprovedTeam(team.id);
+                                }
+                              }}
+                              className="border-destructive/50 text-destructive hover:bg-destructive/10"
+                            >
+                              <Icon name="Trash2" className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </CardContent>
