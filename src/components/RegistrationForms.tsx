@@ -98,12 +98,12 @@ export const RegistrationForms = ({
         <form onSubmit={handleTeamRegistration}>
           <Card className="bg-card/50 border-border">
             <CardHeader className="border-b border-border/50">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="text-2xl text-primary">Регистрация команды</CardTitle>
                   <CardDescription className="mt-2">Заполните данные для участия в турнире</CardDescription>
                 </div>
-                <Badge className={registrationOpen ? 'bg-primary/20 text-primary border border-primary/50' : 'bg-accent/20 text-accent border border-accent/50'}>
+                <Badge className={`${registrationOpen ? 'bg-primary/20 text-primary border border-primary/50' : 'bg-accent/20 text-accent border border-accent/50'} whitespace-nowrap`}>
                   {registrationOpen ? 'Регистрация открыта' : 'Регистрация закрыта'}
                 </Badge>
               </div>
@@ -272,12 +272,12 @@ export const RegistrationForms = ({
         <form onSubmit={handleIndividualRegistration}>
           <Card className="bg-card/50 border-border">
             <CardHeader className="border-b border-border/50">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
                   <CardTitle className="text-2xl text-primary">Индивидуальная регистрация</CardTitle>
                   <CardDescription className="mt-2">Зарегистрируйтесь как свободный игрок</CardDescription>
                 </div>
-                <Badge className={registrationOpen ? 'bg-primary/20 text-primary border border-primary/50' : 'bg-accent/20 text-accent border border-accent/50'}>
+                <Badge className={`${registrationOpen ? 'bg-primary/20 text-primary border border-primary/50' : 'bg-accent/20 text-accent border border-accent/50'} whitespace-nowrap`}>
                   {registrationOpen ? 'Регистрация открыта' : 'Регистрация закрыта'}
                 </Badge>
               </div>
