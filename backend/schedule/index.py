@@ -42,7 +42,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 SELECT 
                     id, match_date, match_time, 
                     team1_id, team2_id, team1_name, team2_name,
-                    status, winner_team_id, score_team1, score_team2, round
+                    status, winner_team_id, score_team1, score_team2, round, stream_url
                 FROM matches 
                 ORDER BY match_date ASC, match_time ASC
             """)
@@ -60,7 +60,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'winner_team_id': match['winner_team_id'],
                     'score_team1': match['score_team1'],
                     'score_team2': match['score_team2'],
-                    'round': match['round']
+                    'round': match['round'],
+                    'stream_url': match['stream_url']
                 })
             
             return {
@@ -95,8 +96,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cursor.execute("""
                 INSERT INTO matches 
-                (match_date, match_time, team1_id, team2_id, team1_name, team2_name, round, status)
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                (match_date, match_time, team1_id, team2_id, team1_name, team2_name, round, status, stream_url)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
                 RETURNING id
             """, (
                 body_data['match_date'],
@@ -106,7 +107,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 body_data['team1_name'],
                 body_data['team2_name'],
                 body_data['round'],
-                body_data.get('status', 'waiting')
+                body_data.get('status', 'waiting'),
+                body_data.get('stream_url', '')
             ))
             
             match_id = cursor.fetchone()['id']
@@ -145,13 +147,14 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             cursor.execute("""
                 UPDATE matches 
-                SET status = %s, winner_team_id = %s, score_team1 = %s, score_team2 = %s, updated_at = CURRENT_TIMESTAMP
+                SET status = %s, winner_team_id = %s, score_team1 = %s, score_team2 = %s, stream_url = %s, updated_at = CURRENT_TIMESTAMP
                 WHERE id = %s
             """, (
                 body_data.get('status'),
                 body_data.get('winner_team_id'),
                 body_data.get('score_team1'),
                 body_data.get('score_team2'),
+                body_data.get('stream_url', ''),
                 match_id
             ))
             

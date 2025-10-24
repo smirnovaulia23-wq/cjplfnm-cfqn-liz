@@ -27,6 +27,7 @@ interface Match {
   score_team1?: number;
   score_team2?: number;
   round: string;
+  stream_url?: string;
 }
 
 interface ScheduleAdminPanelProps {
@@ -340,6 +341,18 @@ export const ScheduleAdminPanel = ({
                               </SelectContent>
                             </Select>
                           </div>
+
+                          {editMatch.status === 'live' && (
+                            <div>
+                              <Label>Ссылка на трансляцию</Label>
+                              <Input
+                                type="url"
+                                placeholder="https://youtube.com/watch?v=..."
+                                value={editMatch.stream_url || ''}
+                                onChange={(e) => setEditMatch({ ...editMatch, stream_url: e.target.value })}
+                              />
+                            </div>
+                          )}
 
                           {editMatch.status === 'completed' && (
                             <>

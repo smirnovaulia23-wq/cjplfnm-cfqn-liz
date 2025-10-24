@@ -14,6 +14,7 @@ interface Match {
   score_team1?: number;
   score_team2?: number;
   round: string;
+  stream_url?: string;
 }
 
 interface ScheduleViewProps {
@@ -153,6 +154,18 @@ export const ScheduleView = ({ backendUrl }: ScheduleViewProps) => {
                       )}
                     </div>
                   </div>
+                  
+                  {match.status === 'live' && match.stream_url && (
+                    <a 
+                      href={match.stream_url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-semibold transition-colors"
+                    >
+                      <Icon name="Play" className="w-5 h-5" />
+                      Смотреть
+                    </a>
+                  )}
                   
                   {match.status === 'completed' && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
