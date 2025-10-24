@@ -19,12 +19,12 @@ import { HomePageEditor } from '@/components/HomePageEditor';
 import Icon from '@/components/ui/icon';
 
 const BACKEND_URLS = {
-  auth: 'https://functions.poehali.dev/87a1a191-aacc-478d-8869-478b7969f36c',
-  userAuth: 'https://functions.poehali.dev/6593734f-22cc-4ee2-b697-635b5817a9bd',
-  teams: 'https://functions.poehali.dev/35199dac-d68a-4536-959b-4aad2fb7e7ad',
-  settings: 'https://functions.poehali.dev/9f1de6c4-8e50-4131-b3c0-0253597bdbdf',
-  register: 'https://functions.poehali.dev/aa5c695c-a493-4e80-8b18-578f26f15470',
-  schedule: 'https://functions.poehali.dev/90fb9334-17bb-4511-9ac9-ccd72a79c3aa'
+  auth: 'https://ce876244.tw1.ru/api/auth.php',
+  userAuth: 'https://ce876244.tw1.ru/api/user-auth.php',
+  teams: 'https://ce876244.tw1.ru/api/teams.php',
+  settings: 'https://ce876244.tw1.ru/api/settings.php',
+  register: 'https://ce876244.tw1.ru/api/register.php',
+  schedule: 'https://ce876244.tw1.ru/api/schedule.php'
 };
 
 const Index = () => {
