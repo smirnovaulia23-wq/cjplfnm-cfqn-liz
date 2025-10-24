@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,15 +10,53 @@ interface TeamManagementDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   backendUrl: string;
+  teamId?: number;
+  sessionToken?: string;
+  isAdmin?: boolean;
 }
 
-export const TeamManagementDialog = ({ open, onOpenChange, backendUrl }: TeamManagementDialogProps) => {
-  const [step, setStep] = useState<'login' | 'manage'>('login');
+export const TeamManagementDialog = ({ open, onOpenChange, backendUrl, teamId, sessionToken, isAdmin }: TeamManagementDialogProps) => {
+  const [step, setStep] = useState<'login' | 'manage'>(isAdmin && teamId ? 'manage' : 'login');
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');
   const [teamData, setTeamData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (open && isAdmin && teamId) {
+      loadTeamData();
+    }
+  }, [open, isAdmin, teamId]);
+
+  const loadTeamData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${backendUrl}?teamId=${teamId}`);
+      const data = await response.json();
+      
+      if (data.team) {
+        setTeamData(data.team);
+        setStep('manage');
+      } else {
+        toast({ 
+          title: 'Ошибка', 
+          description: 'Команда не найдена',
+          variant: 'destructive'
+        });
+        onOpenChange(false);
+      }
+    } catch (error) {
+      toast({ 
+        title: 'Ошибка', 
+        description: 'Не удалось загрузить данные команды',
+        variant: 'destructive'
+      });
+      onOpenChange(false);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogin = async () => {
     if (!teamName.trim() || !password.trim()) {
@@ -68,14 +106,25 @@ export const TeamManagementDialog = ({ open, onOpenChange, backendUrl }: TeamMan
   const handleUpdateTeam = async () => {
     setLoading(true);
     try {
+      const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+      if (isAdmin && sessionToken) {
+        headers['X-Auth-Token'] = sessionToken;
+      }
+
+      const body: any = {
+        action: 'update',
+        teamId: teamData.id,
+        ...teamData
+      };
+      
+      if (!isAdmin) {
+        body.password = password;
+      }
+
       const response = await fetch(backendUrl, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: teamData.id,
-          password,
-          ...teamData
-        })
+        headers,
+        body: JSON.stringify(body)
       });
 
       const data = await response.json();

@@ -655,6 +655,9 @@ const Index = () => {
         open={showTeamManagementDialog}
         onOpenChange={setShowTeamManagementDialog}
         backendUrl={BACKEND_URLS.teams}
+        teamId={teamId || undefined}
+        sessionToken={sessionToken}
+        isAdmin={isAdmin}
       />
     </div>
   );

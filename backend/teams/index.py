@@ -374,6 +374,16 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             if action == 'update':
+                auth_token = event.get('headers', {}).get('X-Auth-Token') or event.get('headers', {}).get('x-auth-token')
+                is_admin_update = False
+                
+                if auth_token:
+                    cur.execute(
+                        f"SELECT role FROM admin_users WHERE session_token = '{escape_sql(auth_token)}'"
+                    )
+                    admin_result = cur.fetchone()
+                    is_admin_update = admin_result is not None
+                
                 team_name = escape_sql(body_data.get('teamName', ''))
                 top_nick = escape_sql(body_data.get('topNick', ''))
                 top_telegram = escape_sql(body_data.get('topTelegram', ''))
@@ -390,20 +400,34 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 sub2_nick = escape_sql(body_data.get('sub2Nick', ''))
                 sub2_telegram = escape_sql(body_data.get('sub2Telegram', ''))
                 
-                cur.execute(
-                    f"""UPDATE teams SET 
-                        team_name = '{team_name}',
-                        top_nick = '{top_nick}', top_telegram = '{top_telegram}',
-                        jungle_nick = '{jungle_nick}', jungle_telegram = '{jungle_telegram}',
-                        mid_nick = '{mid_nick}', mid_telegram = '{mid_telegram}',
-                        adc_nick = '{adc_nick}', adc_telegram = '{adc_telegram}',
-                        support_nick = '{support_nick}', support_telegram = '{support_telegram}',
-                        sub1_nick = '{sub1_nick}', sub1_telegram = '{sub1_telegram}',
-                        sub2_nick = '{sub2_nick}', sub2_telegram = '{sub2_telegram}',
-                        status = 'pending',
-                        is_edited = true
-                    WHERE id = {team_id}"""
-                )
+                if is_admin_update:
+                    cur.execute(
+                        f"""UPDATE teams SET 
+                            team_name = '{team_name}',
+                            top_nick = '{top_nick}', top_telegram = '{top_telegram}',
+                            jungle_nick = '{jungle_nick}', jungle_telegram = '{jungle_telegram}',
+                            mid_nick = '{mid_nick}', mid_telegram = '{mid_telegram}',
+                            adc_nick = '{adc_nick}', adc_telegram = '{adc_telegram}',
+                            support_nick = '{support_nick}', support_telegram = '{support_telegram}',
+                            sub1_nick = '{sub1_nick}', sub1_telegram = '{sub1_telegram}',
+                            sub2_nick = '{sub2_nick}', sub2_telegram = '{sub2_telegram}'
+                        WHERE id = {team_id}"""
+                    )
+                else:
+                    cur.execute(
+                        f"""UPDATE teams SET 
+                            team_name = '{team_name}',
+                            top_nick = '{top_nick}', top_telegram = '{top_telegram}',
+                            jungle_nick = '{jungle_nick}', jungle_telegram = '{jungle_telegram}',
+                            mid_nick = '{mid_nick}', mid_telegram = '{mid_telegram}',
+                            adc_nick = '{adc_nick}', adc_telegram = '{adc_telegram}',
+                            support_nick = '{support_nick}', support_telegram = '{support_telegram}',
+                            sub1_nick = '{sub1_nick}', sub1_telegram = '{sub1_telegram}',
+                            sub2_nick = '{sub2_nick}', sub2_telegram = '{sub2_telegram}',
+                            status = 'pending',
+                            is_edited = true
+                        WHERE id = {team_id}"""
+                    )
                 conn.commit()
                 
                 return {
