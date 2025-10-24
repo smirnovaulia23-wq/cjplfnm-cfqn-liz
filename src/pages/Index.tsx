@@ -582,26 +582,33 @@ const Index = () => {
                 />
               </TabsContent>
 
-              <TabsContent value="bracket" className="mt-8">
+              <TabsContent value="tournament" className="mt-8">
                 <div className="max-w-6xl mx-auto">
-                  <TournamentBracket challongeUrl={challongeUrl} />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="schedule" className="mt-8">
-                <div className="max-w-5xl mx-auto">
-                  {isAdmin && (
-                    <div className="mb-4">
-                      <Button 
-                        onClick={() => setShowScheduleAdminPanel(true)}
-                        className="bg-primary hover:bg-primary/90"
-                      >
-                        <Icon name="Settings" className="w-4 h-4 mr-2" />
-                        Управление расписанием
-                      </Button>
-                    </div>
-                  )}
-                  <ScheduleView backendUrl={BACKEND_URLS.schedule} />
+                  <Tabs defaultValue="bracket" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 mb-6">
+                      <TabsTrigger value="bracket">Турнирная сетка</TabsTrigger>
+                      <TabsTrigger value="schedule">Расписание</TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="bracket">
+                      <TournamentBracket challongeUrl={challongeUrl} />
+                    </TabsContent>
+                    
+                    <TabsContent value="schedule">
+                      {isAdmin && (
+                        <div className="mb-4">
+                          <Button 
+                            onClick={() => setShowScheduleAdminPanel(true)}
+                            className="bg-primary hover:bg-primary/90"
+                          >
+                            <Icon name="Settings" className="w-4 h-4 mr-2" />
+                            Управление расписанием
+                          </Button>
+                        </div>
+                      )}
+                      <ScheduleView backendUrl={BACKEND_URLS.schedule} />
+                    </TabsContent>
+                  </Tabs>
                 </div>
               </TabsContent>
 

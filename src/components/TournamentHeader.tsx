@@ -76,20 +76,12 @@ export const TournamentHeader = ({
               Свободные игроки
             </Button>
             <Button 
-              variant={selectedTab === 'bracket' ? 'default' : 'ghost'}
-              onClick={() => setSelectedTab('bracket')}
-              className={selectedTab === 'bracket' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+              variant={selectedTab === 'tournament' ? 'default' : 'ghost'}
+              onClick={() => setSelectedTab('tournament')}
+              className={selectedTab === 'tournament' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
             >
               <Icon name="Trophy" className="w-4 h-4 mr-2" />
-              Турнирная сетка
-            </Button>
-            <Button 
-              variant={selectedTab === 'schedule' ? 'default' : 'ghost'}
-              onClick={() => setSelectedTab('schedule')}
-              className={selectedTab === 'schedule' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
-            >
-              <Icon name="Calendar" className="w-4 h-4 mr-2" />
-              Расписание
+              Турнир
             </Button>
 
           </nav>
