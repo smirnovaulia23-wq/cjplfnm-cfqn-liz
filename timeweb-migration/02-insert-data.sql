@@ -2,11 +2,11 @@
 -- Выполните этот скрипт ПОСЛЕ создания структуры (01-mysql-schema.sql)
 
 -- Администраторы
--- Пароль для Xuna: 0000 (хеш SHA-256)
+-- Пароль для Xuna: Smirnova2468 (хеш SHA-256)
 -- Пароль для Dante: 0000 (хеш SHA-256)
 INSERT INTO admin_users (username, password_hash, role) VALUES
-('Xuna', '7e45e9698d89fc03a9012fa25e87a37ccf7154f623c4a49c1e8df294f30ad7c9', 'super_admin'),
-('Dante', 'a7c1e9b45150876c9f247b1c7757fbb36e79dc18df7a4e811b1558a5291400c6', 'admin')
+('Xuna', SHA2('Smirnova2468', 256), 'super_admin'),
+('Dante', '7e45e9698d89fc03a9012fa25e87a37ccf7154f623c4a49c1e8df294f30ad7c9', 'admin')
 ON DUPLICATE KEY UPDATE 
     password_hash = VALUES(password_hash),
     role = VALUES(role);
