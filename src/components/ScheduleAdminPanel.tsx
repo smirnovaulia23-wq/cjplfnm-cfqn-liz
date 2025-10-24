@@ -372,19 +372,21 @@ export const ScheduleAdminPanel = ({
           </Card>
 
           <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-lg">Список матчей</CardTitle>
-              {matches.length > 0 && (
-                <Button 
-                  onClick={handleClearAll} 
-                  variant="destructive" 
-                  size="sm"
-                  disabled={loading}
-                >
-                  <Icon name="Trash2" className="w-4 h-4 mr-2" />
-                  Очистить всё
-                </Button>
-              )}
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg">Список матчей</CardTitle>
+                {matches.length > 0 && (
+                  <Button 
+                    onClick={handleClearAll} 
+                    variant="destructive" 
+                    size="sm"
+                    disabled={loading}
+                  >
+                    <Icon name="Trash2" className="w-4 h-4 mr-2" />
+                    Очистить всё
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent className="space-y-3">
               {matches.length === 0 ? (
