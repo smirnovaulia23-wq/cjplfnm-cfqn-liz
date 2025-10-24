@@ -115,7 +115,7 @@ export const TournamentHeader = ({
                       size="sm"
                     >
                       <Icon name="Shield" className="w-4 h-4 sm:mr-2" />
-                      <span className="hidden sm:inline">Администрация</span>
+                      <span className="hidden sm:inline">Админ</span>
                     </Button>
                   )}
                 </>
