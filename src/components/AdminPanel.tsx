@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
 import { useState } from 'react';
+import * as XLSX from 'xlsx';
 
 interface Team {
   id: number;
@@ -77,6 +78,30 @@ export const AdminPanel = ({
 }: AdminPanelProps) => {
   const [tempChallongeUrl, setTempChallongeUrl] = useState(challongeUrl || '');
   const [useIframeMode, setUseIframeMode] = useState(false);
+
+  const exportToExcel = () => {
+    const data = approvedTeams.map((team, index) => ({
+      '№': index + 1,
+      'Название команды': team.teamName,
+      'Капитан': team.captainNick,
+      'Telegram': team.captainTelegram
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Команды');
+
+    const colWidths = [
+      { wch: 5 },
+      { wch: 25 },
+      { wch: 20 },
+      { wch: 20 }
+    ];
+    worksheet['!cols'] = colWidths;
+
+    XLSX.writeFile(workbook, `Команды_турнира_${new Date().toLocaleDateString('ru-RU')}.xlsx`);
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border max-w-4xl max-h-[80vh] overflow-y-auto">
@@ -391,9 +416,21 @@ export const AdminPanel = ({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-lg">Одобренные команды</CardTitle>
-                <Badge variant="outline" className="border-primary text-primary">
-                  {approvedTeams.length}
-                </Badge>
+                <div className="flex items-center gap-2">
+                  {approvedTeams.length > 0 && (
+                    <Button
+                      onClick={exportToExcel}
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <Icon name="Download" className="w-4 h-4 mr-2" />
+                      Скачать Excel
+                    </Button>
+                  )}
+                  <Badge variant="outline" className="border-primary text-primary">
+                    {approvedTeams.length}
+                  </Badge>
+                </div>
               </div>
             </CardHeader>
             <CardContent>
