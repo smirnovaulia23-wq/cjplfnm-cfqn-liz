@@ -84,13 +84,11 @@ export const RegistrationForms = ({
   return (
     <Tabs defaultValue="team" className="max-w-3xl mx-auto">
       <TabsList className="grid w-full grid-cols-2 mb-8">
-        <TabsTrigger value="team" className="text-xs sm:text-sm">
-          <span className="hidden sm:inline">Регистрация команды</span>
-          <span className="sm:hidden">Команда</span>
+        <TabsTrigger value="team" className="text-sm">
+          Команда
         </TabsTrigger>
-        <TabsTrigger value="individual" className="text-xs sm:text-sm">
-          <span className="hidden sm:inline">Индивидуальная регистрация</span>
-          <span className="sm:hidden">Индивид.</span>
+        <TabsTrigger value="individual" className="text-sm">
+          Индивидуально
         </TabsTrigger>
       </TabsList>
 
