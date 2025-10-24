@@ -52,6 +52,14 @@ export const TournamentHeader = ({
           
           <nav className="hidden sm:flex items-center space-x-2">
             <Button 
+              variant={selectedTab === 'home' ? 'default' : 'ghost'}
+              onClick={() => setSelectedTab('home')}
+              className={selectedTab === 'home' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}
+            >
+              <Icon name="Home" className="w-4 h-4 mr-2" />
+              Главная
+            </Button>
+            <Button 
               variant={selectedTab === 'register' ? 'default' : 'ghost'}
               onClick={() => setSelectedTab('register')}
               className={selectedTab === 'register' ? 'bg-secondary text-white hover:bg-secondary/90' : 'text-foreground hover:text-primary transition-colors'}

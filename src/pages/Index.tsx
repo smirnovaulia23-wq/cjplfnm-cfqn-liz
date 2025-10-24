@@ -27,7 +27,7 @@ const BACKEND_URLS = {
 };
 
 const Index = () => {
-  const [selectedTab, setSelectedTab] = useState('register');
+  const [selectedTab, setSelectedTab] = useState('home');
   const [showLoginDialog, setShowLoginDialog] = useState(false);
   const [showAdminPanel, setShowAdminPanel] = useState(false);
   const [showSuperAdminPanel, setShowSuperAdminPanel] = useState(false);
@@ -552,6 +552,131 @@ const Index = () => {
             <MobileNavigation selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
 
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+              <TabsContent value="home" className="mt-0">
+                <div className="max-w-6xl mx-auto">
+                  <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 p-12 mb-12 backdrop-blur-sm border border-primary/20">
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+                    <div className="relative z-10 text-center">
+                      <h1 className="text-5xl md:text-7xl font-bold mb-6 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+                        League of Legends
+                      </h1>
+                      <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+                        Турнир 5x5
+                      </h2>
+                      <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+                        Соберите команду и докажите своё мастерство на Поле Правосудия
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-3 gap-6 mb-12">
+                    <div className="bg-card border border-border rounded-2xl p-8 hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10">
+                      <div className="w-16 h-16 bg-primary/20 rounded-2xl flex items-center justify-center mb-4">
+                        <Icon name="Trophy" className="w-8 h-8 text-primary" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground mb-2">Призы</h3>
+                      <p className="text-muted-foreground">
+                        Победители получат ценные призы и звание чемпионов турнира
+                      </p>
+                    </div>
+
+                    <div className="bg-card border border-border rounded-2xl p-8 hover:border-secondary/50 transition-all hover:shadow-lg hover:shadow-secondary/10">
+                      <div className="w-16 h-16 bg-secondary/20 rounded-2xl flex items-center justify-center mb-4">
+                        <Icon name="Users" className="w-8 h-8 text-secondary" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground mb-2">Команды</h3>
+                      <p className="text-muted-foreground">
+                        Регистрируйтесь готовой командой или найдите союзников среди игроков
+                      </p>
+                    </div>
+
+                    <div className="bg-card border border-border rounded-2xl p-8 hover:border-accent/50 transition-all hover:shadow-lg hover:shadow-accent/10">
+                      <div className="w-16 h-16 bg-accent/20 rounded-2xl flex items-center justify-center mb-4">
+                        <Icon name="Gamepad2" className="w-8 h-8 text-accent" />
+                      </div>
+                      <h3 className="text-2xl font-bold text-foreground mb-2">Формат</h3>
+                      <p className="text-muted-foreground">
+                        Классический формат 5 на 5, турнирная сетка на выбывание
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid md:grid-cols-2 gap-8">
+                    <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-8">
+                      <h3 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
+                        <Icon name="Calendar" className="w-6 h-6 text-primary" />
+                        Этапы турнира
+                      </h3>
+                      <div className="space-y-4">
+                        <div className="flex gap-4">
+                          <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-lg font-bold text-primary">1</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-foreground">Регистрация</h4>
+                            <p className="text-sm text-muted-foreground">Зарегистрируйте команду или заявку</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-4">
+                          <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-lg font-bold text-primary">2</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-foreground">Модерация</h4>
+                            <p className="text-sm text-muted-foreground">Ожидайте одобрения заявки</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-4">
+                          <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-lg font-bold text-primary">3</span>
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-foreground">Турнир</h4>
+                            <p className="text-sm text-muted-foreground">Сражайтесь за победу!</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/20 rounded-2xl p-8">
+                      <h3 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-2">
+                        <Icon name="Target" className="w-6 h-6 text-secondary" />
+                        Быстрый старт
+                      </h3>
+                      <div className="space-y-4">
+                        <Button
+                          onClick={() => setSelectedTab('register')}
+                          className="w-full bg-primary hover:bg-primary/90 text-lg py-6"
+                          size="lg"
+                        >
+                          <Icon name="UserPlus" className="w-5 h-5 mr-2" />
+                          Зарегистрировать команду
+                        </Button>
+                        <Button
+                          onClick={() => setSelectedTab('teams')}
+                          variant="outline"
+                          className="w-full border-primary/50 text-primary hover:bg-primary/10 text-lg py-6"
+                          size="lg"
+                        >
+                          <Icon name="Shield" className="w-5 h-5 mr-2" />
+                          Посмотреть команды
+                        </Button>
+                        <Button
+                          onClick={() => setSelectedTab('tournament')}
+                          variant="outline"
+                          className="w-full border-secondary/50 text-secondary hover:bg-secondary/10 text-lg py-6"
+                          size="lg"
+                        >
+                          <Icon name="Trophy" className="w-5 h-5 mr-2" />
+                          Турнирная сетка
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </TabsContent>
+
               <TabsContent value="register" className="mt-8">
                 <RegistrationForms
                   teamForm={teamForm}
