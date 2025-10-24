@@ -9,7 +9,7 @@ interface Match {
   match_time: string;
   team1_name: string;
   team2_name: string;
-  status: 'scheduled' | 'in_progress' | 'completed';
+  status: 'waiting' | 'live' | 'playing' | 'completed';
   winner_team_id?: number;
   score_team1?: number;
   score_team2?: number;
@@ -47,10 +47,12 @@ export const ScheduleView = ({ backendUrl }: ScheduleViewProps) => {
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'scheduled':
-        return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">Запланирован</Badge>;
-      case 'in_progress':
-        return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">Идёт игра</Badge>;
+      case 'waiting':
+        return <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/30">Ожидание</Badge>;
+      case 'live':
+        return <Badge variant="outline" className="bg-red-500/10 text-red-500 border-red-500/30 animate-pulse">В эфире</Badge>;
+      case 'playing':
+        return <Badge variant="outline" className="bg-green-500/10 text-green-500 border-green-500/30">Играют</Badge>;
       case 'completed':
         return <Badge variant="outline" className="bg-gray-500/10 text-gray-500 border-gray-500/30">Завершён</Badge>;
       default:

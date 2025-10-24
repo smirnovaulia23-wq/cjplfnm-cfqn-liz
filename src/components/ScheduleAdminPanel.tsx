@@ -22,7 +22,7 @@ interface Match {
   team2_id: number;
   team1_name: string;
   team2_name: string;
-  status: 'scheduled' | 'in_progress' | 'completed';
+  status: 'waiting' | 'live' | 'playing' | 'completed';
   winner_team_id?: number;
   score_team1?: number;
   score_team2?: number;
@@ -128,7 +128,7 @@ export const ScheduleAdminPanel = ({
           team1_name: team1?.team_name || '',
           team2_name: team2?.team_name || '',
           round: newMatch.round,
-          status: 'scheduled'
+          status: 'waiting'
         })
       });
 
@@ -192,10 +192,12 @@ export const ScheduleAdminPanel = ({
 
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'scheduled':
-        return <Badge variant="outline" className="bg-blue-500/10 text-blue-500">Запланирован</Badge>;
-      case 'in_progress':
-        return <Badge variant="outline" className="bg-green-500/10 text-green-500">Идёт игра</Badge>;
+      case 'waiting':
+        return <Badge variant="outline" className="bg-blue-500/10 text-blue-500">Ожидание</Badge>;
+      case 'live':
+        return <Badge variant="outline" className="bg-red-500/10 text-red-500 animate-pulse">В эфире</Badge>;
+      case 'playing':
+        return <Badge variant="outline" className="bg-green-500/10 text-green-500">Играют</Badge>;
       case 'completed':
         return <Badge variant="outline" className="bg-gray-500/10 text-gray-500">Завершён</Badge>;
       default:
@@ -331,8 +333,9 @@ export const ScheduleAdminPanel = ({
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="scheduled">Запланирован</SelectItem>
-                                <SelectItem value="in_progress">Идёт игра</SelectItem>
+                                <SelectItem value="waiting">Ожидание</SelectItem>
+                                <SelectItem value="live">В эфире</SelectItem>
+                                <SelectItem value="playing">Играют</SelectItem>
                                 <SelectItem value="completed">Завершён</SelectItem>
                               </SelectContent>
                             </Select>

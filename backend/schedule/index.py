@@ -106,7 +106,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 body_data['team1_name'],
                 body_data['team2_name'],
                 body_data['round'],
-                body_data.get('status', 'scheduled')
+                body_data.get('status', 'waiting')
             ))
             
             match_id = cursor.fetchone()['id']
