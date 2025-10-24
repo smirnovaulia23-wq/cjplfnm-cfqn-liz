@@ -82,10 +82,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Unauthorized'})
                 }
             
-            cursor.execute("SELECT admin_id FROM user_sessions WHERE session_token = %s", (admin_token,))
-            session = cursor.fetchone()
+            cursor.execute("SELECT id, role FROM admin_users WHERE session_token = %s", (admin_token,))
+            admin = cursor.fetchone()
             
-            if not session:
+            if not admin:
                 return {
                     'statusCode': 403,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
@@ -130,10 +130,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'body': json.dumps({'error': 'Unauthorized'})
                 }
             
-            cursor.execute("SELECT admin_id FROM user_sessions WHERE session_token = %s", (admin_token,))
-            session = cursor.fetchone()
+            cursor.execute("SELECT id, role FROM admin_users WHERE session_token = %s", (admin_token,))
+            admin = cursor.fetchone()
             
-            if not session:
+            if not admin:
                 return {
                     'statusCode': 403,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
