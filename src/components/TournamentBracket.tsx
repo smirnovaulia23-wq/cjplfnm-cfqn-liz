@@ -42,6 +42,7 @@ export const TournamentBracket = ({ challongeUrl }: TournamentBracketProps) => {
         height="500" 
         className="rounded-lg border border-white/10"
         style={{ border: 0 }}
+        title="Tournament Bracket"
       />
     </div>
   );
