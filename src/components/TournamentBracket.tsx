@@ -13,7 +13,10 @@ export const TournamentBracket = ({ challongeUrl }: TournamentBracketProps) => {
       const url = challongeUrl.includes('/module') 
         ? challongeUrl 
         : `${challongeUrl}/module`;
+      console.log('Tournament URL:', challongeUrl, '-> iframe URL:', url);
       setBracketUrl(url);
+    } else {
+      console.log('No challonge URL provided');
     }
   }, [challongeUrl]);
 
