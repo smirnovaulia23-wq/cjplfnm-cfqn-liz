@@ -85,16 +85,29 @@ export const TeamsList = ({
             <Card key={team.id} className="bg-card/50 border-border hover:border-primary/50 transition-all">
               <CardContent className="p-6">
                 <div className="space-y-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50 flex-shrink-0">
-                        <span className="text-lg sm:text-xl font-bold text-primary">#{index + 1}</span>
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div className="flex items-center justify-between sm:justify-start gap-2 sm:gap-4 flex-1 min-w-0">
+                      <div className="flex items-center gap-2 sm:gap-4 flex-1 min-w-0">
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/20 flex items-center justify-center border border-primary/50 flex-shrink-0">
+                          <span className="text-lg sm:text-xl font-bold text-primary">#{index + 1}</span>
+                        </div>
+                        <Badge className="bg-primary/20 text-primary border border-primary/50 sm:hidden">
+                          Одобрено
+                        </Badge>
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <h3 className="text-lg sm:text-xl font-semibold text-foreground text-ellipsis-nick">{team.teamName}</h3>
-                      </div>
+                      {!isLoggedIn && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="border-primary/50 text-primary hover:bg-primary/10 sm:hidden"
+                          onClick={() => setExpandedTeam(expandedTeam === team.id ? null : team.id)}
+                        >
+                          <Icon name={expandedTeam === team.id ? "ChevronUp" : "ChevronDown"} className="w-4 h-4 mr-1" />
+                          Подробнее
+                        </Button>
+                      )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="hidden sm:flex sm:items-center sm:gap-2">
                       <Badge className="bg-primary/20 text-primary border border-primary/50">
                         Одобрено
                       </Badge>
@@ -110,6 +123,10 @@ export const TeamsList = ({
                         </Button>
                       )}
                     </div>
+                  </div>
+                  
+                  <div className="min-w-0">
+                    <h3 className="text-lg sm:text-xl font-semibold text-foreground text-ellipsis-nick">{team.teamName}</h3>
                   </div>
 
                   <div className="text-sm text-muted-foreground">
