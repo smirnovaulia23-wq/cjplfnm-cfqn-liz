@@ -53,6 +53,10 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             key = body_data.get('key')
             value = body_data.get('value')
             
+            # Convert value to JSON string if it's not already a string
+            if not isinstance(value, str):
+                value = json.dumps(value, ensure_ascii=False)
+            
             cur.execute(
                 f"""
                 INSERT INTO settings (key, value, updated_at) 
