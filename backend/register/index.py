@@ -11,6 +11,9 @@ from typing import Dict, Any
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
+def escape_sql(value: str) -> str:
+    return value.replace("'", "''")
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     method: str = event.get('httpMethod', 'GET')
     
@@ -57,51 +60,62 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
     if reg_type == 'team':
-        cur.execute("""
+        team_name = escape_sql(body_data.get('teamName', ''))
+        captain_nick = escape_sql(body_data.get('captainNick', ''))
+        captain_telegram = escape_sql(body_data.get('captainTelegram', ''))
+        top_nick = escape_sql(body_data.get('topNick', ''))
+        top_telegram = escape_sql(body_data.get('topTelegram', ''))
+        jungle_nick = escape_sql(body_data.get('jungleNick', ''))
+        jungle_telegram = escape_sql(body_data.get('jungleTelegram', ''))
+        mid_nick = escape_sql(body_data.get('midNick', ''))
+        mid_telegram = escape_sql(body_data.get('midTelegram', ''))
+        adc_nick = escape_sql(body_data.get('adcNick', ''))
+        adc_telegram = escape_sql(body_data.get('adcTelegram', ''))
+        support_nick = escape_sql(body_data.get('supportNick', ''))
+        support_telegram = escape_sql(body_data.get('supportTelegram', ''))
+        sub1_nick = escape_sql(body_data.get('sub1Nick', ''))
+        sub1_telegram = escape_sql(body_data.get('sub1Telegram', ''))
+        sub2_nick = escape_sql(body_data.get('sub2Nick', ''))
+        sub2_telegram = escape_sql(body_data.get('sub2Telegram', ''))
+        
+        cur.execute(f"""
             INSERT INTO team_registrations (
                 team_name, captain_nick, captain_telegram,
                 top_nick, top_telegram, jungle_nick, jungle_telegram,
                 mid_nick, mid_telegram, adc_nick, adc_telegram,
                 support_nick, support_telegram,
                 sub1_nick, sub1_telegram, sub2_nick, sub2_telegram
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES ('{team_name}', '{captain_nick}', '{captain_telegram}', 
+                      '{top_nick}', '{top_telegram}', '{jungle_nick}', '{jungle_telegram}',
+                      '{mid_nick}', '{mid_telegram}', '{adc_nick}', '{adc_telegram}',
+                      '{support_nick}', '{support_telegram}',
+                      '{sub1_nick}', '{sub1_telegram}', '{sub2_nick}', '{sub2_telegram}')
             RETURNING id
-        """, (
-            body_data.get('teamName'),
-            body_data.get('captainNick'),
-            body_data.get('captainTelegram'),
-            body_data.get('topNick'),
-            body_data.get('topTelegram'),
-            body_data.get('jungleNick'),
-            body_data.get('jungleTelegram'),
-            body_data.get('midNick'),
-            body_data.get('midTelegram'),
-            body_data.get('adcNick'),
-            body_data.get('adcTelegram'),
-            body_data.get('supportNick'),
-            body_data.get('supportTelegram'),
-            body_data.get('sub1Nick'),
-            body_data.get('sub1Telegram'),
-            body_data.get('sub2Nick'),
-            body_data.get('sub2Telegram')
-        ))
+        """)
     elif reg_type == 'individual':
-        cur.execute("""
+        player_nick = escape_sql(body_data.get('playerNick', ''))
+        player_telegram = escape_sql(body_data.get('playerTelegram', ''))
+        main_role = escape_sql(body_data.get('mainRole', ''))
+        alternative_role = escape_sql(body_data.get('alternativeRole', ''))
+        friend1_nick = escape_sql(body_data.get('friend1Nick', '')) if body_data.get('friend1Nick') else ''
+        friend1_telegram = escape_sql(body_data.get('friend1Telegram', '')) if body_data.get('friend1Telegram') else ''
+        friend2_nick = escape_sql(body_data.get('friend2Nick', '')) if body_data.get('friend2Nick') else ''
+        friend2_telegram = escape_sql(body_data.get('friend2Telegram', '')) if body_data.get('friend2Telegram') else ''
+        
+        # Handle NULL values for optional fields
+        friend1_nick_val = f"'{friend1_nick}'" if friend1_nick else 'NULL'
+        friend1_telegram_val = f"'{friend1_telegram}'" if friend1_telegram else 'NULL'
+        friend2_nick_val = f"'{friend2_nick}'" if friend2_nick else 'NULL'
+        friend2_telegram_val = f"'{friend2_telegram}'" if friend2_telegram else 'NULL'
+        
+        cur.execute(f"""
             INSERT INTO individual_registrations (
                 player_nick, player_telegram, main_role, alternative_role,
                 friend1_nick, friend1_telegram, friend2_nick, friend2_telegram
-            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+            ) VALUES ('{player_nick}', '{player_telegram}', '{main_role}', '{alternative_role}',
+                      {friend1_nick_val}, {friend1_telegram_val}, {friend2_nick_val}, {friend2_telegram_val})
             RETURNING id
-        """, (
-            body_data.get('playerNick'),
-            body_data.get('playerTelegram'),
-            body_data.get('mainRole'),
-            body_data.get('alternativeRole'),
-            body_data.get('friend1Nick'),
-            body_data.get('friend1Telegram'),
-            body_data.get('friend2Nick'),
-            body_data.get('friend2Telegram')
-        ))
+        """)
     else:
         cur.close()
         conn.close()

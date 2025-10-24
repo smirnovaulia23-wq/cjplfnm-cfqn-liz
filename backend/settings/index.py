@@ -3,6 +3,9 @@ import os
 import psycopg2
 from typing import Dict, Any
 
+def escape_sql(value: str) -> str:
+    return value.replace("'", "''")
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
     Business: Manage tournament settings like registration open/close
@@ -51,13 +54,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             value = body_data.get('value')
             
             cur.execute(
-                """
+                f"""
                 INSERT INTO settings (key, value, updated_at) 
-                VALUES (%s, %s, CURRENT_TIMESTAMP)
+                VALUES ('{escape_sql(key)}', '{escape_sql(value)}', CURRENT_TIMESTAMP)
                 ON CONFLICT (key) DO UPDATE 
                 SET value = EXCLUDED.value, updated_at = CURRENT_TIMESTAMP
-                """,
-                (key, value)
+                """
             )
             conn.commit()
             

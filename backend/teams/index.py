@@ -4,6 +4,9 @@ import hashlib
 import psycopg2
 from typing import Dict, Any
 
+def escape_sql(value: str) -> str:
+    return value.replace("'", "''")
+
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -80,13 +83,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             team_id = params.get('teamId')
             if team_id:
                 cur.execute(
-                    """SELECT id, team_name, captain_nick, captain_telegram, status, created_at,
+                    f"""SELECT id, team_name, captain_nick, captain_telegram, status, created_at,
                               top_nick, top_telegram, jungle_nick, jungle_telegram, 
                               mid_nick, mid_telegram, adc_nick, adc_telegram,
                               support_nick, support_telegram, sub1_nick, sub1_telegram,
                               sub2_nick, sub2_telegram, is_edited 
-                       FROM teams WHERE id = %s""",
-                    (team_id,)
+                       FROM teams WHERE id = {team_id}"""
                 )
                 t = cur.fetchone()
                 
@@ -132,13 +134,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             status_filter = params.get('status', 'approved')
             
             cur.execute(
-                """SELECT id, team_name, captain_nick, captain_telegram, status, created_at,
+                f"""SELECT id, team_name, captain_nick, captain_telegram, status, created_at,
                           top_nick, top_telegram, jungle_nick, jungle_telegram, 
                           mid_nick, mid_telegram, adc_nick, adc_telegram,
                           support_nick, support_telegram, sub1_nick, sub1_telegram,
                           sub2_nick, sub2_telegram, is_edited 
-                   FROM teams WHERE status = %s ORDER BY created_at DESC""",
-                (status_filter,)
+                   FROM teams WHERE status = '{escape_sql(status_filter)}' ORDER BY created_at DESC"""
             )
             teams = cur.fetchall()
             
@@ -195,14 +196,13 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 password_hash = hash_password(password)
                 
                 cur.execute(
-                    """SELECT id, team_name, captain_nick, captain_telegram, status,
+                    f"""SELECT id, team_name, captain_nick, captain_telegram, status,
                               top_nick, top_telegram, jungle_nick, jungle_telegram,
                               mid_nick, mid_telegram, adc_nick, adc_telegram,
                               support_nick, support_telegram, sub1_nick, sub1_telegram,
                               sub2_nick, sub2_telegram
                        FROM teams 
-                       WHERE team_name = %s AND password_hash = %s""",
-                    (team_name, password_hash)
+                       WHERE team_name = '{escape_sql(team_name)}' AND password_hash = '{escape_sql(password_hash)}'"""
                 )
                 team = cur.fetchone()
                 
@@ -260,26 +260,35 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             if body_data.get('type') == 'individual':
                 preferred_roles = body_data.get('preferredRoles', [])
                 has_friends = body_data.get('hasFriends', False)
+                nickname = escape_sql(body_data.get('nickname', ''))
+                telegram = escape_sql(body_data.get('telegram', ''))
+                
+                # Handle arrays for PostgreSQL
+                preferred_roles_str = '{' + ','.join([f'"{escape_sql(r)}"' for r in preferred_roles]) + '}'
+                
+                friend1_nickname = escape_sql(body_data.get('friend1Nickname', '')) if has_friends and body_data.get('friend1Nickname') else 'NULL'
+                friend1_telegram = escape_sql(body_data.get('friend1Telegram', '')) if has_friends and body_data.get('friend1Telegram') else 'NULL'
+                friend1_roles = body_data.get('friend1Roles', []) if has_friends else []
+                friend1_roles_str = '{' + ','.join([f'"{escape_sql(r)}"' for r in friend1_roles]) + '}' if friend1_roles else 'NULL'
+                
+                friend2_nickname = escape_sql(body_data.get('friend2Nickname', '')) if has_friends and body_data.get('friend2Nickname') else 'NULL'
+                friend2_telegram = escape_sql(body_data.get('friend2Telegram', '')) if has_friends and body_data.get('friend2Telegram') else 'NULL'
+                friend2_roles = body_data.get('friend2Roles', []) if has_friends else []
+                friend2_roles_str = '{' + ','.join([f'"{escape_sql(r)}"' for r in friend2_roles]) + '}' if friend2_roles else 'NULL'
                 
                 cur.execute(
-                    """INSERT INTO individual_players (
+                    f"""INSERT INTO individual_players (
                         nickname, telegram, password_hash, preferred_roles, status,
                         has_friends, friend1_nickname, friend1_telegram, friend1_roles,
                         friend2_nickname, friend2_telegram, friend2_roles
-                    ) VALUES (%s, %s, '', %s, 'pending', %s, %s, %s, %s, %s, %s, %s)
-                    RETURNING id""",
-                    (
-                        body_data.get('nickname'),
-                        body_data.get('telegram'),
-                        preferred_roles,
-                        has_friends,
-                        body_data.get('friend1Nickname') if has_friends else None,
-                        body_data.get('friend1Telegram') if has_friends else None,
-                        body_data.get('friend1Roles') if has_friends else None,
-                        body_data.get('friend2Nickname') if has_friends else None,
-                        body_data.get('friend2Telegram') if has_friends else None,
-                        body_data.get('friend2Roles') if has_friends else None
-                    )
+                    ) VALUES ('{nickname}', '{telegram}', '', '{preferred_roles_str}', 'pending', {has_friends}, 
+                        {'NULL' if friend1_nickname == 'NULL' else f"'{friend1_nickname}'"}, 
+                        {'NULL' if friend1_telegram == 'NULL' else f"'{friend1_telegram}'"}, 
+                        {'NULL' if friend1_roles_str == 'NULL' else f"'{friend1_roles_str}'"}, 
+                        {'NULL' if friend2_nickname == 'NULL' else f"'{friend2_nickname}'"}, 
+                        {'NULL' if friend2_telegram == 'NULL' else f"'{friend2_telegram}'"}, 
+                        {'NULL' if friend2_roles_str == 'NULL' else f"'{friend2_roles_str}'"})
+                    RETURNING id"""
                 )
                 player_id = cur.fetchone()[0]
                 conn.commit()
@@ -296,35 +305,37 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             password_hash = hash_password(body_data.get('password', ''))
             
+            team_name = escape_sql(body_data.get('teamName', ''))
+            captain_nick = escape_sql(body_data.get('captainNick', ''))
+            captain_telegram = escape_sql(body_data.get('captainTelegram', ''))
+            top_nick = escape_sql(body_data.get('topNick', ''))
+            top_telegram = escape_sql(body_data.get('topTelegram', ''))
+            jungle_nick = escape_sql(body_data.get('jungleNick', ''))
+            jungle_telegram = escape_sql(body_data.get('jungleTelegram', ''))
+            mid_nick = escape_sql(body_data.get('midNick', ''))
+            mid_telegram = escape_sql(body_data.get('midTelegram', ''))
+            adc_nick = escape_sql(body_data.get('adcNick', ''))
+            adc_telegram = escape_sql(body_data.get('adcTelegram', ''))
+            support_nick = escape_sql(body_data.get('supportNick', ''))
+            support_telegram = escape_sql(body_data.get('supportTelegram', ''))
+            sub1_nick = escape_sql(body_data.get('sub1Nick', ''))
+            sub1_telegram = escape_sql(body_data.get('sub1Telegram', ''))
+            sub2_nick = escape_sql(body_data.get('sub2Nick', ''))
+            sub2_telegram = escape_sql(body_data.get('sub2Telegram', ''))
+            
             cur.execute(
-                """INSERT INTO teams (
+                f"""INSERT INTO teams (
                     team_name, captain_nick, captain_telegram, password_hash,
                     top_nick, top_telegram, jungle_nick, jungle_telegram,
                     mid_nick, mid_telegram, adc_nick, adc_telegram,
                     support_nick, support_telegram, sub1_nick, sub1_telegram,
                     sub2_nick, sub2_telegram, status
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, 'pending')
-                RETURNING id""",
-                (
-                    body_data.get('teamName'),
-                    body_data.get('captainNick'),
-                    body_data.get('captainTelegram'),
-                    password_hash,
-                    body_data.get('topNick'),
-                    body_data.get('topTelegram'),
-                    body_data.get('jungleNick'),
-                    body_data.get('jungleTelegram'),
-                    body_data.get('midNick'),
-                    body_data.get('midTelegram'),
-                    body_data.get('adcNick'),
-                    body_data.get('adcTelegram'),
-                    body_data.get('supportNick'),
-                    body_data.get('supportTelegram'),
-                    body_data.get('sub1Nick'),
-                    body_data.get('sub1Telegram'),
-                    body_data.get('sub2Nick'),
-                    body_data.get('sub2Telegram')
-                )
+                ) VALUES ('{team_name}', '{captain_nick}', '{captain_telegram}', '{password_hash}', 
+                          '{top_nick}', '{top_telegram}', '{jungle_nick}', '{jungle_telegram}',
+                          '{mid_nick}', '{mid_telegram}', '{adc_nick}', '{adc_telegram}',
+                          '{support_nick}', '{support_telegram}', '{sub1_nick}', '{sub1_telegram}',
+                          '{sub2_nick}', '{sub2_telegram}', 'pending')
+                RETURNING id"""
             )
             team_id = cur.fetchone()[0]
             conn.commit()
@@ -346,10 +357,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             action = body_data.get('action')
             
             if player_id:
-                new_status = body_data.get('status')
+                new_status = escape_sql(body_data.get('status', ''))
                 cur.execute(
-                    "UPDATE individual_players SET status = %s WHERE id = %s",
-                    (new_status, player_id)
+                    f"UPDATE individual_players SET status = '{new_status}' WHERE id = {player_id}"
                 )
                 conn.commit()
                 
@@ -364,30 +374,35 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 }
             
             if action == 'update':
+                team_name = escape_sql(body_data.get('teamName', ''))
+                top_nick = escape_sql(body_data.get('topNick', ''))
+                top_telegram = escape_sql(body_data.get('topTelegram', ''))
+                jungle_nick = escape_sql(body_data.get('jungleNick', ''))
+                jungle_telegram = escape_sql(body_data.get('jungleTelegram', ''))
+                mid_nick = escape_sql(body_data.get('midNick', ''))
+                mid_telegram = escape_sql(body_data.get('midTelegram', ''))
+                adc_nick = escape_sql(body_data.get('adcNick', ''))
+                adc_telegram = escape_sql(body_data.get('adcTelegram', ''))
+                support_nick = escape_sql(body_data.get('supportNick', ''))
+                support_telegram = escape_sql(body_data.get('supportTelegram', ''))
+                sub1_nick = escape_sql(body_data.get('sub1Nick', ''))
+                sub1_telegram = escape_sql(body_data.get('sub1Telegram', ''))
+                sub2_nick = escape_sql(body_data.get('sub2Nick', ''))
+                sub2_telegram = escape_sql(body_data.get('sub2Telegram', ''))
+                
                 cur.execute(
-                    """UPDATE teams SET 
-                        team_name = %s,
-                        top_nick = %s, top_telegram = %s,
-                        jungle_nick = %s, jungle_telegram = %s,
-                        mid_nick = %s, mid_telegram = %s,
-                        adc_nick = %s, adc_telegram = %s,
-                        support_nick = %s, support_telegram = %s,
-                        sub1_nick = %s, sub1_telegram = %s,
-                        sub2_nick = %s, sub2_telegram = %s,
+                    f"""UPDATE teams SET 
+                        team_name = '{team_name}',
+                        top_nick = '{top_nick}', top_telegram = '{top_telegram}',
+                        jungle_nick = '{jungle_nick}', jungle_telegram = '{jungle_telegram}',
+                        mid_nick = '{mid_nick}', mid_telegram = '{mid_telegram}',
+                        adc_nick = '{adc_nick}', adc_telegram = '{adc_telegram}',
+                        support_nick = '{support_nick}', support_telegram = '{support_telegram}',
+                        sub1_nick = '{sub1_nick}', sub1_telegram = '{sub1_telegram}',
+                        sub2_nick = '{sub2_nick}', sub2_telegram = '{sub2_telegram}',
                         status = 'pending',
                         is_edited = true
-                    WHERE id = %s""",
-                    (
-                        body_data.get('teamName'),
-                        body_data.get('topNick'), body_data.get('topTelegram'),
-                        body_data.get('jungleNick'), body_data.get('jungleTelegram'),
-                        body_data.get('midNick'), body_data.get('midTelegram'),
-                        body_data.get('adcNick'), body_data.get('adcTelegram'),
-                        body_data.get('supportNick'), body_data.get('supportTelegram'),
-                        body_data.get('sub1Nick'), body_data.get('sub1Telegram'),
-                        body_data.get('sub2Nick'), body_data.get('sub2Telegram'),
-                        team_id
-                    )
+                    WHERE id = {team_id}"""
                 )
                 conn.commit()
                 
@@ -401,17 +416,15 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     'isBase64Encoded': False
                 }
             
-            new_status = body_data.get('status')
+            new_status = escape_sql(body_data.get('status', ''))
             
             if new_status == 'approved':
                 cur.execute(
-                    "UPDATE teams SET status = %s, is_edited = false WHERE id = %s",
-                    (new_status, team_id)
+                    f"UPDATE teams SET status = '{new_status}', is_edited = false WHERE id = {team_id}"
                 )
             else:
                 cur.execute(
-                    "UPDATE teams SET status = %s WHERE id = %s",
-                    (new_status, team_id)
+                    f"UPDATE teams SET status = '{new_status}' WHERE id = {team_id}"
                 )
             conn.commit()
             
@@ -444,8 +457,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 cur.execute(
-                    "SELECT role FROM admin_users WHERE session_token = %s",
-                    (auth_token,)
+                    f"SELECT role FROM admin_users WHERE session_token = '{escape_sql(auth_token)}'"
                 )
                 admin_result = cur.fetchone()
                 
@@ -458,9 +470,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 if item_type == 'team':
-                    cur.execute("DELETE FROM teams WHERE id = %s", (item_id,))
+                    cur.execute(f"DELETE FROM teams WHERE id = {item_id}")
                 elif item_type == 'player':
-                    cur.execute("DELETE FROM individual_players WHERE id = %s", (item_id,))
+                    cur.execute(f"DELETE FROM individual_players WHERE id = {item_id}")
                 
                 conn.commit()
                 
@@ -486,8 +498,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if item_type == 'team':
                 cur.execute(
-                    "SELECT password_hash FROM teams WHERE id = %s",
-                    (item_id,)
+                    f"SELECT password_hash FROM teams WHERE id = {item_id}"
                 )
                 result = cur.fetchone()
                 
@@ -499,13 +510,12 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cur.execute("DELETE FROM teams WHERE id = %s", (item_id,))
+                cur.execute(f"DELETE FROM teams WHERE id = {item_id}")
                 conn.commit()
             
             elif item_type == 'player':
                 cur.execute(
-                    "SELECT password_hash FROM individual_players WHERE id = %s",
-                    (item_id,)
+                    f"SELECT password_hash FROM individual_players WHERE id = {item_id}"
                 )
                 result = cur.fetchone()
                 
@@ -517,7 +527,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cur.execute("DELETE FROM individual_players WHERE id = %s", (item_id,))
+                cur.execute(f"DELETE FROM individual_players WHERE id = {item_id}")
                 conn.commit()
             
             return {

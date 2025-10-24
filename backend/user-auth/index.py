@@ -13,6 +13,9 @@ from typing import Dict, Any, Optional
 import psycopg2
 from psycopg2.extras import RealDictCursor
 
+def escape_sql(value: str) -> str:
+    return value.replace("'", "''")
+
 def hash_password(password: str) -> str:
     return hashlib.sha256(password.encode()).hexdigest()
 
@@ -60,8 +63,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 password_hash = hash_password(password)
                 
                 cur.execute(
-                    "SELECT id, team_name, captain_nick, status FROM teams WHERE captain_telegram = %s AND password_hash = %s",
-                    (telegram, password_hash)
+                    f"SELECT id, team_name, captain_nick, status FROM teams WHERE captain_telegram = '{escape_sql(telegram)}' AND password_hash = '{escape_sql(password_hash)}'"
                 )
                 team = cur.fetchone()
                 
@@ -70,8 +72,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     expires_at = datetime.now() + timedelta(days=7)
                     
                     cur.execute(
-                        "INSERT INTO user_sessions (telegram, user_type, session_token, expires_at) VALUES (%s, %s, %s, %s)",
-                        (telegram, 'team_captain', session_token, expires_at)
+                        f"INSERT INTO user_sessions (telegram, user_type, session_token, expires_at) VALUES ('{escape_sql(telegram)}', 'team_captain', '{escape_sql(session_token)}', '{expires_at}')"
                     )
                     conn.commit()
                     
@@ -90,8 +91,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 cur.execute(
-                    "SELECT id, nickname, preferred_role, status FROM individual_players WHERE telegram = %s AND password_hash = %s",
-                    (telegram, password_hash)
+                    f"SELECT id, nickname, preferred_role, status FROM individual_players WHERE telegram = '{escape_sql(telegram)}' AND password_hash = '{escape_sql(password_hash)}'"
                 )
                 player = cur.fetchone()
                 
@@ -100,8 +100,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     expires_at = datetime.now() + timedelta(days=7)
                     
                     cur.execute(
-                        "INSERT INTO user_sessions (telegram, user_type, session_token, expires_at) VALUES (%s, %s, %s, %s)",
-                        (telegram, 'individual_player', session_token, expires_at)
+                        f"INSERT INTO user_sessions (telegram, user_type, session_token, expires_at) VALUES ('{escape_sql(telegram)}', 'individual_player', '{escape_sql(session_token)}', '{expires_at}')"
                     )
                     conn.commit()
                     
@@ -136,8 +135,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 cur.execute(
-                    "SELECT telegram, user_type, expires_at FROM user_sessions WHERE session_token = %s",
-                    (token,)
+                    f"SELECT telegram, user_type, expires_at FROM user_sessions WHERE session_token = '{escape_sql(token)}'"
                 )
                 session = cur.fetchone()
                 
@@ -149,7 +147,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 if datetime.now() > session['expires_at']:
-                    cur.execute("DELETE FROM user_sessions WHERE session_token = %s", (token,))
+                    cur.execute(f"DELETE FROM user_sessions WHERE session_token = '{escape_sql(token)}'")
                     conn.commit()
                     return {
                         'statusCode': 401,
@@ -159,8 +157,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 if session['user_type'] == 'team_captain':
                     cur.execute(
-                        "SELECT id, team_name, captain_nick, status FROM teams WHERE captain_telegram = %s",
-                        (session['telegram'],)
+                        f"SELECT id, team_name, captain_nick, status FROM teams WHERE captain_telegram = '{escape_sql(session['telegram'])}'"
                     )
                     team = cur.fetchone()
                     
@@ -180,8 +177,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 else:
                     cur.execute(
-                        "SELECT id, nickname, preferred_role, status FROM individual_players WHERE telegram = %s",
-                        (session['telegram'],)
+                        f"SELECT id, nickname, preferred_role, status FROM individual_players WHERE telegram = '{escape_sql(session['telegram'])}'"
                     )
                     player = cur.fetchone()
                     
@@ -209,7 +205,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 token = body_data.get('token')
                 
                 if token:
-                    cur.execute("DELETE FROM user_sessions WHERE session_token = %s", (token,))
+                    cur.execute(f"DELETE FROM user_sessions WHERE session_token = '{escape_sql(token)}'")
                     conn.commit()
                 
                 return {

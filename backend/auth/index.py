@@ -11,6 +11,9 @@ def hash_password(password: str) -> str:
 def generate_session_token() -> str:
     return secrets.token_urlsafe(32)
 
+def escape_sql(value: str) -> str:
+    return value.replace("'", "''")
+
 def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
     '''
     Business: Authenticate users and manage admin sessions with token generation
@@ -131,8 +134,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 hashed_password = hash_password(new_password)
                 
                 cur.execute(
-                    "INSERT INTO admin_users (username, password_hash, role) VALUES (%s, %s, 'admin') RETURNING id",
-                    (new_username, hashed_password)
+                    f"INSERT INTO admin_users (username, password_hash, role) VALUES ('{escape_sql(new_username)}', '{hashed_password}', 'admin') RETURNING id"
                 )
                 admin_id = cur.fetchone()[0]
                 conn.commit()
@@ -161,8 +163,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             hashed_password = hash_password(password)
             
             cur.execute(
-                "SELECT id, username, role, password_hash FROM admin_users WHERE username = %s",
-                (username,)
+                f"SELECT id, username, role, password_hash FROM admin_users WHERE username = '{escape_sql(username)}'"
             )
             user_data = cur.fetchone()
             
@@ -170,8 +171,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 session_token = generate_session_token()
                 
                 cur.execute(
-                    "UPDATE admin_users SET session_token = %s WHERE id = %s",
-                    (session_token, user_data[0])
+                    f"UPDATE admin_users SET session_token = '{session_token}' WHERE id = {user_data[0]}"
                 )
                 conn.commit()
                 
@@ -216,8 +216,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     }
                 
                 cur.execute(
-                    "SELECT username FROM admin_users WHERE session_token = %s",
-                    (auth_token,)
+                    f"SELECT username FROM admin_users WHERE session_token = '{escape_sql(auth_token)}'"
                 )
                 admin = cur.fetchone()
                 
@@ -231,7 +230,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 admin_id = body_data.get('adminId')
                 
-                cur.execute("SELECT username FROM admin_users WHERE id = %s", (admin_id,))
+                cur.execute(f"SELECT username FROM admin_users WHERE id = {admin_id}")
                 target_admin = cur.fetchone()
                 
                 if target_admin and target_admin[0] == 'Xuna':
@@ -242,7 +241,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         'isBase64Encoded': False
                     }
                 
-                cur.execute("DELETE FROM admin_users WHERE id = %s", (admin_id,))
+                cur.execute(f"DELETE FROM admin_users WHERE id = {admin_id}")
                 conn.commit()
                 
                 return {
