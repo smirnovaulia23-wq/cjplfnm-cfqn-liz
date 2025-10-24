@@ -1,10 +1,20 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import Icon from '@/components/ui/icon';
 import { useToast } from '@/hooks/use-toast';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 interface TeamEditDialogProps {
   open: boolean;
@@ -18,6 +28,9 @@ export const TeamEditDialog = ({ open, onOpenChange, teamId, sessionToken, onSuc
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [teamData, setTeamData] = useState<any>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (open && teamId) {
@@ -66,6 +79,57 @@ export const TeamEditDialog = ({ open, onOpenChange, teamId, sessionToken, onSuc
       toast({ title: 'Ошибка', description: 'Не удалось обновить данные', variant: 'destructive' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteTeam = async () => {
+    if (!deletePassword) {
+      toast({
+        title: 'Ошибка',
+        description: 'Введите пароль команды',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const response = await fetch('https://functions.poehali.dev/35199dac-d68a-4536-959b-4aad2fb7e7ad', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: teamId,
+          password: deletePassword,
+          type: 'team'
+        })
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast({
+          title: 'Команда удалена',
+          description: 'Ваша команда успешно удалена из турнира'
+        });
+        setShowDeleteDialog(false);
+        onOpenChange(false);
+        onSuccess();
+        window.location.reload();
+      } else {
+        toast({
+          title: 'Ошибка',
+          description: data.error || 'Неверный пароль',
+          variant: 'destructive'
+        });
+      }
+    } catch (error) {
+      toast({
+        title: 'Ошибка',
+        description: 'Не удалось удалить команду',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -271,8 +335,53 @@ export const TeamEditDialog = ({ open, onOpenChange, teamId, sessionToken, onSuc
               Отмена
             </Button>
           </div>
+          
+          <div className="pt-6 border-t border-border">
+            <Button
+              type="button"
+              variant="destructive"
+              className="w-full"
+              onClick={() => setShowDeleteDialog(true)}
+            >
+              <Icon name="Trash2" className="w-4 h-4 mr-2" />
+              Удалить команду
+            </Button>
+          </div>
         </form>
       </DialogContent>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent className="bg-card border-border">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-foreground">Удалить команду?</AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              Введите пароль команды для подтверждения удаления. Это действие нельзя отменить.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <Input
+              type="password"
+              placeholder="Пароль команды"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              className="bg-background border-border"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => {
+              setDeletePassword('');
+              setShowDeleteDialog(false);
+            }}>Отмена</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTeam}
+              disabled={isDeleting || !deletePassword}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              {isDeleting ? 'Удаление...' : 'Удалить команду'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Dialog>
   );
 };
