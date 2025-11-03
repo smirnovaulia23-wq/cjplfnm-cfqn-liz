@@ -388,11 +388,17 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 
                 if not is_admin_update and session_token:
                     cur.execute(
-                        f"SELECT team_id FROM user_sessions WHERE session_token = '{escape_sql(session_token)}'"
+                        f"SELECT telegram, user_type FROM user_sessions WHERE session_token = '{escape_sql(session_token)}'"
                     )
                     session_result = cur.fetchone()
-                    if session_result and session_result[0] == team_id:
-                        is_captain_update = True
+                    if session_result and session_result[1] == 'team_captain':
+                        telegram = session_result[0]
+                        cur.execute(
+                            f"SELECT id FROM teams WHERE captain_telegram = '{escape_sql(telegram)}'"
+                        )
+                        team_result = cur.fetchone()
+                        if team_result and team_result[0] == team_id:
+                            is_captain_update = True
                 
                 if not is_admin_update and not is_captain_update:
                     return {
