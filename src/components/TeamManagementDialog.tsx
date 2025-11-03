@@ -13,9 +13,10 @@ interface TeamManagementDialogProps {
   teamId?: number;
   sessionToken?: string;
   isAdmin?: boolean;
+  onSuccess?: () => void;
 }
 
-export const TeamManagementDialog = ({ open, onOpenChange, backendUrl, teamId, sessionToken: adminSessionToken, isAdmin }: TeamManagementDialogProps) => {
+export const TeamManagementDialog = ({ open, onOpenChange, backendUrl, teamId, sessionToken: adminSessionToken, isAdmin, onSuccess }: TeamManagementDialogProps) => {
   const [step, setStep] = useState<'login' | 'manage'>(isAdmin && teamId ? 'manage' : 'login');
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');
@@ -111,8 +112,10 @@ export const TeamManagementDialog = ({ open, onOpenChange, backendUrl, teamId, s
     setLoading(true);
     try {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (isAdmin && sessionToken) {
-        headers['X-Auth-Token'] = sessionToken;
+      if (isAdmin && adminSessionToken) {
+        headers['X-Auth-Token'] = adminSessionToken;
+      } else if (captainSessionToken) {
+        headers['X-Session-Token'] = captainSessionToken;
       }
 
       const body: any = {
@@ -138,6 +141,10 @@ export const TeamManagementDialog = ({ open, onOpenChange, backendUrl, teamId, s
           title: 'Успешно', 
           description: 'Данные команды обновлены!' 
         });
+        if (onSuccess) {
+          onSuccess();
+        }
+        onOpenChange(false);
       } else {
         toast({ 
           title: 'Ошибка', 

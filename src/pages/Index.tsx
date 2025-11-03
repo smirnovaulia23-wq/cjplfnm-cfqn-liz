@@ -906,6 +906,10 @@ const Index = () => {
         teamId={teamId || undefined}
         sessionToken={sessionToken}
         isAdmin={isAdmin}
+        onSuccess={() => {
+          loadApprovedTeams();
+          loadPendingTeams();
+        }}
       />
 
       {isAdmin && (
