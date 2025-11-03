@@ -16,6 +16,10 @@ import TournamentBracket from '@/components/TournamentBracket';
 import { ScheduleView } from '@/components/ScheduleView';
 import { ScheduleAdminPanel } from '@/components/ScheduleAdminPanel';
 import { HomePageEditor } from '@/components/HomePageEditor';
+import { HomeTab } from '@/components/index/HomeTab';
+import { useAuthentication } from '@/components/index/AuthenticationLogic';
+import { useDataLoader } from '@/components/index/DataLoader';
+import { useRegistrationHandler } from '@/components/index/RegistrationHandler';
 import Icon from '@/components/ui/icon';
 
 const BACKEND_URLS = {
@@ -89,800 +93,327 @@ const Index = () => {
   });
   const { toast } = useToast();
 
+  const dataLoader = useDataLoader(BACKEND_URLS.teams, BACKEND_URLS.settings);
+
+  const loadApprovedTeamsData = async () => {
+    const teams = await dataLoader.loadApprovedTeams();
+    setApprovedTeams(teams);
+  };
+
+  const loadPendingTeamsData = async () => {
+    const teams = await dataLoader.loadPendingTeams();
+    setPendingTeams(teams);
+  };
+
+  const loadIndividualPlayersData = async () => {
+    const { approved, pending } = await dataLoader.loadIndividualPlayers();
+    setIndividualPlayers(approved);
+    setPendingPlayers(pending);
+  };
+
+  const loadSettingsData = async () => {
+    const settings = await dataLoader.loadSettings();
+    setRegistrationOpen(settings.registrationOpen);
+    setChallongeUrl(settings.challongeUrl);
+    setHomeTitle(settings.homeTitle);
+    setHomeSubtitle(settings.homeSubtitle);
+    setHomeDescription(settings.homeDescription);
+    setTournamentInfo(settings.tournamentInfo);
+  };
+
+  const { handleLogin, handleLogout } = useAuthentication({
+    setIsLoggedIn,
+    setIsAdmin,
+    setIsSuperAdmin,
+    setSessionToken,
+    setUsername,
+    setUserRole,
+    setTeamId,
+    setShowLoginDialog,
+    setShowAdminPanel,
+    setShowSuperAdminPanel,
+    loadPendingTeams: loadPendingTeamsData,
+    authUrl: BACKEND_URLS.auth,
+    userAuthUrl: BACKEND_URLS.userAuth
+  });
+
+  const registrationHandler = useRegistrationHandler({
+    registerUrl: BACKEND_URLS.register,
+    loadApprovedTeams: loadApprovedTeamsData,
+    loadIndividualPlayers: loadIndividualPlayersData
+  });
+
   useEffect(() => {
-    loadApprovedTeams();
-    loadIndividualPlayers();
-    loadSettings();
+    loadApprovedTeamsData();
+    loadIndividualPlayersData();
+    loadSettingsData();
     if (isLoggedIn) {
-      loadPendingTeams();
+      loadPendingTeamsData();
     }
   }, [isLoggedIn]);
 
-  const loadApprovedTeams = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URLS.teams}?status=approved`, {
-        mode: 'cors',
-        credentials: 'omit'
+  const handleTeamRegister = async () => {
+    const success = await registrationHandler.handleTeamRegister(teamForm);
+    if (success) {
+      setTeamForm({
+        teamName: '',
+        captainNick: '',
+        captainTelegram: '',
+        password: '',
+        confirmPassword: '',
+        topNick: '',
+        topTelegram: '',
+        jungleNick: '',
+        jungleTelegram: '',
+        midNick: '',
+        midTelegram: '',
+        adcNick: '',
+        adcTelegram: '',
+        supportNick: '',
+        supportTelegram: '',
+        sub1Nick: '',
+        sub1Telegram: '',
+        sub2Nick: '',
+        sub2Telegram: ''
       });
-      if (!response.ok) {
-        setApprovedTeams([]);
-        return;
-      }
-      const data = await response.json();
-      setApprovedTeams(data.teams || []);
-    } catch (error) {
-      setApprovedTeams([]);
     }
   };
 
-  const loadPendingTeams = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URLS.teams}?status=pending`, {
-        mode: 'cors',
-        credentials: 'omit'
+  const handleIndividualRegister = async () => {
+    const success = await registrationHandler.handleIndividualRegister(individualForm);
+    if (success) {
+      setIndividualForm({
+        nickname: '',
+        telegram: '',
+        preferredRoles: [],
+        hasFriends: false,
+        friend1Nickname: '',
+        friend1Telegram: '',
+        friend1Roles: [],
+        friend2Nickname: '',
+        friend2Telegram: '',
+        friend2Roles: []
       });
-      if (!response.ok) {
-        setPendingTeams([]);
-        return;
-      }
-      const data = await response.json();
-      setPendingTeams(data.teams || []);
-    } catch (error) {
-      setPendingTeams([]);
     }
   };
 
-  const loadIndividualPlayers = async () => {
-    try {
-      const response = await fetch(`${BACKEND_URLS.teams}?type=individual`, {
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      if (!response.ok) {
-        setIndividualPlayers([]);
-        setPendingPlayers([]);
-        return;
-      }
-      const data = await response.json();
-      const approved = (data.players || []).filter((p: any) => p.status === 'approved');
-      const pending = (data.players || []).filter((p: any) => p.status === 'pending');
-      setIndividualPlayers(approved);
-      setPendingPlayers(pending);
-    } catch (error) {
-      setIndividualPlayers([]);
-      setPendingPlayers([]);
-    }
+  const handleTeamFormChange = (field: string, value: any) => {
+    setTeamForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const loadSettings = async () => {
-    try {
-      const response = await fetch(BACKEND_URLS.settings, {
-        mode: 'cors',
-        credentials: 'omit'
-      });
-      if (!response.ok) {
-        setRegistrationOpen(true);
-        return;
-      }
-      const data = await response.json();
-      setRegistrationOpen(data.settings?.registration_open === 'true');
-      setChallongeUrl(data.settings?.challonge_url || '');
-      setHomeTitle(data.settings?.home_title || 'League of Legends: Wild Rift');
-      setHomeSubtitle(data.settings?.home_subtitle || 'Турнир 5x5');
-      setHomeDescription(data.settings?.home_description || 'Соберите команду и докажите своё мастерство в «Диком ущелье»');
-      
-      try {
-        const info = JSON.parse(data.settings?.tournament_info || '{}');
-        setTournamentInfo(info);
-      } catch {
-        setTournamentInfo({});
-      }
-    } catch (error) {
-      setRegistrationOpen(true);
-    }
+  const handleIndividualFormChange = (field: string, value: any) => {
+    setIndividualForm(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleLogin = async (telegram: string, password: string) => {
+  const handleTeamUpdate = async (teamData: any) => {
+    if (!teamId) return;
+
     try {
-      const adminResponse = await fetch(BACKEND_URLS.auth, {
-        method: 'POST',
+      const response = await fetch(BACKEND_URLS.teams, {
+        method: 'PUT',
         mode: 'cors',
         credentials: 'omit',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: telegram, password })
-      });
-      
-      const adminData = await adminResponse.json();
-
-      if (adminData.success) {
-        setIsLoggedIn(true);
-        setIsAdmin(true);
-        setIsSuperAdmin(adminData.username === 'Xuna');
-        setSessionToken(adminData.token);
-        setUsername(adminData.username);
-        setUserRole(adminData.role);
-        setShowLoginDialog(false);
-        if (adminData.username === 'Xuna') {
-          setShowSuperAdminPanel(true);
-        } else {
-          setShowAdminPanel(true);
-        }
-        toast({ title: 'Вход выполнен', description: `Добро пожаловать, ${adminData.username}!` });
-        loadPendingTeams();
-        return;
-      }
-
-      const userResponse = await fetch(BACKEND_URLS.userAuth, {
-        method: 'POST',
-        mode: 'cors',
-        credentials: 'omit',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'login', telegram, password })
-      });
-      
-      const userData = await userResponse.json();
-
-      if (userData.success) {
-        setIsLoggedIn(true);
-        setIsAdmin(false);
-        setSessionToken(userData.token);
-        setUserRole(userData.userType);
-        
-        if (userData.userType === 'team_captain') {
-          setUsername(userData.captainNick);
-          setTeamId(userData.teamId);
-          setShowTeamEditDialog(true);
-          toast({ 
-            title: 'Вход выполнен', 
-            description: `Добро пожаловать, ${userData.captainNick}! Команда: ${userData.teamName}` 
-          });
-        } else {
-          setUsername(userData.nickname);
-          setShowTeamManagementDialog(true);
-          toast({ 
-            title: 'Вход выполнен', 
-            description: `Добро пожаловать, ${userData.nickname}!` 
-          });
-        }
-        
-        setShowLoginDialog(false);
-      } else {
-        toast({ title: 'Ошибка входа', description: userData.error || 'Неверный логин или пароль', variant: 'destructive' });
-      }
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось выполнить вход. Попробуйте обновить страницу', variant: 'destructive' });
-    }
-  };
-
-  const handleLogout = () => {
-    setIsLoggedIn(false);
-    setIsAdmin(false);
-    setIsSuperAdmin(false);
-    setUsername('');
-    setUserRole('');
-    setSessionToken('');
-    setTeamId(null);
-    toast({ title: 'Выход выполнен' });
-  };
-
-  const handleChallongeUrlChange = async (url: string) => {
-    try {
-      await fetch(BACKEND_URLS.settings, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: 'challonge_url', value: url })
-      });
-      setChallongeUrl(url);
-      toast({ title: 'Успешно', description: 'URL турнирной сетки обновлен' });
-      loadSettings();
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось обновить URL', variant: 'destructive' });
-    }
-  };
-
-  const handleToggleRegistration = async (open: boolean) => {
-    try {
-      await fetch(BACKEND_URLS.settings, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ key: 'registration_open', value: open ? 'true' : 'false' })
-      });
-      setRegistrationOpen(open);
-      toast({ title: 'Настройки обновлены', description: `Регистрация ${open ? 'открыта' : 'закрыта'}` });
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось обновить настройки', variant: 'destructive' });
-    }
-  };
-
-  const handleApproveTeam = async (teamId: number) => {
-    try {
-      await fetch(BACKEND_URLS.teams, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamId, status: 'approved' })
-      });
-      toast({ title: 'Команда одобрена', description: 'Команда добавлена в список участников' });
-      loadPendingTeams();
-      loadApprovedTeams();
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось одобрить команду', variant: 'destructive' });
-    }
-  };
-
-  const handleRejectTeam = async (teamId: number) => {
-    try {
-      await fetch(BACKEND_URLS.teams, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamId, status: 'rejected' })
-      });
-      toast({ title: 'Заявка отклонена', description: 'Команда не будет допущена к турниру' });
-      loadPendingTeams();
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось отклонить заявку', variant: 'destructive' });
-    }
-  };
-
-  const handleApprovePlayer = async (playerId: number) => {
-    try {
-      await fetch(BACKEND_URLS.teams, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerId, status: 'approved' })
-      });
-      toast({ title: 'Игрок одобрен', description: 'Игрок добавлен в список свободных игроков' });
-      loadIndividualPlayers();
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось одобрить игрока', variant: 'destructive' });
-    }
-  };
-
-  const handleRejectPlayer = async (playerId: number) => {
-    try {
-      await fetch(BACKEND_URLS.teams, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ playerId, status: 'rejected' })
-      });
-      toast({ title: 'Заявка отклонена', description: 'Игрок не будет допущен к турниру' });
-      loadIndividualPlayers();
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось отклонить заявку', variant: 'destructive' });
-    }
-  };
-
-  const handleDeleteApprovedTeam = async (teamId: number) => {
-    try {
-      await fetch(BACKEND_URLS.teams, {
-        method: 'DELETE',
-        headers: { 
+        headers: {
           'Content-Type': 'application/json',
-          'X-Auth-Token': sessionToken
+          'X-Session-Token': sessionToken
         },
-        body: JSON.stringify({ teamId })
-      });
-      toast({ title: 'Команда удалена', description: 'Команда была удалена из списка' });
-      loadApprovedTeams();
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось удалить команду', variant: 'destructive' });
-    }
-  };
-
-  const handleDeleteApprovedPlayer = async (playerId: number) => {
-    try {
-      await fetch(BACKEND_URLS.teams, {
-        method: 'DELETE',
-        headers: { 
-          'Content-Type': 'application/json',
-          'X-Auth-Token': sessionToken
-        },
-        body: JSON.stringify({ playerId })
-      });
-      toast({ title: 'Игрок удален', description: 'Игрок был удален из списка' });
-      loadIndividualPlayers();
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось удалить игрока', variant: 'destructive' });
-    }
-  };
-
-  const handleTeamRegistration = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!teamForm.teamName || !teamForm.captainNick || !teamForm.captainTelegram ||
-        !teamForm.password || !teamForm.confirmPassword ||
-        !teamForm.topNick || !teamForm.topTelegram || !teamForm.jungleNick || !teamForm.jungleTelegram ||
-        !teamForm.midNick || !teamForm.midTelegram || !teamForm.adcNick || !teamForm.adcTelegram ||
-        !teamForm.supportNick || !teamForm.supportTelegram) {
-      toast({ title: 'Заполните обязательные поля', description: 'Все поля отмеченные * обязательны', variant: 'destructive' });
-      return;
-    }
-
-    if (teamForm.password !== teamForm.confirmPassword) {
-      toast({ title: 'Ошибка', description: 'Пароли не совпадают', variant: 'destructive' });
-      return;
-    }
-
-    if (teamForm.password.length < 6) {
-      toast({ title: 'Ошибка', description: 'Пароль должен быть не менее 6 символов', variant: 'destructive' });
-      return;
-    }
-
-    try {
-      if (!registrationOpen) {
-        toast({ title: 'Регистрация закрыта', description: 'В данный момент регистрация команд недоступна', variant: 'destructive' });
-        return;
-      }
-
-      const registerResponse = await fetch(BACKEND_URLS.register, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...teamForm, type: 'team' })
-      });
-      const registerData = await registerResponse.json();
-
-      if (!registerData.success) {
-        toast({ title: 'Ошибка', description: registerData.error || 'Не удалось сохранить регистрацию', variant: 'destructive' });
-        return;
-      }
-
-      const response = await fetch(BACKEND_URLS.teams, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(teamForm)
-      });
-      const data = await response.json();
-
-      if (data.success) {
-        toast({ title: 'Заявка отправлена!', description: 'Ваша команда отправлена на одобрение администрации. Используйте свой Telegram для входа.' });
-        setTeamForm({
-          teamName: '',
-          captainNick: '',
-          captainTelegram: '',
-          password: '',
-          confirmPassword: '',
-          topNick: '',
-          topTelegram: '',
-          jungleNick: '',
-          jungleTelegram: '',
-          midNick: '',
-          midTelegram: '',
-          adcNick: '',
-          adcTelegram: '',
-          supportNick: '',
-          supportTelegram: '',
-          sub1Nick: '',
-          sub1Telegram: '',
-          sub2Nick: '',
-          sub2Telegram: ''
-        });
-      } else {
-        toast({ title: 'Ошибка', description: data.error || 'Не удалось отправить заявку', variant: 'destructive' });
-      }
-    } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось отправить заявку', variant: 'destructive' });
-    }
-  };
-
-  const handleIndividualRegistration = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!individualForm.nickname || !individualForm.telegram) {
-      toast({ title: 'Заполните обязательные поля', description: 'Ник и Telegram обязательны для заполнения', variant: 'destructive' });
-      return;
-    }
-
-    if (individualForm.preferredRoles.length === 0) {
-      toast({ title: 'Выберите роли', description: 'Выберите хотя бы одну предпочитаемую роль', variant: 'destructive' });
-      return;
-    }
-
-    try {
-      if (!registrationOpen) {
-        toast({ title: 'Регистрация закрыта', description: 'В данный момент регистрация недоступна', variant: 'destructive' });
-        return;
-      }
-
-      const response = await fetch(BACKEND_URLS.teams, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          type: 'individual',
-          nickname: individualForm.nickname,
-          telegram: individualForm.telegram,
-          preferredRoles: individualForm.preferredRoles,
-          hasFriends: individualForm.hasFriends,
-          friend1Nickname: individualForm.friend1Nickname,
-          friend1Telegram: individualForm.friend1Telegram,
-          friend1Roles: individualForm.friend1Roles,
-          friend2Nickname: individualForm.friend2Nickname,
-          friend2Telegram: individualForm.friend2Telegram,
-          friend2Roles: individualForm.friend2Roles
+          action: 'update_team',
+          teamId,
+          ...teamData
         })
       });
+
       const data = await response.json();
 
-      if (data.success) {
-        toast({ title: 'Заявка отправлена!', description: 'Ваша заявка отправлена на модерацию администрации.' });
-        setIndividualForm({
-          nickname: '',
-          telegram: '',
-          preferredRoles: [],
-          hasFriends: false,
-          friend1Nickname: '',
-          friend1Telegram: '',
-          friend1Roles: [],
-          friend2Nickname: '',
-          friend2Telegram: '',
-          friend2Roles: []
-        });
-        loadIndividualPlayers();
+      if (response.ok) {
+        toast({ title: 'Команда обновлена!' });
+        setShowTeamEditDialog(false);
+        loadApprovedTeamsData();
       } else {
-        toast({ title: 'Ошибка', description: data.error || 'Не удалось зарегистрироваться', variant: 'destructive' });
+        toast({ title: 'Ошибка', description: data.error || 'Не удалось обновить команду', variant: 'destructive' });
       }
     } catch (error) {
-      toast({ title: 'Ошибка', description: 'Не удалось отправить заявку', variant: 'destructive' });
+      toast({ title: 'Ошибка', description: 'Не удалось обновить команду', variant: 'destructive' });
     }
   };
 
-  const toggleRole = (role: string) => {
-    const roles = individualForm.preferredRoles;
-    if (roles.includes(role)) {
-      setIndividualForm({
-        ...individualForm,
-        preferredRoles: roles.filter(r => r !== role)
-      });
-    } else if (roles.length < 3) {
-      setIndividualForm({
-        ...individualForm,
-        preferredRoles: [...roles, role]
-      });
+  const handleHeaderAction = () => {
+    if (isLoggedIn) {
+      if (isSuperAdmin) {
+        setShowSuperAdminPanel(true);
+      } else if (isAdmin) {
+        setShowAdminPanel(true);
+      } else if (userRole === 'team_captain') {
+        setShowTeamEditDialog(true);
+      }
     } else {
-      toast({ title: 'Максимум ролей', description: 'Можно выбрать не более 3 ролей', variant: 'destructive' });
+      setShowLoginDialog(true);
     }
   };
 
   return (
-    <div className="min-h-screen go-board-pattern">
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background"></div>
-        
-        <TournamentHeader
-          selectedTab={selectedTab}
-          setSelectedTab={setSelectedTab}
-          isLoggedIn={isLoggedIn}
-          isAdmin={isAdmin}
-          isSuperAdmin={isSuperAdmin}
-          userRole={userRole}
-          username={username}
-          teamId={teamId}
-          setShowLoginDialog={setShowLoginDialog}
-          setShowAdminPanel={setShowAdminPanel}
-          setShowSuperAdminPanel={setShowSuperAdminPanel}
-          setShowTeamEditDialog={setShowTeamEditDialog}
-          setShowTeamManagementDialog={setShowTeamManagementDialog}
-          onLogout={handleLogout}
-        />
+    <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
+      <TournamentHeader 
+        isLoggedIn={isLoggedIn}
+        isAdmin={isAdmin}
+        isSuperAdmin={isSuperAdmin}
+        userRole={userRole}
+        username={username}
+        onLoginClick={() => setShowLoginDialog(true)}
+        onLogoutClick={handleLogout}
+        onAdminPanelClick={() => {
+          if (isSuperAdmin) {
+            setShowSuperAdminPanel(true);
+          } else {
+            setShowAdminPanel(true);
+          }
+        }}
+        onTeamEditClick={() => setShowTeamEditDialog(true)}
+        onTeamManagementClick={() => setShowTeamManagementDialog(true)}
+        onScheduleAdminClick={() => setShowScheduleAdminPanel(true)}
+      />
 
-        <section className="py-8 relative z-10 pb-20 sm:pb-8">
-          <div className="container mx-auto px-4">
-            <MobileNavigation selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
+      <div className="container mx-auto px-4 py-8">
+        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+          <TabsList className="hidden md:grid w-full grid-cols-5 mb-8 bg-card/50 backdrop-blur">
+            <TabsTrigger value="home" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Icon name="Home" className="w-4 h-4 mr-2" />
+              Главная
+            </TabsTrigger>
+            <TabsTrigger value="teams" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Icon name="Users" className="w-4 h-4 mr-2" />
+              Команды
+            </TabsTrigger>
+            <TabsTrigger value="players" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Icon name="User" className="w-4 h-4 mr-2" />
+              Игроки
+            </TabsTrigger>
+            <TabsTrigger value="bracket" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Icon name="GitBranch" className="w-4 h-4 mr-2" />
+              Сетка
+            </TabsTrigger>
+            <TabsTrigger value="schedule" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+              <Icon name="Calendar" className="w-4 h-4 mr-2" />
+              Расписание
+            </TabsTrigger>
+          </TabsList>
 
-            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-              <TabsContent value="home" className="mt-0">
-                <div className="max-w-6xl mx-auto">
-                  {isAdmin && (
-                    <div className="mb-4 flex justify-end">
-                      <Button 
-                        onClick={() => setShowHomePageEditor(true)}
-                        className="bg-primary hover:bg-primary/90"
-                        size="sm"
-                      >
-                        <Icon name="Edit" className="w-4 h-4 mr-2" />
-                        Редактировать страницу
-                      </Button>
-                    </div>
-                  )}
-                  
-                  <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-secondary/20 to-accent/20 p-12 mb-12 backdrop-blur-sm border border-primary/20">
-                    <div className="absolute top-0 right-0 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
-                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
-                    <div className="relative z-10 text-center">
-                      <h1 className="text-4xl md:text-6xl font-bold mb-4 bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-                        {homeTitle}
-                      </h1>
-                      <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-                        {homeSubtitle}
-                      </h2>
-                      <p className="text-xl text-muted-foreground max-w-2xl mx-auto whitespace-pre-wrap">
-                        {homeDescription}
-                      </p>
-                    </div>
-                  </div>
+          <TabsContent value="home" className="mt-6">
+            <HomeTab 
+              homeTitle={homeTitle}
+              homeSubtitle={homeSubtitle}
+              homeDescription={homeDescription}
+              registrationOpen={registrationOpen}
+              isSuperAdmin={isSuperAdmin}
+              tournamentInfo={tournamentInfo}
+              onRegisterClick={() => setSelectedTab('teams')}
+              onEditHomeClick={() => setShowHomePageEditor(true)}
+            />
+          </TabsContent>
 
-                  {Object.keys(tournamentInfo).length > 0 && (
-                    <div className="flex gap-8 items-start">
-                      <div className="space-y-6 flex-1">
-                        {tournamentInfo.tournamentName && (
-                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
-                            <h3 className="text-sm font-semibold text-muted-foreground mb-2">Название турнира</h3>
-                            <p className="text-xl font-bold text-foreground">{tournamentInfo.tournamentName}</p>
-                          </div>
-                        )}
-                        
-                        {tournamentInfo.prizeFund && (
-                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                                <Icon name="Trophy" className="w-5 h-5 text-primary" />
-                              </div>
-                              <h3 className="text-sm font-semibold text-muted-foreground">Призовой фонд</h3>
-                            </div>
-                            <p className="text-xl font-bold text-primary">{tournamentInfo.prizeFund}</p>
-                          </div>
-                        )}
-                        
-                        {tournamentInfo.prizeCount && (
-                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center flex-shrink-0">
-                                <Icon name="Award" className="w-5 h-5 text-secondary" />
-                              </div>
-                              <h3 className="text-sm font-semibold text-muted-foreground">Количество призовых мест</h3>
-                            </div>
-                            <p className="text-xl font-bold text-foreground">{tournamentInfo.prizeCount}</p>
-                          </div>
-                        )}
-                        
-                        {tournamentInfo.streamLinks && (
-                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center flex-shrink-0">
-                                <Icon name="Video" className="w-5 h-5 text-accent" />
-                              </div>
-                              <h3 className="text-sm font-semibold text-muted-foreground">Стрим-трансляции</h3>
-                            </div>
-                            <div className="space-y-2">
-                              {tournamentInfo.streamLinks.split('\n').filter(link => link.trim()).map((link, idx) => (
-                                <a 
-                                  key={idx}
-                                  href={link.trim()}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="flex items-center gap-2 text-primary hover:underline"
-                                >
-                                  <Icon name="ExternalLink" className="w-4 h-4" />
-                                  {link.trim()}
-                                </a>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                        
-                        {tournamentInfo.sponsor && (
-                          <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
-                            <div className="flex items-center gap-3 mb-3">
-                              <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                                <Icon name="Handshake" className="w-5 h-5 text-purple-500" />
-                              </div>
-                              <h3 className="text-sm font-semibold text-muted-foreground">Спонсор</h3>
-                            </div>
-                            <p className="text-xl font-bold text-foreground">{tournamentInfo.sponsor}</p>
-                          </div>
-                        )}
-                        
-                        {(tournamentInfo.startDate || tournamentInfo.registrationEnd) && (
-                          <div className="grid md:grid-cols-2 gap-6">
-                            {tournamentInfo.startDate && (
-                              <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
-                                <div className="flex items-center gap-3 mb-3">
-                                  <div className="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                                    <Icon name="CalendarCheck" className="w-5 h-5 text-blue-500" />
-                                  </div>
-                                  <h3 className="text-sm font-semibold text-muted-foreground">Начало турнира</h3>
-                                </div>
-                                <p className="text-xl font-bold text-secondary">{tournamentInfo.startDate}</p>
-                              </div>
-                            )}
-                            
-                            {tournamentInfo.registrationEnd && (
-                              <div className="bg-card border border-border rounded-xl p-6 hover:border-primary/50 transition-colors">
-                                <div className="flex items-center gap-3 mb-3">
-                                  <div className="w-10 h-10 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-                                    <Icon name="Clock" className="w-5 h-5 text-orange-500" />
-                                  </div>
-                                  <h3 className="text-sm font-semibold text-muted-foreground">Окончание регистрации</h3>
-                                </div>
-                                <p className="text-xl font-bold text-accent">{tournamentInfo.registrationEnd}</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {tournamentInfo.verticalBanner && (
-                        <div className="hidden lg:block w-80 flex-shrink-0">
-                          <div className="sticky top-8">
-                            <img 
-                              src={tournamentInfo.verticalBanner} 
-                              alt="Баннер турнира"
-                              className="w-full h-auto rounded-xl border border-border object-cover"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
-
-                  {tournamentInfo.rules && (
-                    <div className="bg-card border border-border rounded-xl p-6 mt-8">
-                      <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                        <Icon name="FileText" className="w-5 h-5 text-primary" />
-                        Основные правила и условия
-                      </h3>
-                      <div className="text-muted-foreground whitespace-pre-wrap">{tournamentInfo.rules}</div>
-                    </div>
-                  )}
-
-                  {tournamentInfo.regulationsLink && (
-                    <div className="bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/20 rounded-xl p-6 mt-6">
-                      <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                        <Icon name="Book" className="w-5 h-5 text-primary" />
-                        Регламент турнира
-                      </h3>
-                      <a 
-                        href={tournamentInfo.regulationsLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-primary hover:underline font-semibold"
-                      >
-                        Посмотреть полный регламент
-                        <Icon name="ExternalLink" className="w-4 h-4" />
-                      </a>
-                    </div>
-                  )}
-
-                  {tournamentInfo.participantTips && (
-                    <div className="bg-gradient-to-br from-accent/10 to-accent/5 border border-accent/20 rounded-xl p-6 mt-6">
-                      <h3 className="text-lg font-bold text-foreground mb-3 flex items-center gap-2">
-                        <Icon name="Lightbulb" className="w-5 h-5 text-accent" />
-                        Подсказки для участников
-                      </h3>
-                      <div className="text-muted-foreground whitespace-pre-wrap">{tournamentInfo.participantTips}</div>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="register" className="mt-8">
-                <RegistrationForms
+          <TabsContent value="teams" className="mt-6">
+            <TeamsList 
+              teams={approvedTeams}
+              registrationOpen={registrationOpen}
+              isLoggedIn={isLoggedIn}
+            />
+            
+            {registrationOpen && (
+              <div className="mt-8">
+                <RegistrationForms 
                   teamForm={teamForm}
-                  setTeamForm={setTeamForm}
                   individualForm={individualForm}
-                  setIndividualForm={setIndividualForm}
-                  registrationOpen={registrationOpen}
-                  handleTeamRegistration={handleTeamRegistration}
-                  handleIndividualRegistration={handleIndividualRegistration}
-                  toggleRole={toggleRole}
+                  onTeamFormChange={handleTeamFormChange}
+                  onIndividualFormChange={handleIndividualFormChange}
+                  onTeamRegister={handleTeamRegister}
+                  onIndividualRegister={handleIndividualRegister}
                 />
-              </TabsContent>
+              </div>
+            )}
+          </TabsContent>
 
-              <TabsContent value="teams" className="mt-8">
-                <TeamsList
-                  approvedTeams={approvedTeams}
-                  isLoggedIn={isLoggedIn}
-                  registrationOpen={registrationOpen}
-                  loadApprovedTeams={loadApprovedTeams}
-                />
-              </TabsContent>
+          <TabsContent value="players" className="mt-6">
+            <PlayersList players={individualPlayers} />
+          </TabsContent>
 
-              <TabsContent value="players" className="mt-8">
-                <PlayersList
-                  individualPlayers={individualPlayers}
-                  registrationOpen={registrationOpen}
-                  loadIndividualPlayers={loadIndividualPlayers}
-                />
-              </TabsContent>
+          <TabsContent value="bracket" className="mt-6">
+            <TournamentBracket challongeUrl={challongeUrl} />
+          </TabsContent>
 
-              <TabsContent value="tournament" className="mt-8">
-                <div className="max-w-6xl mx-auto">
-                  <Tabs defaultValue="bracket" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 mb-6">
-                      <TabsTrigger value="bracket">Турнирная сетка</TabsTrigger>
-                      <TabsTrigger value="schedule">Расписание</TabsTrigger>
-                    </TabsList>
-                    
-                    <TabsContent value="bracket">
-                      <TournamentBracket challongeUrl={challongeUrl} />
-                    </TabsContent>
-                    
-                    <TabsContent value="schedule">
-                      {isAdmin && (
-                        <div className="mb-4">
-                          <Button 
-                            onClick={() => setShowScheduleAdminPanel(true)}
-                            className="bg-primary hover:bg-primary/90"
-                          >
-                            <Icon name="Settings" className="w-4 h-4 mr-2" />
-                            Управление расписанием
-                          </Button>
-                        </div>
-                      )}
-                      <ScheduleView backendUrl={BACKEND_URLS.schedule} />
-                    </TabsContent>
-                  </Tabs>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="myteam" className="mt-8">
-                <div className="max-w-2xl mx-auto text-center py-12">
-                  <div className="mb-6">
-                    <div className="w-16 h-16 bg-secondary/20 rounded-full mx-auto mb-4 flex items-center justify-center">
-                      <Icon name="Settings" className="w-8 h-8 text-secondary" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-foreground mb-2">Управление командой</h2>
-                    <p className="text-muted-foreground mb-6">
-                      Войдите с помощью названия команды и пароля, указанных при регистрации
-                    </p>
-                  </div>
-                  <Button 
-                    onClick={() => setShowTeamManagementDialog(true)}
-                    size="lg"
-                    className="bg-secondary hover:bg-secondary/90"
-                  >
-                    <Icon name="LogIn" className="w-5 h-5 mr-2" />
-                    Войти в управление командой
-                  </Button>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </section>
+          <TabsContent value="schedule" className="mt-6">
+            <ScheduleView 
+              scheduleUrl={BACKEND_URLS.schedule}
+              isAdmin={isAdmin}
+              isSuperAdmin={isSuperAdmin}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
-      <LoginDialog
+      <MobileNavigation selectedTab={selectedTab} onTabChange={setSelectedTab} />
+
+      <LoginDialog 
         open={showLoginDialog}
         onOpenChange={setShowLoginDialog}
         onLogin={handleLogin}
       />
 
-      {isAdmin && (
-        <AdminPanel
-          open={showAdminPanel}
-          onOpenChange={setShowAdminPanel}
-          pendingTeams={pendingTeams}
-          pendingPlayers={pendingPlayers}
-          approvedTeams={approvedTeams}
-          approvedPlayers={individualPlayers}
-          registrationOpen={registrationOpen}
-          onApproveTeam={handleApproveTeam}
-          onRejectTeam={handleRejectTeam}
-          onApprovePlayer={handleApprovePlayer}
-          onRejectPlayer={handleRejectPlayer}
-          onDeleteApprovedTeam={handleDeleteApprovedTeam}
-          onDeleteApprovedPlayer={handleDeleteApprovedPlayer}
-          onEditApprovedTeam={(teamId) => {
-            setTeamId(teamId);
-            setShowTeamManagementDialog(true);
-          }}
-          onToggleRegistration={handleToggleRegistration}
-          userRole={userRole}
-          challongeUrl={challongeUrl}
-          onChallongeUrlChange={handleChallongeUrlChange}
+      <AdminPanel 
+        open={showAdminPanel}
+        onOpenChange={setShowAdminPanel}
+        sessionToken={sessionToken}
+        teamsUrl={BACKEND_URLS.teams}
+        settingsUrl={BACKEND_URLS.settings}
+        onTeamsUpdate={() => {
+          loadApprovedTeamsData();
+          loadPendingTeamsData();
+          loadIndividualPlayersData();
+        }}
+        onSettingsUpdate={loadSettingsData}
+        pendingTeams={pendingTeams}
+        pendingPlayers={pendingPlayers}
+      />
+
+      <SuperAdminPanel 
+        open={showSuperAdminPanel}
+        onOpenChange={setShowSuperAdminPanel}
+        sessionToken={sessionToken}
+        teamsUrl={BACKEND_URLS.teams}
+        settingsUrl={BACKEND_URLS.settings}
+        onTeamsUpdate={() => {
+          loadApprovedTeamsData();
+          loadPendingTeamsData();
+          loadIndividualPlayersData();
+        }}
+        onSettingsUpdate={loadSettingsData}
+        pendingTeams={pendingTeams}
+        pendingPlayers={pendingPlayers}
+      />
+
+      {teamId && (
+        <TeamEditDialog 
+          open={showTeamEditDialog}
+          onOpenChange={setShowTeamEditDialog}
+          teamId={teamId}
+          sessionToken={sessionToken}
+          teamsUrl={BACKEND_URLS.teams}
+          onUpdate={handleTeamUpdate}
         />
       )}
 
-      {isSuperAdmin && (
-        <SuperAdminPanel
-          open={showSuperAdminPanel}
-          onOpenChange={setShowSuperAdminPanel}
+      {userRole === 'team_captain' && teamId && (
+        <TeamManagementDialog 
+          open={showTeamManagementDialog}
+          onOpenChange={setShowTeamManagementDialog}
+          teamId={teamId}
           sessionToken={sessionToken}
-          authUrl={BACKEND_URLS.auth}
           teamsUrl={BACKEND_URLS.teams}
         />
       )}
 
-      {isAdmin && (
-        <ScheduleAdminPanel
+      {(isAdmin || isSuperAdmin) && (
+        <ScheduleAdminPanel 
           open={showScheduleAdminPanel}
           onOpenChange={setShowScheduleAdminPanel}
           sessionToken={sessionToken}
@@ -890,33 +421,17 @@ const Index = () => {
         />
       )}
 
-      {userRole === 'team_captain' && teamId && (
-        <TeamEditDialog
-          open={showTeamEditDialog}
-          onOpenChange={setShowTeamEditDialog}
-          teamId={teamId}
-          sessionToken={sessionToken}
-        />
-      )}
-
-      <TeamManagementDialog
-        open={showTeamManagementDialog}
-        onOpenChange={setShowTeamManagementDialog}
-        backendUrl={BACKEND_URLS.teams}
-        teamId={teamId || undefined}
-        sessionToken={sessionToken}
-        isAdmin={isAdmin}
-      />
-
-      {isAdmin && (
-        <HomePageEditor
+      {isSuperAdmin && (
+        <HomePageEditor 
           open={showHomePageEditor}
-          onOpenChange={(open) => {
-            setShowHomePageEditor(open);
-            if (!open) loadSettings();
-          }}
+          onOpenChange={setShowHomePageEditor}
+          sessionToken={sessionToken}
           settingsUrl={BACKEND_URLS.settings}
-          adminToken={sessionToken}
+          currentTitle={homeTitle}
+          currentSubtitle={homeSubtitle}
+          currentDescription={homeDescription}
+          currentTournamentInfo={tournamentInfo}
+          onUpdate={loadSettingsData}
         />
       )}
     </div>
