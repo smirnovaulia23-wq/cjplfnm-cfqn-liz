@@ -255,23 +255,20 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background/95 to-primary/5">
       <TournamentHeader 
+        selectedTab={selectedTab}
+        setSelectedTab={setSelectedTab}
         isLoggedIn={isLoggedIn}
         isAdmin={isAdmin}
         isSuperAdmin={isSuperAdmin}
         userRole={userRole}
         username={username}
-        onLoginClick={() => setShowLoginDialog(true)}
-        onLogoutClick={handleLogout}
-        onAdminPanelClick={() => {
-          if (isSuperAdmin) {
-            setShowSuperAdminPanel(true);
-          } else {
-            setShowAdminPanel(true);
-          }
-        }}
-        onTeamEditClick={() => setShowTeamEditDialog(true)}
-        onTeamManagementClick={() => setShowTeamManagementDialog(true)}
-        onScheduleAdminClick={() => setShowScheduleAdminPanel(true)}
+        teamId={teamId}
+        setShowLoginDialog={setShowLoginDialog}
+        setShowAdminPanel={setShowAdminPanel}
+        setShowSuperAdminPanel={setShowSuperAdminPanel}
+        setShowTeamEditDialog={setShowTeamEditDialog}
+        setShowTeamManagementDialog={setShowTeamManagementDialog}
+        onLogout={handleLogout}
       />
 
       <div className="container mx-auto px-4 py-8">
