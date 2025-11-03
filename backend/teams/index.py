@@ -25,7 +25,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             'headers': {
                 'Access-Control-Allow-Origin': '*',
                 'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Token',
+                'Access-Control-Allow-Headers': 'Content-Type, X-Auth-Token, X-Session-Token',
                 'Access-Control-Max-Age': '86400'
             },
             'body': '',
@@ -375,7 +375,9 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if action == 'update':
                 auth_token = event.get('headers', {}).get('X-Auth-Token') or event.get('headers', {}).get('x-auth-token')
+                session_token = event.get('headers', {}).get('X-Session-Token') or event.get('headers', {}).get('x-session-token')
                 is_admin_update = False
+                is_captain_update = False
                 
                 if auth_token:
                     cur.execute(
@@ -384,7 +386,26 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     admin_result = cur.fetchone()
                     is_admin_update = admin_result is not None
                 
-                if not is_admin_update:
+                if not is_admin_update and session_token:
+                    cur.execute(
+                        f"SELECT team_id FROM user_sessions WHERE session_token = '{escape_sql(session_token)}'"
+                    )
+                    session_result = cur.fetchone()
+                    if session_result and session_result[0] == team_id:
+                        is_captain_update = True
+                
+                if not is_admin_update and not is_captain_update:
+                    return {
+                        'statusCode': 403,
+                        'headers': {
+                            'Content-Type': 'application/json',
+                            'Access-Control-Allow-Origin': '*'
+                        },
+                        'body': json.dumps({'success': False, 'error': 'Недостаточно прав для редактирования'}),
+                        'isBase64Encoded': False
+                    }
+                
+                if is_captain_update:
                     cur.execute("SELECT value FROM settings WHERE key = 'registration_open'")
                     reg_status = cur.fetchone()
                     
@@ -431,7 +452,6 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 else:
                     cur.execute(
                         f"""UPDATE teams SET 
-                            team_name = '{team_name}',
                             top_nick = '{top_nick}', top_telegram = '{top_telegram}',
                             jungle_nick = '{jungle_nick}', jungle_telegram = '{jungle_telegram}',
                             mid_nick = '{mid_nick}', mid_telegram = '{mid_telegram}',

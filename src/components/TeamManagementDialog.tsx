@@ -216,8 +216,19 @@ export const TeamManagementDialog = ({ open, onOpenChange, backendUrl, teamId, s
         ) : (
           <div className="space-y-4 mt-4">
             <div className="p-4 bg-background/50 rounded-lg border border-border">
-              <h3 className="font-semibold text-lg mb-2">{teamData.teamName}</h3>
-              <p className="text-sm text-muted-foreground">
+              {isAdmin ? (
+                <div className="space-y-2">
+                  <Label className="text-base font-semibold">Название команды</Label>
+                  <Input
+                    value={teamData.teamName}
+                    onChange={(e) => setTeamData({...teamData, teamName: e.target.value})}
+                    className="text-lg font-semibold"
+                  />
+                </div>
+              ) : (
+                <h3 className="font-semibold text-lg mb-2">{teamData.teamName}</h3>
+              )}
+              <p className="text-sm text-muted-foreground mt-2">
                 Статус: <span className="text-foreground font-medium">
                   {teamData.status === 'approved' ? '✅ Одобрена' : '⏳ На рассмотрении'}
                 </span>

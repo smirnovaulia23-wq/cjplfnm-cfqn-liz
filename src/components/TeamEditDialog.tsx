@@ -149,11 +149,11 @@ export const TeamEditDialog = ({ open, onOpenChange, teamId, sessionToken, onSuc
             <Label className="text-base font-semibold text-foreground">Название команды</Label>
             <Input
               value={teamData.teamName || ''}
-              onChange={(e) => setTeamData({ ...teamData, teamName: e.target.value })}
               placeholder="Название команды"
-              className="bg-background border-border focus:border-primary"
-              required
+              className="bg-background border-border cursor-not-allowed opacity-60"
+              disabled
             />
+            <p className="text-xs text-muted-foreground">Название команды нельзя изменить. Обратитесь к администрации.</p>
           </div>
 
           <div className="space-y-4">
