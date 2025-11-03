@@ -1,13 +1,10 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import Icon from '@/components/ui/icon';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { SchedulePublishToggle } from './schedule/SchedulePublishToggle';
+import { MatchCreateForm } from './schedule/MatchCreateForm';
+import { MatchEditDialog } from './schedule/MatchEditDialog';
+import { MatchesList } from './schedule/MatchesList';
 
 interface Match {
   id: number;
@@ -123,6 +120,10 @@ export const ScheduleAdminPanel = ({
     }
   };
 
+  const handleMatchChange = (field: string, value: string) => {
+    setNewMatch({ ...newMatch, [field]: value });
+  };
+
   const handleCreateMatch = async () => {
     if (!newMatch.match_date || !newMatch.match_time || !newMatch.team1_name || !newMatch.team2_name || !newMatch.round) {
       toast({ title: 'Заполните все поля', variant: 'destructive' });
@@ -168,6 +169,12 @@ export const ScheduleAdminPanel = ({
       toast({ title: 'Ошибка', description: 'Не удалось создать матч', variant: 'destructive' });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditMatchChange = (updates: Partial<Match>) => {
+    if (editMatch) {
+      setEditMatch({ ...editMatch, ...updates });
     }
   };
 
@@ -261,264 +268,48 @@ export const ScheduleAdminPanel = ({
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case 'waiting':
-        return <Badge variant="outline" className="bg-blue-500/10 text-blue-500">Ожидание</Badge>;
-      case 'live':
-        return <Badge variant="outline" className="bg-red-500/10 text-red-500 animate-pulse">В эфире</Badge>;
-      case 'playing':
-        return <Badge variant="outline" className="bg-green-500/10 text-green-500">Играют</Badge>;
-      case 'completed':
-        return <Badge variant="outline" className="bg-gray-500/10 text-gray-500">Завершён</Badge>;
-      default:
-        return null;
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Icon name="Calendar" className="w-5 h-5" />
-            Управление расписанием
-          </DialogTitle>
-          <DialogDescription>
-            Создавайте и редактируйте матчи турнира
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="bg-card border-border max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-primary">Управление расписанием</DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-6">
-          <Card className={published ? "border-green-500/50" : "border-orange-500/50"}>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg">Статус публикации</CardTitle>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {published ? 'Расписание видно всем пользователям' : 'Расписание видно только админам'}
-                  </p>
-                </div>
-                <Button 
-                  onClick={handleTogglePublish}
-                  disabled={loading}
-                  variant={published ? "destructive" : "default"}
-                  size="lg"
-                >
-                  <Icon name={published ? "EyeOff" : "Eye"} className="w-4 h-4 mr-2" />
-                  {published ? 'Скрыть расписание' : 'Опубликовать расписание'}
-                </Button>
-              </div>
-            </CardHeader>
-          </Card>
+          <div className="space-y-6 mt-4">
+            <SchedulePublishToggle 
+              published={published}
+              loading={loading}
+              onTogglePublish={handleTogglePublish}
+            />
 
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Создать новый матч</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Дата матча</Label>
-                  <Input
-                    type="date"
-                    value={newMatch.match_date}
-                    onChange={(e) => setNewMatch({ ...newMatch, match_date: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label>Время матча</Label>
-                  <Input
-                    type="time"
-                    value={newMatch.match_time}
-                    onChange={(e) => setNewMatch({ ...newMatch, match_time: e.target.value })}
-                  />
-                </div>
-              </div>
+            <MatchCreateForm 
+              newMatch={newMatch}
+              loading={loading}
+              onMatchChange={handleMatchChange}
+              onCreateMatch={handleCreateMatch}
+            />
 
-              <div>
-                <Label>Раунд/Стадия</Label>
-                <Input
-                  placeholder="Например: Групповой этап, 1/4 финала"
-                  value={newMatch.round}
-                  onChange={(e) => setNewMatch({ ...newMatch, round: e.target.value })}
-                />
-              </div>
+            <MatchesList 
+              matches={matches}
+              loading={loading}
+              onEditMatch={setEditMatch}
+              onDeleteMatch={handleDeleteMatch}
+              onClearAll={handleClearAll}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Команда 1</Label>
-                  <Input
-                    placeholder="Введите название команды"
-                    value={newMatch.team1_name}
-                    onChange={(e) => setNewMatch({ ...newMatch, team1_name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label>Команда 2</Label>
-                  <Input
-                    placeholder="Введите название команды"
-                    value={newMatch.team2_name}
-                    onChange={(e) => setNewMatch({ ...newMatch, team2_name: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <Button onClick={handleCreateMatch} disabled={loading} className="w-full">
-                <Icon name="Plus" className="w-4 h-4 mr-2" />
-                Создать матч
-              </Button>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg">Список матчей</CardTitle>
-                {matches.length > 0 && (
-                  <Button 
-                    onClick={handleClearAll} 
-                    variant="destructive" 
-                    size="sm"
-                    disabled={loading}
-                  >
-                    <Icon name="Trash2" className="w-4 h-4 mr-2" />
-                    Очистить всё
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {matches.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">Матчи ещё не созданы</p>
-              ) : (
-                matches.map(match => (
-                  <Card key={match.id} className="border-secondary/30">
-                    <CardContent className="pt-4">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="outline">{match.round}</Badge>
-                          {getStatusBadge(match.status)}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {match.match_date} в {match.match_time}
-                        </div>
-                      </div>
-
-                      <div className="space-y-2 mb-3">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">{match.team1_name}</span>
-                          {match.status === 'completed' && <Badge>{match.score_team1}</Badge>}
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold">{match.team2_name}</span>
-                          {match.status === 'completed' && <Badge>{match.score_team2}</Badge>}
-                        </div>
-                      </div>
-
-                      {editMatch?.id === match.id ? (
-                        <div className="space-y-3 mt-3 pt-3 border-t">
-                          <div>
-                            <Label>Статус</Label>
-                            <Select value={editMatch.status} onValueChange={(value: any) => setEditMatch({ ...editMatch, status: value })}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="waiting">Ожидание</SelectItem>
-                                <SelectItem value="live">В эфире</SelectItem>
-                                <SelectItem value="playing">Играют</SelectItem>
-                                <SelectItem value="completed">Завершён</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-
-                          {editMatch.status === 'live' && (
-                            <div>
-                              <Label>Ссылка на трансляцию</Label>
-                              <Input
-                                type="url"
-                                placeholder="https://youtube.com/watch?v=..."
-                                value={editMatch.stream_url || ''}
-                                onChange={(e) => setEditMatch({ ...editMatch, stream_url: e.target.value })}
-                              />
-                            </div>
-                          )}
-
-                          {editMatch.status === 'completed' && (
-                            <>
-                              <div className="grid grid-cols-2 gap-2">
-                                <div>
-                                  <Label>Счёт команды 1</Label>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    value={editMatch.score_team1 || 0}
-                                    onChange={(e) => setEditMatch({ ...editMatch, score_team1: parseInt(e.target.value) })}
-                                  />
-                                </div>
-                                <div>
-                                  <Label>Счёт команды 2</Label>
-                                  <Input
-                                    type="number"
-                                    min="0"
-                                    value={editMatch.score_team2 || 0}
-                                    onChange={(e) => setEditMatch({ ...editMatch, score_team2: parseInt(e.target.value) })}
-                                  />
-                                </div>
-                              </div>
-
-                              <div>
-                                <Label>Победитель</Label>
-                                <Select 
-                                  value={editMatch.winner_team_id?.toString() || ''} 
-                                  onValueChange={(value) => setEditMatch({ ...editMatch, winner_team_id: parseInt(value) })}
-                                >
-                                  <SelectTrigger>
-                                    <SelectValue placeholder="Выберите победителя" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value={match.team1_id.toString()}>{match.team1_name}</SelectItem>
-                                    <SelectItem value={match.team2_id.toString()}>{match.team2_name}</SelectItem>
-                                  </SelectContent>
-                                </Select>
-                              </div>
-                            </>
-                          )}
-
-                          <div className="flex gap-2">
-                            <Button onClick={handleUpdateMatch} disabled={loading} size="sm" className="flex-1">
-                              Сохранить
-                            </Button>
-                            <Button onClick={() => setEditMatch(null)} variant="outline" size="sm">
-                              Отмена
-                            </Button>
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="flex gap-2">
-                          <Button onClick={() => setEditMatch(match)} variant="outline" size="sm" className="flex-1">
-                            <Icon name="Edit" className="w-4 h-4 mr-2" />
-                            Редактировать
-                          </Button>
-                          <Button 
-                            onClick={() => handleDeleteMatch(match.id)} 
-                            variant="destructive" 
-                            size="sm"
-                            disabled={loading}
-                          >
-                            <Icon name="Trash2" className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      </DialogContent>
-    </Dialog>
+      <MatchEditDialog 
+        editMatch={editMatch}
+        loading={loading}
+        onEditMatchChange={handleEditMatchChange}
+        onUpdateMatch={handleUpdateMatch}
+        onClose={() => setEditMatch(null)}
+      />
+    </>
   );
 };
+
+export default ScheduleAdminPanel;
