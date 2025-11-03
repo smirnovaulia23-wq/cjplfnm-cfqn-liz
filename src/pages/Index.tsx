@@ -314,9 +314,10 @@ const Index = () => {
 
           <TabsContent value="teams" className="mt-6">
             <TeamsList 
-              teams={approvedTeams}
+              approvedTeams={approvedTeams}
               registrationOpen={registrationOpen}
               isLoggedIn={isLoggedIn}
+              loadApprovedTeams={loadApprovedTeamsData}
             />
             
             {registrationOpen && (
