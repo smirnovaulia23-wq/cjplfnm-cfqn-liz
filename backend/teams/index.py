@@ -427,6 +427,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                         }
                 
                 team_name = escape_sql(body_data.get('teamName', ''))
+                captain_nick = escape_sql(body_data.get('captainNick', ''))
+                captain_telegram = escape_sql(body_data.get('captainTelegram', ''))
                 top_nick = escape_sql(body_data.get('topNick', ''))
                 top_telegram = escape_sql(body_data.get('topTelegram', ''))
                 jungle_nick = escape_sql(body_data.get('jungleNick', ''))
@@ -446,6 +448,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                     cur.execute(
                         f"""UPDATE teams SET 
                             team_name = '{team_name}',
+                            captain_nick = '{captain_nick}', captain_telegram = '{captain_telegram}',
                             top_nick = '{top_nick}', top_telegram = '{top_telegram}',
                             jungle_nick = '{jungle_nick}', jungle_telegram = '{jungle_telegram}',
                             mid_nick = '{mid_nick}', mid_telegram = '{mid_telegram}',
@@ -458,6 +461,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 else:
                     cur.execute(
                         f"""UPDATE teams SET 
+                            team_name = '{team_name}',
+                            captain_nick = '{captain_nick}', captain_telegram = '{captain_telegram}',
                             top_nick = '{top_nick}', top_telegram = '{top_telegram}',
                             jungle_nick = '{jungle_nick}', jungle_telegram = '{jungle_telegram}',
                             mid_nick = '{mid_nick}', mid_telegram = '{mid_telegram}',
