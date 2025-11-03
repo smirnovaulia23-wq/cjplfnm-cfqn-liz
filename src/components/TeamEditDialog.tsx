@@ -149,11 +149,38 @@ export const TeamEditDialog = ({ open, onOpenChange, teamId, sessionToken, onSuc
             <Label className="text-base font-semibold text-foreground">Название команды</Label>
             <Input
               value={teamData.teamName || ''}
+              onChange={(e) => setTeamData({ ...teamData, teamName: e.target.value })}
               placeholder="Название команды"
-              className="bg-background border-border cursor-not-allowed opacity-60"
-              disabled
+              className="bg-background border-border focus:border-primary"
+              required
             />
-            <p className="text-xs text-muted-foreground">Название команды нельзя изменить. Обратитесь к администрации.</p>
+          </div>
+
+          <div className="space-y-4">
+            <Label className="text-base font-semibold text-foreground">Капитан команды</Label>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-muted-foreground">Капитан - Ник</Label>
+                <Input
+                  value={teamData.captainNick || ''}
+                  onChange={(e) => setTeamData({ ...teamData, captainNick: e.target.value })}
+                  placeholder="Ник капитана"
+                  className="bg-background border-border focus:border-primary"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-muted-foreground">Капитан - Telegram</Label>
+                <Input
+                  value={teamData.captainTelegram || ''}
+                  onChange={(e) => setTeamData({ ...teamData, captainTelegram: e.target.value })}
+                  placeholder="@username"
+                  className="bg-background border-border focus:border-primary"
+                  required
+                />
+              </div>
+            </div>
           </div>
 
           <div className="space-y-4">
