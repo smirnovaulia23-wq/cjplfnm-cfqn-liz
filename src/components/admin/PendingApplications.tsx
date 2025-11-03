@@ -11,6 +11,21 @@ interface Team {
   status: string;
   createdAt: string;
   isEdited?: boolean;
+  oldData?: any;
+  topNick?: string;
+  topTelegram?: string;
+  jungleNick?: string;
+  jungleTelegram?: string;
+  midNick?: string;
+  midTelegram?: string;
+  adcNick?: string;
+  adcTelegram?: string;
+  supportNick?: string;
+  supportTelegram?: string;
+  sub1Nick?: string;
+  sub1Telegram?: string;
+  sub2Nick?: string;
+  sub2Telegram?: string;
 }
 
 interface Player {
@@ -46,6 +61,22 @@ export const PendingApplications = ({
   onApprovePlayer,
   onRejectPlayer
 }: PendingApplicationsProps) => {
+  const renderFieldComparison = (label: string, oldValue: string | undefined, newValue: string | undefined) => {
+    if (!oldValue || oldValue === newValue) return null;
+    return (
+      <div className="flex items-start gap-2 text-sm">
+        <span className="text-muted-foreground min-w-[120px]">{label}:</span>
+        <div className="flex-1 space-y-1">
+          <div className="flex items-center gap-2">
+            <span className="line-through text-red-500">{oldValue}</span>
+            <Icon name="ArrowRight" className="w-3 h-3 text-muted-foreground" />
+            <span className="text-green-500">{newValue}</span>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <Card className="bg-background/50 border-border">
@@ -71,22 +102,50 @@ export const PendingApplications = ({
                   className="p-4 rounded-lg bg-card border border-border space-y-4"
                 >
                   <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg text-foreground">{team.teamName}</h3>
-                        {team.isEdited && (
-                          <Badge className="bg-accent/20 text-accent border-accent/50">
-                            <Icon name="Edit" className="w-3 h-3 mr-1" />
-                            Отредактирована
-                          </Badge>
-                        )}
+                    <div className="flex-1 space-y-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-lg text-foreground">{team.teamName}</h3>
+                          {team.isEdited && (
+                            <Badge className="bg-accent/20 text-accent border-accent/50">
+                              <Icon name="Edit" className="w-3 h-3 mr-1" />
+                              Отредактирована
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          Капитан: {team.captainNick} ({team.captainTelegram})
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Подана: {new Date(team.createdAt).toLocaleString('ru-RU')}
+                        </p>
                       </div>
-                      <p className="text-sm text-muted-foreground">
-                        Капитан: {team.captainNick} ({team.captainTelegram})
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Подана: {new Date(team.createdAt).toLocaleString('ru-RU')}
-                      </p>
+                      
+                      {team.isEdited && team.oldData && (
+                        <div className="bg-accent/5 border border-accent/20 rounded-lg p-3 space-y-2">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Icon name="FileEdit" className="w-4 h-4 text-accent" />
+                            <span className="text-sm font-semibold text-accent">Изменённые данные:</span>
+                          </div>
+                          {renderFieldComparison('Название', team.oldData.teamName, team.teamName)}
+                          {renderFieldComparison('Капитан - Ник', team.oldData.captainNick, team.captainNick)}
+                          {renderFieldComparison('Капитан - Telegram', team.oldData.captainTelegram, team.captainTelegram)}
+                          {renderFieldComparison('Топ - Ник', team.oldData.topNick, team.topNick)}
+                          {renderFieldComparison('Топ - Telegram', team.oldData.topTelegram, team.topTelegram)}
+                          {renderFieldComparison('Лес - Ник', team.oldData.jungleNick, team.jungleNick)}
+                          {renderFieldComparison('Лес - Telegram', team.oldData.jungleTelegram, team.jungleTelegram)}
+                          {renderFieldComparison('Мид - Ник', team.oldData.midNick, team.midNick)}
+                          {renderFieldComparison('Мид - Telegram', team.oldData.midTelegram, team.midTelegram)}
+                          {renderFieldComparison('АДК - Ник', team.oldData.adcNick, team.adcNick)}
+                          {renderFieldComparison('АДК - Telegram', team.oldData.adcTelegram, team.adcTelegram)}
+                          {renderFieldComparison('Саппорт - Ник', team.oldData.supportNick, team.supportNick)}
+                          {renderFieldComparison('Саппорт - Telegram', team.oldData.supportTelegram, team.supportTelegram)}
+                          {renderFieldComparison('Запасной 1 - Ник', team.oldData.sub1Nick, team.sub1Nick)}
+                          {renderFieldComparison('Запасной 1 - Telegram', team.oldData.sub1Telegram, team.sub1Telegram)}
+                          {renderFieldComparison('Запасной 2 - Ник', team.oldData.sub2Nick, team.sub2Nick)}
+                          {renderFieldComparison('Запасной 2 - Telegram', team.oldData.sub2Telegram, team.sub2Telegram)}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex gap-2">

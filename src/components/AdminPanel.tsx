@@ -12,6 +12,21 @@ interface Team {
   status: string;
   createdAt: string;
   isEdited?: boolean;
+  oldData?: any;
+  topNick?: string;
+  topTelegram?: string;
+  jungleNick?: string;
+  jungleTelegram?: string;
+  midNick?: string;
+  midTelegram?: string;
+  adcNick?: string;
+  adcTelegram?: string;
+  supportNick?: string;
+  supportTelegram?: string;
+  sub1Nick?: string;
+  sub1Telegram?: string;
+  sub2Nick?: string;
+  sub2Telegram?: string;
 }
 
 interface Player {

@@ -138,7 +138,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                           top_nick, top_telegram, jungle_nick, jungle_telegram, 
                           mid_nick, mid_telegram, adc_nick, adc_telegram,
                           support_nick, support_telegram, sub1_nick, sub1_telegram,
-                          sub2_nick, sub2_telegram, is_edited 
+                          sub2_nick, sub2_telegram, is_edited, old_data 
                    FROM teams WHERE status = '{escape_sql(status_filter)}' ORDER BY created_at DESC"""
             )
             teams = cur.fetchall()
@@ -164,7 +164,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                 'sub1Telegram': t[17],
                 'sub2Nick': t[18],
                 'sub2Telegram': t[19],
-                'isEdited': t[20] if len(t) > 20 and t[20] is not None else False
+                'isEdited': t[20] if len(t) > 20 and t[20] is not None else False,
+                'oldData': t[21] if len(t) > 21 and t[21] is not None else None
             } for t in teams]
             
             return {
@@ -437,6 +438,42 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             'isBase64Encoded': False
                         }
                 
+                if not is_admin_update:
+                    cur.execute(
+                        f"""SELECT team_name, captain_nick, captain_telegram,
+                                  top_nick, top_telegram, jungle_nick, jungle_telegram,
+                                  mid_nick, mid_telegram, adc_nick, adc_telegram,
+                                  support_nick, support_telegram, sub1_nick, sub1_telegram,
+                                  sub2_nick, sub2_telegram
+                           FROM teams WHERE id = {team_id}"""
+                    )
+                    old_team = cur.fetchone()
+                    if old_team:
+                        old_data = {
+                            'teamName': old_team[0],
+                            'captainNick': old_team[1],
+                            'captainTelegram': old_team[2],
+                            'topNick': old_team[3],
+                            'topTelegram': old_team[4],
+                            'jungleNick': old_team[5],
+                            'jungleTelegram': old_team[6],
+                            'midNick': old_team[7],
+                            'midTelegram': old_team[8],
+                            'adcNick': old_team[9],
+                            'adcTelegram': old_team[10],
+                            'supportNick': old_team[11],
+                            'supportTelegram': old_team[12],
+                            'sub1Nick': old_team[13],
+                            'sub1Telegram': old_team[14],
+                            'sub2Nick': old_team[15],
+                            'sub2Telegram': old_team[16]
+                        }
+                        old_data_json = json.dumps(old_data).replace("'", "''")
+                    else:
+                        old_data_json = 'NULL'
+                else:
+                    old_data_json = 'NULL'
+                
                 team_name = escape_sql(body_data.get('teamName', ''))
                 captain_nick = escape_sql(body_data.get('captainNick', ''))
                 captain_telegram = escape_sql(body_data.get('captainTelegram', ''))
@@ -482,7 +519,8 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
                             sub1_nick = '{sub1_nick}', sub1_telegram = '{sub1_telegram}',
                             sub2_nick = '{sub2_nick}', sub2_telegram = '{sub2_telegram}',
                             status = 'pending',
-                            is_edited = true
+                            is_edited = true,
+                            old_data = {'NULL' if old_data_json == 'NULL' else f"'{old_data_json}'"}
                         WHERE id = {team_id}"""
                     )
                 conn.commit()
@@ -501,7 +539,7 @@ def handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
             
             if new_status == 'approved':
                 cur.execute(
-                    f"UPDATE teams SET status = '{new_status}', is_edited = false WHERE id = {team_id}"
+                    f"UPDATE teams SET status = '{new_status}', is_edited = false, old_data = NULL WHERE id = {team_id}"
                 )
             else:
                 cur.execute(
