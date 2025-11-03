@@ -15,11 +15,12 @@ interface TeamManagementDialogProps {
   isAdmin?: boolean;
 }
 
-export const TeamManagementDialog = ({ open, onOpenChange, backendUrl, teamId, sessionToken, isAdmin }: TeamManagementDialogProps) => {
+export const TeamManagementDialog = ({ open, onOpenChange, backendUrl, teamId, sessionToken: adminSessionToken, isAdmin }: TeamManagementDialogProps) => {
   const [step, setStep] = useState<'login' | 'manage'>(isAdmin && teamId ? 'manage' : 'login');
   const [teamName, setTeamName] = useState('');
   const [password, setPassword] = useState('');
   const [teamData, setTeamData] = useState<any>(null);
+  const [captainSessionToken, setCaptainSessionToken] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
 
@@ -80,6 +81,9 @@ export const TeamManagementDialog = ({ open, onOpenChange, backendUrl, teamId, s
       
       if (data.success && data.team) {
         setTeamData(data.team);
+        if (data.sessionToken) {
+          setCaptainSessionToken(data.sessionToken);
+        }
         setStep('manage');
         toast({ 
           title: 'Успешно', 
