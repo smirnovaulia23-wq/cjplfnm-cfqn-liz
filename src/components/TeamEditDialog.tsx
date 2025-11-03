@@ -65,10 +65,11 @@ export const TeamEditDialog = ({ open, onOpenChange, teamId, sessionToken, onSuc
       });
       const data = await response.json();
 
-      if (data.success) {
+      if (response.ok && data.success) {
         toast({ 
-          title: 'Данные отправлены на проверку', 
-          description: 'Ваша команда будет рассмотрена администрацией' 
+          title: '✅ Изменения отправлены администрации', 
+          description: 'Ваши изменения будут проверены и одобрены в ближайшее время',
+          className: 'bg-green-50 border-green-200'
         });
         onSuccess();
         onOpenChange(false);
